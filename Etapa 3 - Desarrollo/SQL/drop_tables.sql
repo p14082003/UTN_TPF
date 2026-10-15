@@ -11,10 +11,12 @@ DROP TABLE IF EXISTS AdministradoresInstitucion;
 
 DROP TABLE IF EXISTS IdiomaInstitucion;
 DROP TABLE IF EXISTS Cursos;
+DROP TABLE IF EXISTS NivelesEscolares;
 DROP TABLE IF EXISTS Imagenes;
 
 DROP TABLE IF EXISTS Usuarios;
 DROP TABLE IF EXISTS Instituciones;
+DROP TABLE IF EXISTS Discapacidades;
 DROP TABLE IF EXISTS Personas;
 
 DROP TABLE IF EXISTS EstadosPostulacion;

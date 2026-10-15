@@ -69,6 +69,17 @@ CREATE TABLE Instituciones (
   CONSTRAINT fk_instituciones_tipoinstitucion FOREIGN KEY (idTipoInstitucion) REFERENCES TipoInstitucion (id)
 );
 
+CREATE TABLE Discapacidades ( #Hecho aparte de la tabla "Instituciones" por ordenar. En teoria, los campos de esta tabla podrian ir dentro de Instituciones.
+  idInstitucion INT NOT NULL AUTO_INCREMENT,
+  movilidad BOOL NOT NULL,
+  visual BOOL NOT NULL,
+  auditiva BOOL NOT NULL,
+  intelectual BOOL NOT NULL,
+  sindromeDown BOOL NOT NULL,
+  autismo BOOL NOT NULL,
+  PRIMARY KEY (idInstitucion)
+);
+
 CREATE TABLE IdiomaInstitucion (
   idInstitucion INT NOT NULL, 
   idIdioma TINYINT NOT NULL, 
@@ -77,17 +88,27 @@ CREATE TABLE IdiomaInstitucion (
   CONSTRAINT fk_idiomainstitucion_idioma FOREIGN KEY (idIdioma) REFERENCES Idiomas (id)
 );
 
+CREATE TABLE NivelesEscolares (
+  id INT NOT NULL AUTO_INCREMENT, 
+  descripcion VARCHAR(30) NOT NULL,
+  PRIMARY KEY (id)
+);
+
 CREATE TABLE Cursos (
   id INT NOT NULL AUTO_INCREMENT, 
   idInstitucion INT NOT NULL, 
   idTurno INT NOT NULL, 
-  anio TINYINT NOT NULL, 
-  division VARCHAR(50) NOT NULL, 
+  cicloLectivo INT NOT NULL, 					#ANIO CALENDARIO: 2026, 2007, 1998
+  idNivel INT NULL,								#EJ: 1 si es preescolar, 2 si es primaria, 3 si es secundaria
+  anio TINYINT NULL,							#ANIO ESTANDAR ESCOLAR, PARA PRE, PRIMARIA Y SEC: 1er grado, 2do grado, 1er año, 3er año. preescolar.
+  nivelPersonalizado VARCHAR(30) NULL, 			#TAG CUSTOM EN CASO DE NO SER ESTANDAR: 2nd Children, 1° grado, 4to año.
+  division VARCHAR(50) NOT NULL, 				#SI SOLO HAY 1, SE COMPLETA CON 1: 4ta division, salita azul, A B C, Lunes y Miercoles, martes y jueves
   capacidad TINYINT NOT NULL, 
   inscriptos TINYINT NOT NULL DEFAULT 0, 
   PRIMARY KEY (id), 
   CONSTRAINT fk_cursos_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
   CONSTRAINT fk_cursos_turno FOREIGN KEY (idTurno) REFERENCES Turnos (id), 
+  CONSTRAINT fk_niveles_escolares FOREIGN KEY (idNivel) REFERENCES NivelesEscolares (id), 
   CONSTRAINT ck_cursos_inscriptos CHECK (inscriptos <= capacidad)
 );
 
@@ -152,12 +173,12 @@ CREATE TABLE Postulaciones (
   id INT NOT NULL AUTO_INCREMENT, 
   fecha DATE NOT NULL, 
   codigoSeguimiento VARCHAR(30) NOT NULL, 
-  idInstitucion INT NOT NULL, 
+  idCurso INT NOT NULL, 
   idAlumno INT NOT NULL, 
   idEstado INT NOT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postulaciones_codigo (codigoSeguimiento), 
-  CONSTRAINT fk_postulaciones_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
+  CONSTRAINT fk_postulaciones_curso FOREIGN KEY (idCurso) REFERENCES Cursos (id), 
   CONSTRAINT fk_postulaciones_alumno FOREIGN KEY (idAlumno) REFERENCES Alumnos (id), 
   CONSTRAINT fk_postulaciones_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
 );
@@ -188,3 +209,6 @@ CREATE TABLE Telefonos (
   CONSTRAINT fk_telefonos_responsable FOREIGN KEY (idResponsable) REFERENCES Responsables (id), 
   CONSTRAINT ck_telefonos_dueno CHECK (idInstitucion IS NOT NULL OR idAdministrador IS NOT NULL OR idResponsable IS NOT NULL)
 );
+
+#A FUTURO: 
+#historial de cursos
