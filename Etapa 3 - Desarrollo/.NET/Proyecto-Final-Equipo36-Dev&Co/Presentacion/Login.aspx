@@ -99,7 +99,7 @@
                              </div>
 
                              <div class="input-group mb-3">
-                                 <asp:Button CssClass="btn-register w-100 fs-6" ID="btnRegistrarse" runat="server" Text="Registrarse" CausesValidation="False" />
+                                 <asp:Button CssClass="btn-register w-100 fs-6" ID="btnRegistrarse" OnClick="btnRegistrarse_Click" runat="server" Text="Registrarse" CausesValidation="False" />
                              </div>
 
                              <div class="text-end mb-3">
