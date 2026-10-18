@@ -1,0 +1,29 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Compilación
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# Temporales
+*.tmp
+*.log
+*.cache
+*.db-shm
+*.db-wal
+
+# Archivos temporales de Visual Studio
+*.csproj.user
+*.suo
+
+# Paquetes NuGet descargados
+packages/
+
+# Archivos temporales de Office
+~$*
