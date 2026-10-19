@@ -96,6 +96,7 @@
     </Compile>
     <Compile Include="AdminDevCo.aspx.designer.cs">
       <DependentUpon>AdminDevCo.aspx</DependentUpon>
+    </Compile>
     <Compile Include="RegistroFormularioResponsable.aspx.cs">
       <DependentUpon>RegistroFormularioResponsable.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

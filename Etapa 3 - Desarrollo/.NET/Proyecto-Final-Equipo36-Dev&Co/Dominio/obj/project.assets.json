@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Dev\\TP Final TUP\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\Dominio.csproj",
+      "projectUniqueName": "C:\\Dev\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\Dominio.csproj",
       "projectName": "Dominio",
-      "projectPath": "C:\\Dev\\TP Final TUP\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\Dominio.csproj",
+      "projectPath": "C:\\Dev\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\Dominio.csproj",
       "packagesPath": "C:\\Users\\Marcos\\.nuget\\packages\\",
-      "outputPath": "C:\\Dev\\TP Final TUP\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\obj\\",
+      "outputPath": "C:\\Dev\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev&Co\\Dominio\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
