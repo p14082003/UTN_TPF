@@ -1,0 +1,64 @@
+﻿/* PALETA DE IDENTIDAD VISUAL INSTIRED */
+
+/* Fondo*/
+.bg-indigo {
+    background-color: #373A72 !important;
+    color: #FFFFFF !important;
+}
+/* Texto */
+.text-indigo {
+    color: #373A72 !important;
+}
+
+/*Botones */
+.btn-indigo {
+    background-color: #373A72;
+    color: #FFFFFF;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-indigo:hover {
+        background-color: #8D91D5;
+        color: #FFFFFF;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+.bg-lavanda {
+    background-color: #8D91D5 !important;
+    color: #FFFFFF;
+}
+
+.text-lavanda {
+    color: #8D91D5 !important;
+}
+
+.btn-outline-lavanda {
+    border-color: #8D91D5;
+    color: #8D91D5;
+    border-width: 2px;
+}
+
+    .btn-outline-lavanda:hover {
+        background-color: #8D91D5;
+        color: #FFFFFF;
+    }
+
+.bg-fondo {
+    background-color: #F7F5FC !important;
+}
+
+.border-neutro {
+    border-color: #E4E0F0 !important;
+}
+
+/* Tarjetas */
+.card {
+    border: 1px solid #E4E0F0;
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
