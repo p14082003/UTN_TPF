@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class RegistroFormularioResponsable : System.Web.UI.Page
+    public partial class RegistroIntermedio : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
