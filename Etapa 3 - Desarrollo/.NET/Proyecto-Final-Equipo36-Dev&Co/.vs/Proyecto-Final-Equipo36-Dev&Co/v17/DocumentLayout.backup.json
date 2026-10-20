@@ -1,7 +1,32 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Dev\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\",
-  "Documents": [],
+  "WorkspaceRootPath": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|c:\\users\\julieta sanchez\\desktop\\utn-tpf\\utn_tpf\\etapa 3 - desarrollo\\.net\\proyecto-final-equipo36-dev\u0026co\\presentacion\\registropaginaintermedia.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\registropaginaintermedia.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\presentacion\\estilosinstired.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\estilosinstired.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\presentacion\\masterpage.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\masterpage.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\presentacion\\login.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\login.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\presentacion\\login.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\login.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\presentacion\\admindevco.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{0C4D8E21-8D1C-4D25-9E4D-885F8E1E9334}|Presentacion\\Presentacion.csproj|solutionrelative:presentacion\\admindevco.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +34,84 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Login.aspx.cs",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\Login.aspx.cs",
+              "RelativeDocumentMoniker": "Presentacion\\Login.aspx.cs",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\Login.aspx.cs",
+              "RelativeToolTip": "Presentacion\\Login.aspx.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-20T01:52:20.671Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MasterPage.Master",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\MasterPage.Master",
+              "RelativeDocumentMoniker": "Presentacion\\MasterPage.Master",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\MasterPage.Master",
+              "RelativeToolTip": "Presentacion\\MasterPage.Master",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-10-20T00:22:55.887Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Login.aspx",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\Login.aspx",
+              "RelativeDocumentMoniker": "Presentacion\\Login.aspx",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\Login.aspx",
+              "RelativeToolTip": "Presentacion\\Login.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-10-20T00:01:53.728Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "EstilosInstiRed.css",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\EstilosInstiRed.css",
+              "RelativeDocumentMoniker": "Presentacion\\EstilosInstiRed.css",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\EstilosInstiRed.css",
+              "RelativeToolTip": "Presentacion\\EstilosInstiRed.css",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-10-19T23:51:03.389Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RegistroPaginaIntermedia.aspx",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\RegistroPaginaIntermedia.aspx",
+              "RelativeDocumentMoniker": "Presentacion\\RegistroPaginaIntermedia.aspx",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\RegistroPaginaIntermedia.aspx",
+              "RelativeToolTip": "Presentacion\\RegistroPaginaIntermedia.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-10-19T23:42:30.021Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AdminDevCo.aspx",
+              "DocumentMoniker": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\AdminDevCo.aspx",
+              "RelativeDocumentMoniker": "Presentacion\\AdminDevCo.aspx",
+              "ToolTip": "C:\\Users\\Julieta Sanchez\\Desktop\\UTN-TPF\\UTN_TPF\\Etapa 3 - Desarrollo\\.NET\\Proyecto-Final-Equipo36-Dev\u0026Co\\Presentacion\\AdminDevCo.aspx",
+              "RelativeToolTip": "Presentacion\\AdminDevCo.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2026-10-19T23:27:42.671Z"
             }
           ]
         }

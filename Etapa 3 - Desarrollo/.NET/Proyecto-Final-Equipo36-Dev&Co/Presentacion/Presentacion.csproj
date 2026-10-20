@@ -69,8 +69,7 @@
   <ItemGroup>
     <Content Include="EstilosInstiRed.css" />
     <Content Include="Login.aspx" />
-    <Content Include="RegistroFormularioResponsable.aspx" />
-    <Content Include="RegistroIntermedia.aspx" />
+    <Content Include="RegistroPaginaIntermedia.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
@@ -97,29 +96,17 @@
     <Compile Include="AdminDevCo.aspx.designer.cs">
       <DependentUpon>AdminDevCo.aspx</DependentUpon>
     </Compile>
-    <Compile Include="RegistroFormularioResponsable.aspx.cs">
-      <DependentUpon>RegistroFormularioResponsable.aspx</DependentUpon>
+    <Compile Include="RegistroPaginaIntermedia.aspx.cs">
+      <DependentUpon>RegistroPaginaIntermedia.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="RegistroFormularioResponsable.aspx.designer.cs">
-      <DependentUpon>RegistroFormularioResponsable.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="RegistroIntermedia.aspx.cs">
-      <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="RegistroIntermedia.aspx.designer.cs">
-      <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Site.Master.cs">
-      <DependentUpon>Site.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
+    <Compile Include="RegistroPaginaIntermedia.aspx.designer.cs">
+      <DependentUpon>RegistroPaginaIntermedia.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="MasterPage.Master" />
-    <Content Include="Site.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
