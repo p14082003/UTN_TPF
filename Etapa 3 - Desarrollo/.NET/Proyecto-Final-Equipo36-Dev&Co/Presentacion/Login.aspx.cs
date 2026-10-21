@@ -16,7 +16,7 @@ namespace Presentacion
 
         protected void btnRegistrarse_Click(object sender, EventArgs e)
         {
-            Response.Redirect("~/RegistroPaginaIntermedia.aspx");
+            Response.Redirect("~/RegistroIntermedia.aspx");
         }
     }
 }

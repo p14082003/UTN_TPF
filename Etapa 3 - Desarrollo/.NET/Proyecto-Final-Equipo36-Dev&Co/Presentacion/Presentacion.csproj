@@ -69,7 +69,7 @@
   <ItemGroup>
     <Content Include="EstilosInstiRed.css" />
     <Content Include="Login.aspx" />
-    <Content Include="RegistroPaginaIntermedia.aspx" />
+    <Content Include="RegistroIntermedia.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
@@ -96,12 +96,12 @@
     <Compile Include="AdminDevCo.aspx.designer.cs">
       <DependentUpon>AdminDevCo.aspx</DependentUpon>
     </Compile>
-    <Compile Include="RegistroPaginaIntermedia.aspx.cs">
-      <DependentUpon>RegistroPaginaIntermedia.aspx</DependentUpon>
+    <Compile Include="RegistroIntermedia.aspx.cs">
+      <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="RegistroPaginaIntermedia.aspx.designer.cs">
-      <DependentUpon>RegistroPaginaIntermedia.aspx</DependentUpon>
+    <Compile Include="RegistroIntermedia.aspx.designer.cs">
+      <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
