@@ -68,12 +68,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="EstilosInstiRed.css" />
+    <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormularioAdministradorInstitucion.aspx.cs">
+      <DependentUpon>FormularioAdministradorInstitucion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FormularioAdministradorInstitucion.aspx.designer.cs">
+      <DependentUpon>FormularioAdministradorInstitucion.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
