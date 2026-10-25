@@ -49,6 +49,7 @@ CREATE TABLE Usuarios (
   id INT NOT NULL AUTO_INCREMENT, 
   usuario VARCHAR(50) NOT NULL, 
   clave VARCHAR(255) NOT NULL, 
+  email VARCHAR(100) NOT NULL UNIQUE, 
   activo BOOLEAN NOT NULL DEFAULT TRUE, 
   idTipoUsuario TINYINT NOT NULL, 
   PRIMARY KEY (id), 
@@ -59,9 +60,9 @@ CREATE TABLE Usuarios (
 CREATE TABLE Instituciones (
   id INT NOT NULL AUTO_INCREMENT, 
   nombre VARCHAR(100) NOT NULL, 
-  cuit VARCHAR(11) NOT NULL, 
-  direccion VARCHAR(50) NOT NULL, 
-  email VARCHAR(50) NOT NULL, 
+  cuit VARCHAR(11) NOT NULL UNIQUE, 
+  direccion VARCHAR(100) NOT NULL, 
+  email VARCHAR(100) NOT NULL, 
   latitud DOUBLE NOT NULL, 
   longitud DOUBLE NOT NULL,
   descripcion VARCHAR(255) NOT NULL, 
@@ -126,12 +127,10 @@ CREATE TABLE Imagenes (
 CREATE TABLE Alumnos (
   id INT NOT NULL AUTO_INCREMENT, 
   idPersona INT NOT NULL, 
-  idInstitucion INT NULL, 
   idCurso INT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_alumnos_persona (idPersona), 
   CONSTRAINT fk_alumnos_persona FOREIGN KEY (idPersona) REFERENCES Personas (id), 
-  CONSTRAINT fk_alumnos_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
   CONSTRAINT fk_alumnos_curso FOREIGN KEY (idCurso) REFERENCES Cursos (id)
 );
 
@@ -185,11 +184,24 @@ CREATE TABLE Postulaciones (
   CONSTRAINT fk_postulaciones_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
 );
 
+CREATE TABLE PostulacionesInstitucion (
+  id INT NOT NULL AUTO_INCREMENT, 
+  fecha DATE NOT NULL, 
+  codigoSeguimiento VARCHAR(30) NOT NULL, 
+  idInstitucion INT NOT NULL, 
+  idEstado INT NOT NULL, 
+  PRIMARY KEY (id), 
+  UNIQUE KEY uq_postulacionesinstitucion_codigo (codigoSeguimiento), 
+  CONSTRAINT fk_postinst_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
+  CONSTRAINT fk_postinst_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
+);
+
+
 CREATE TABLE Resenias (
   id INT NOT NULL AUTO_INCREMENT, 
   calificacion TINYINT NOT NULL, 
   comentario VARCHAR(255) NOT NULL,
-  respuestaInstitucion VARCHAR(255) NOT NULL, 
+  respuestaInstitucion VARCHAR(255) NULL, 
   fecha DATE NOT NULL, 
   idInstitucion INT NOT NULL, 
   idResponsable INT NOT NULL, 
