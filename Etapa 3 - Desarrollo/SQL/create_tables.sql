@@ -63,21 +63,23 @@ CREATE TABLE Instituciones (
   direccion VARCHAR(50) NOT NULL, 
   email VARCHAR(50) NOT NULL, 
   latitud DOUBLE NOT NULL, 
-  longitud DOUBLE NOT NULL, 
+  longitud DOUBLE NOT NULL,
+  descripcion VARCHAR(255) NOT NULL, 
   idTipoInstitucion TINYINT NOT NULL, 
   PRIMARY KEY (id), 
   CONSTRAINT fk_instituciones_tipoinstitucion FOREIGN KEY (idTipoInstitucion) REFERENCES TipoInstitucion (id)
 );
 
 CREATE TABLE Discapacidades ( #Hecho aparte de la tabla "Instituciones" por ordenar. En teoria, los campos de esta tabla podrian ir dentro de Instituciones.
-  idInstitucion INT NOT NULL AUTO_INCREMENT,
+  idInstitucion INT NOT NULL,
   movilidad BOOL NOT NULL,
   visual BOOL NOT NULL,
   auditiva BOOL NOT NULL,
   intelectual BOOL NOT NULL,
   sindromeDown BOOL NOT NULL,
   autismo BOOL NOT NULL,
-  PRIMARY KEY (idInstitucion)
+  PRIMARY KEY (idInstitucion),
+  CONSTRAINT fk_discapacidades_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id)
 );
 
 CREATE TABLE IdiomaInstitucion (
@@ -186,7 +188,8 @@ CREATE TABLE Postulaciones (
 CREATE TABLE Resenias (
   id INT NOT NULL AUTO_INCREMENT, 
   calificacion TINYINT NOT NULL, 
-  comentario VARCHAR(255) NOT NULL, 
+  comentario VARCHAR(255) NOT NULL,
+  respuestaInstitucion VARCHAR(255) NOT NULL, 
   fecha DATE NOT NULL, 
   idInstitucion INT NOT NULL, 
   idResponsable INT NOT NULL, 

@@ -2,25 +2,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="es">
 <head runat="server">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>INSTIRED</title>
-    <!-- Vinculo a la hoja CSS de identidad viusal --->
-    <link href="~/EstilosInstiRed.css" rel="stylesheet" type="text/css" runat="server" />
-    <!-- LIBRERÍAS BOOTSTRAP -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>InstiRed</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
-    <asp:ContentPlaceHolder ID="head" runat="server">
-    </asp:ContentPlaceHolder>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="~/EstilosInstiRed.css" rel="stylesheet" runat="server" />
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
+    <a class="visually-hidden-focusable" href="#contenido">Saltar al contenido</a>
     <form id="form1" runat="server">
-        <div class="container mt-4">
-            <!-- Aca va el contenido de cada pagina(Login, Admin, etc.) -->
-            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
-            </asp:ContentPlaceHolder>
-        </div>
+        <main id="contenido" class="container mt-4">
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server"></asp:ContentPlaceHolder>
+        </main>
     </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
