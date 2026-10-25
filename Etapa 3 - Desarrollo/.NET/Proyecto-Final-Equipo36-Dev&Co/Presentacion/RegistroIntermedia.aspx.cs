@@ -7,16 +7,11 @@ using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class prueba : System.Web.UI.Page
+    public partial class RegistroPaginaIntermedia : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
 
-        }
-
-        protected void btnRegistrarResponsable_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("~/RegistroFormularioResponsable.aspx");
         }
     }
 }

@@ -10,7 +10,49 @@
     color: #373A72 !important;
 }
 
+/*Link*/
+.link-lilaClaro {
+    color: #8D91D5;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.link-lilaClaro:hover {
+    color: #373A72;
+    text-decoration: underline;
+}
+
 /*Botones */
+.btn-lilaOscuro {
+    background-color: #373A72 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #373A72;
+    border-radius: 15px;
+    padding: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-lilaOscuro:hover {
+        background-color: #2D305F !important;
+        color: #FFFFFF !important;
+    }
+
+
+.btn-lilaClaro {
+    background-color: #F7F5FC !important;
+    color: #373A72;
+    border: 1px solid #E4E0F0;
+    border-radius: 15px;
+    padding: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-lilaClaro:hover {
+        background-color: #E4E0F0 !important;
+        color: #373A72 !important;
+    }
 .btn-indigo {
     background-color: #373A72;
     color: #FFFFFF;
@@ -57,8 +99,12 @@
 .card {
     border: 1px solid #E4E0F0;
     border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(55, 58, 114, 0.12);
 }
 
 .card-header {
     border-radius: 15px 15px 0 0 !important;
 }
+
+
+

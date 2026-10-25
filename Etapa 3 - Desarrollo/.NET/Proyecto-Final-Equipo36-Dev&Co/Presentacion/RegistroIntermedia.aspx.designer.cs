@@ -11,25 +11,34 @@ namespace Presentacion
 {
 
 
-    public partial class prueba
+    public partial class RegistroPaginaIntermedia
     {
 
         /// <summary>
-        /// Control btnRegistrarResponsable.
+        /// Control btnRegistroResponsable.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnRegistrarResponsable;
+        protected global::System.Web.UI.WebControls.Button btnRegistroResponsable;
 
         /// <summary>
-        /// Control btnAccesoInstituciones.
+        /// Control btnRegistroInstitucion.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnAccesoInstituciones;
+        protected global::System.Web.UI.WebControls.Button btnRegistroInstitucion;
+
+        /// <summary>
+        /// Control hlIniciarSesion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink hlIniciarSesion;
     }
 }
