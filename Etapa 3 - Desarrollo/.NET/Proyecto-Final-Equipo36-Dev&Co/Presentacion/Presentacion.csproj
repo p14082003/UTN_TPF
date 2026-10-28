@@ -70,6 +70,7 @@
     <Content Include="EstilosInstiRed.css" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
+    <Content Include="RegistroResponsable.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
@@ -102,6 +103,13 @@
     </Compile>
     <Compile Include="RegistroIntermedia.aspx.designer.cs">
       <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RegistroResponsable.aspx.cs">
+      <DependentUpon>RegistroResponsable.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RegistroResponsable.aspx.designer.cs">
+      <DependentUpon>RegistroResponsable.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
