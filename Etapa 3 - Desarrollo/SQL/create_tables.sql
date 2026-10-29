@@ -65,7 +65,7 @@ CREATE TABLE Instituciones (
   email VARCHAR(100) NOT NULL, 
   latitud DOUBLE NOT NULL, 
   longitud DOUBLE NOT NULL,
-  descripcion VARCHAR(255) NOT NULL, 
+  descripcion VARCHAR(3000) NOT NULL, 
   idTipoInstitucion TINYINT NOT NULL, 
   PRIMARY KEY (id), 
   CONSTRAINT fk_instituciones_tipoinstitucion FOREIGN KEY (idTipoInstitucion) REFERENCES TipoInstitucion (id)
@@ -106,8 +106,8 @@ CREATE TABLE Cursos (
   anio TINYINT NULL,							#ANIO ESTANDAR ESCOLAR, PARA PRE, PRIMARIA Y SEC: 1er grado, 2do grado, 1er año, 3er año. preescolar.
   nivelPersonalizado VARCHAR(30) NULL, 			#TAG CUSTOM EN CASO DE NO SER ESTANDAR: 2nd Children, 1° grado, 4to año.
   division VARCHAR(50) NOT NULL, 				#SI SOLO HAY 1, SE COMPLETA CON 1: 4ta division, salita azul, A B C, Lunes y Miercoles, martes y jueves
-  capacidad TINYINT NOT NULL, 
-  inscriptos TINYINT NOT NULL DEFAULT 0, 
+  capacidad SMALLINT NOT NULL, 
+  inscriptos SMALLINT NOT NULL DEFAULT 0, 
   PRIMARY KEY (id), 
   CONSTRAINT fk_cursos_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
   CONSTRAINT fk_cursos_turno FOREIGN KEY (idTurno) REFERENCES Turnos (id), 
@@ -188,12 +188,14 @@ CREATE TABLE PostulacionesInstitucion (
   id INT NOT NULL AUTO_INCREMENT, 
   fecha DATE NOT NULL, 
   codigoSeguimiento VARCHAR(30) NOT NULL, 
-  idInstitucion INT NOT NULL, 
+  idInstitucion INT NULL, 
+  idAdministradorInstitucion INT NOT NULL,
   idEstado INT NOT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postulacionesinstitucion_codigo (codigoSeguimiento), 
   CONSTRAINT fk_postinst_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
-  CONSTRAINT fk_postinst_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
+  CONSTRAINT fk_postinst_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id),
+  CONSTRAINT fk_admin_institucion FOREIGN KEY (idAdministradorInstitucion) REFERENCES AdministradoresInstitucion (id) 
 );
 
 
