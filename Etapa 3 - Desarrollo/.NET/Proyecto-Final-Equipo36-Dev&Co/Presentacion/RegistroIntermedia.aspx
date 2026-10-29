@@ -6,7 +6,7 @@
   <div class="container-fluid bg-fondo min-vh-100 py-3">
 
         <div class="row justify-content-center">
-            <div class="col-12 col-md-9 col-lg-6">
+            <div class="col-12 md:col-9 lg:col-6">
 
                 <!-- Titulo -->
                 <header class="text-center mb-4">

@@ -6,7 +6,7 @@
     <div class="container-fluid bg-fondo min-vh-100 py-3">
         <!--Titulo-->
         <div class ="row justify-content-center">
-            <div class="col-12 col-md-9 col-lg-6">
+            <div class="col-12 md:col-9 lg:col-6">
                 <div class ="text-center mb-4">
                     <img src="Imagenes/Logo.png" alt="InstiRed" class="w-25 img-fluid mb-1" />
                     <h2 class ="h3 fw-bold text-indigo mb-2">Creá tu cuenta de Responsable</h2>
