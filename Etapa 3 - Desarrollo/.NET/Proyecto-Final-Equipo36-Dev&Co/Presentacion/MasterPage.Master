@@ -18,7 +18,7 @@
 <body>
     <a class="visually-hidden-focusable" href="#contenido">Saltar al contenido</a>
     <form id="form1" runat="server">
-        <main id="contenido" class="container mt-4">
+        <main id="contenido" class="container" style="max-width: 1320px;">
             <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server"></asp:ContentPlaceHolder>
         </main>
     </form>
