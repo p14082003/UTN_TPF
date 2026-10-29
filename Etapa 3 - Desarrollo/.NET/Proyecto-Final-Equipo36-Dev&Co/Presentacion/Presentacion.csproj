@@ -69,8 +69,10 @@
   <ItemGroup>
     <Content Include="EstilosInstiRed.css" />
     <Content Include="FormularioAdministradorInstitucion.aspx" />
+    <Content Include="FormularioInstitucion.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
+    <Content Include="RegistroResponsable.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
@@ -81,6 +83,12 @@
     </Compile>
     <Compile Include="FormularioAdministradorInstitucion.aspx.designer.cs">
       <DependentUpon>FormularioAdministradorInstitucion.aspx</DependentUpon>
+    <Compile Include="FormularioInstitucion.aspx.cs">
+      <DependentUpon>FormularioInstitucion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FormularioInstitucion.aspx.designer.cs">
+      <DependentUpon>FormularioInstitucion.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
@@ -110,6 +118,13 @@
     </Compile>
     <Compile Include="RegistroIntermedia.aspx.designer.cs">
       <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RegistroResponsable.aspx.cs">
+      <DependentUpon>RegistroResponsable.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RegistroResponsable.aspx.designer.cs">
+      <DependentUpon>RegistroResponsable.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
