@@ -2,6 +2,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS ResponsablesPorAlumno;
 DROP TABLE IF EXISTS Postulaciones;
+DROP TABLE IF EXISTS PostulacionesInstitucion;
 DROP TABLE IF EXISTS Resenias;
 DROP TABLE IF EXISTS Telefonos;
 
@@ -11,14 +12,14 @@ DROP TABLE IF EXISTS AdministradoresInstitucion;
 
 DROP TABLE IF EXISTS IdiomaInstitucion;
 DROP TABLE IF EXISTS Cursos;
-DROP TABLE IF EXISTS NivelesEscolares;
 DROP TABLE IF EXISTS Imagenes;
+DROP TABLE IF EXISTS Discapacidades;
 
 DROP TABLE IF EXISTS Usuarios;
 DROP TABLE IF EXISTS Instituciones;
-DROP TABLE IF EXISTS Discapacidades;
 DROP TABLE IF EXISTS Personas;
 
+DROP TABLE IF EXISTS NivelesEscolares;
 DROP TABLE IF EXISTS EstadosPostulacion;
 DROP TABLE IF EXISTS Turnos;
 DROP TABLE IF EXISTS Idiomas;
