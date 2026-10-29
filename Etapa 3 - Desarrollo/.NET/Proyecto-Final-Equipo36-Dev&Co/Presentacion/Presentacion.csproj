@@ -83,6 +83,7 @@
     </Compile>
     <Compile Include="FormularioAdministradorInstitucion.aspx.designer.cs">
       <DependentUpon>FormularioAdministradorInstitucion.aspx</DependentUpon>
+    </Compile>
     <Compile Include="FormularioInstitucion.aspx.cs">
       <DependentUpon>FormularioInstitucion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
