@@ -9,8 +9,8 @@
             <div class="col-12 col-md-9 col-lg-6">
 
                 <header class="text-center mb-4">
-                    <img src="Imagenes/Logo.png" alt="InstiRed" class="w-50 img-fluid mb-1" />
-                    <h2 class="h3 fw-bold text-indigo mb-2">Registrá tu institución</h2>
+                    <img src="Imagenes/Logo.png" alt="InstiRed" class="w-25 img-fluid mb-1" />
+                    <h2 class="h3 fw-bold text-indigo mb-2">Registrate como Administrador de la Institución</h2>
                     <p class="text-secondary mb-0">
                         Completá tus datos y los de la institución. Te enviaremos la contraseña por correo.
                     </p>
@@ -24,19 +24,21 @@
                             <asp:Literal ID="litMensaje" runat="server" />
                         </asp:Panel>
 
+                        <h4 class="text-indigo mb-3">DATOS PERSONALES</h4>
+
                         <div class="mb-3">
-                            <label for="<%= txtNombreUsuario.ClientID %>" class="form-label text-indigo fw-semibold">Nombre</label>
-                            <asp:TextBox ID="txtNombreUsuario" runat="server" CssClass="form-control" MaxLength="50" />
+                            <label for="<%= txtNombre.ClientID %>" class="form-label text-indigo fw-semibold">Nombre</label>
+                            <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="50" />
                         </div>
 
                         <div class="mb-3">
-                            <label for="<%= txtApellidoUsuario.ClientID %>" class="form-label text-indigo fw-semibold">Apellido</label>
-                            <asp:TextBox ID="txtApellidoUsuario" runat="server" CssClass="form-control" MaxLength="50" />
+                            <label for="<%= txtApellido.ClientID %>" class="form-label text-indigo fw-semibold">Apellido</label>
+                            <asp:TextBox ID="txtApellido" runat="server" CssClass="form-control" MaxLength="50" />
                         </div>
 
                         <div class="mb-3">
                             <label for="<%= txtEmail.ClientID %>" class="form-label text-indigo fw-semibold">Correo electrónico</label>
-                            <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="50" />
+                            <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" />
                         </div>
 
                         <div class="mb-3">
@@ -44,25 +46,45 @@
                             <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" />
                         </div>
 
+                        <!-- Selector de institución -->
+                        <h4 class="text-indigo mb-3">DATOS DE LA INSTITUCIÓN</h4>
                         <div class="mb-3">
-                            <label for="<%= txtNombreInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de la institución</label>
-                            <asp:TextBox ID="txtNombreInstitucion" runat="server" CssClass="form-control" MaxLength="100" />
+                            <label for="<%= ddlInstitucion.ClientID %>" class="form-label d-block text-indigo fw-semibold">Institución</label>
+                            <asp:DropDownList ID="ddlInstitucion" runat="server" CssClass="form-select d-block w-100" AppendDataBoundItems="true">
+                                <asp:ListItem Text="Seleccioná una institución" Value="" />
+                                <asp:ListItem Text="+ Cargar nueva institución" Value="NUEVA" />
+                            </asp:DropDownList>
+                            <div class="form-text">Si tu institución no está en la lista, elegí "Cargar nueva institución".</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="<%= ddlTipoInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Tipo de institución</label>
-                            <asp:DropDownList ID="ddlTipoInstitucion" runat="server" CssClass="form-select" />
-                        </div>
+                        <!-- Se muestra solo si se elige "Cargar nueva institución" -->
+                        <asp:Panel ID="pnlNuevaInstitucion" runat="server" CssClass="d-none border border-neutro rounded-3 p-3 mb-3">
 
-                        <div class="mb-4">
-                            <label for="<%= fuDocumentos.ClientID %>" class="form-label text-indigo fw-semibold">Documentos</label>
-                            <asp:FileUpload ID="fuDocumentos" runat="server" CssClass="form-control" AllowMultiple="true" accept=".pdf,.jpg,.jpeg,.png" />
-                            <div class="form-text">PDF, JPG o PNG. Máximo 5 MB por archivo. Podés agregar varios.</div>
-                            <div id="errorArchivos" class="text-danger small mt-1" style="display:none;"></div>
-                            <ul id="listaArchivos" class="list-unstyled mt-2 mb-0"></ul>
-                        </div>
+                            <div class="mb-3">
+                                <label for="<%= txtNombreInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de la institución</label>
+                                <asp:TextBox ID="txtNombreInstitucion" runat="server" CssClass="form-control" MaxLength="100" />
+                            </div>
 
-                        <asp:Button ID="btnGuardar" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 py-2 mb-2" OnClick="btnGuardar_Click" />
+                            <div class="mb-3">
+                                <label for="<%= txtCuit.ClientID %>" class="form-label text-indigo fw-semibold">CUIT</label>
+                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="<%= ddlTipoInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Tipo de institución</label>
+                                <asp:DropDownList ID="ddlTipoInstitucion" runat="server" CssClass="form-select" />
+                            </div>
+
+                            <div class="mb-0">
+                                <label for="<%= fuDocumentos.ClientID %>" class="form-label text-indigo fw-semibold">Documentos</label>
+                                <asp:FileUpload ID="fuDocumentos" runat="server" CssClass="form-control" AllowMultiple="true" accept=".pdf,.jpg,.jpeg,.png" />
+                                <div class="form-text">PDF, JPG o PNG. Máximo 5 MB por archivo. Podés agregar varios.</div>
+                                <div id="errorArchivos" class="text-danger small mt-1" style="display:none;"></div>
+                                <ul id="listaArchivos" class="list-unstyled mt-2 mb-0"></ul>
+                            </div>
+                        </asp:Panel>
+
+                        <asp:Button ID="btnGuardar" runat="server" Text="Preregistro" CssClass="btn btn-lilaOscuro w-100 py-2 mb-2" OnClick="btnGuardar_Click" />
                         <asp:Button ID="btnCancelar" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro w-100 py-2" OnClick="btnCancelar_Click" />
                     </div>
                 </div>
@@ -80,78 +102,99 @@
 
     <script>
         (function () {
-            var input = document.getElementById('<%= fuDocumentos.ClientID %>');
-            var lista = document.getElementById('listaArchivos');
-            var error = document.getElementById('errorArchivos');
-            var extensiones = ['pdf', 'jpg', 'jpeg', 'png'];
-            var maxBytes = 5 * 1024 * 1024;
-            var seleccion = new DataTransfer();
+            // ---------- Mostrar / ocultar "Cargar nueva institución" ----------
+            var ddl = document.getElementById('<%= ddlInstitucion.ClientID %>');
+            var panelNueva = document.getElementById('<%= pnlNuevaInstitucion.ClientID %>');
 
-            function formatoTamanio(bytes) {
-                return bytes >= 1048576
-                    ? (bytes / 1048576).toFixed(1) + ' MB'
-                    : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+            function alternarPanel() {
+                panelNueva.classList.toggle('d-none', ddl.value !== 'NUEVA');
             }
+            ddl.addEventListener('change', alternarPanel);
+            alternarPanel(); // mantiene el estado tras un postback con errores
 
-            function dibujar() {
-                lista.innerHTML = '';
-                Array.prototype.forEach.call(seleccion.files, function (archivo, i) {
-                    var li = document.createElement('li');
-                    li.className = 'd-flex align-items-center justify-content-between border border-neutro rounded-3 bg-white px-3 py-2 mb-2';
-
-                    var nombre = document.createElement('span');
-                    nombre.className = 'small text-indigo text-truncate me-2';
-                    nombre.textContent = archivo.name + ' (' + formatoTamanio(archivo.size) + ')';
-
-                    var boton = document.createElement('button');
-                    boton.type = 'button';
-                    boton.className = 'btn btn-lilaClaro btn-sm py-1 px-2';
-                    boton.setAttribute('aria-label', 'Quitar ' + archivo.name);
-                    boton.textContent = 'Quitar';
-                    boton.addEventListener('click', function () { quitar(i); });
-
-                    li.appendChild(nombre);
-                    li.appendChild(boton);
-                    lista.appendChild(li);
-                });
-                input.files = seleccion.files;
-            }
-
-            function quitar(indice) {
-                var nueva = new DataTransfer();
-                Array.prototype.forEach.call(seleccion.files, function (archivo, i) {
-                    if (i !== indice) nueva.items.add(archivo);
-                });
-                seleccion = nueva;
-                error.style.display = 'none';
-                dibujar();
-            }
-
-            input.addEventListener('change', function () {
-                var rechazados = [];
-
-                Array.prototype.forEach.call(input.files, function (archivo) {
-                    var ext = archivo.name.split('.').pop().toLowerCase();
-                    var repetido = Array.prototype.some.call(seleccion.files, function (f) {
-                        return f.name === archivo.name && f.size === archivo.size;
-                    });
-
-                    if (extensiones.indexOf(ext) < 0 || archivo.size === 0 || archivo.size > maxBytes) {
-                        rechazados.push(archivo.name);
-                    } else if (!repetido) {
-                        seleccion.items.add(archivo);
-                    }
-                });
-
-                if (rechazados.length > 0) {
-                    error.textContent = 'No se agregaron (solo PDF, JPG o PNG de hasta 5 MB): ' + rechazados.join(', ');
-                    error.style.display = 'block';
-                } else {
-                    error.style.display = 'none';
-                }
-
-                dibujar();
+            // ---------- Formato de CUIT (XX-XXXXXXXX-X) ----------
+            var cuit = document.getElementById('<%= txtCuit.ClientID %>');
+            cuit.addEventListener('input', function () {
+                var d = cuit.value.replace(/\D/g, '').substring(0, 11);
+                var f = d;
+                if (d.length > 10) f = d.substring(0, 2) + '-' + d.substring(2, 10) + '-' + d.substring(10);
+                else if (d.length > 2) f = d.substring(0, 2) + '-' + d.substring(2);
+                cuit.value = f;
             });
-        })();
-    </script>
+
+            // ---------- Carga de documentos ----------
+    var input = document.getElementById('<%= fuDocumentos.ClientID %>');
+    var lista = document.getElementById('listaArchivos');
+    var error = document.getElementById('errorArchivos');
+    var extensiones = ['pdf', 'jpg', 'jpeg', 'png'];
+    var maxBytes = 5 * 1024 * 1024;
+    var seleccion = new DataTransfer();
+
+    function formatoTamanio(bytes) {
+        return bytes >= 1048576
+            ? (bytes / 1048576).toFixed(1) + ' MB'
+            : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+    }
+
+    function dibujar() {
+        lista.innerHTML = '';
+        Array.prototype.forEach.call(seleccion.files, function (archivo, i) {
+            var li = document.createElement('li');
+            li.className = 'd-flex align-items-center justify-content-between border border-neutro rounded-3 bg-white px-3 py-2 mb-2';
+
+            var nombre = document.createElement('span');
+            nombre.className = 'small text-indigo text-truncate me-2';
+            nombre.textContent = archivo.name + ' (' + formatoTamanio(archivo.size) + ')';
+
+            var boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'btn btn-lilaClaro btn-sm py-1 px-2';
+            boton.setAttribute('aria-label', 'Quitar ' + archivo.name);
+            boton.textContent = 'Quitar';
+            boton.addEventListener('click', function () { quitar(i); });
+
+            li.appendChild(nombre);
+            li.appendChild(boton);
+            lista.appendChild(li);
+        });
+        input.files = seleccion.files;
+    }
+
+    function quitar(indice) {
+        var nueva = new DataTransfer();
+        Array.prototype.forEach.call(seleccion.files, function (archivo, i) {
+            if (i !== indice) nueva.items.add(archivo);
+        });
+        seleccion = nueva;
+        error.style.display = 'none';
+        dibujar();
+    }
+
+    input.addEventListener('change', function () {
+        var rechazados = [];
+
+        Array.prototype.forEach.call(input.files, function (archivo) {
+            var ext = archivo.name.split('.').pop().toLowerCase();
+            var repetido = Array.prototype.some.call(seleccion.files, function (f) {
+                return f.name === archivo.name && f.size === archivo.size;
+            });
+
+            if (extensiones.indexOf(ext) < 0 || archivo.size === 0 || archivo.size > maxBytes) {
+                rechazados.push(archivo.name);
+            } else if (!repetido) {
+                seleccion.items.add(archivo);
+            }
+        });
+
+        if (rechazados.length > 0) {
+            error.textContent = 'No se agregaron (solo PDF, JPG o PNG de hasta 5 MB): ' + rechazados.join(', ');
+            error.style.display = 'block';
+        } else {
+            error.style.display = 'none';
+        }
+
+        dibujar();
+    });
+})();
+</script>
 </asp:Content>

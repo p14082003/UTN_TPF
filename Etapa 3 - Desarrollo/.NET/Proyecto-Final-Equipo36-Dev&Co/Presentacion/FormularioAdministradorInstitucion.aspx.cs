@@ -20,6 +20,10 @@ namespace Presentacion
         {
             if (!IsPostBack)
             {
+                //ddlInstitucion.DataSource =;
+                ddlInstitucion.DataTextField = "Nombre";
+                ddlInstitucion.DataValueField = "Id";
+                ddlInstitucion.DataBind();
                 CargarTiposUsuario();
                 CargarTiposInstitucion();
             }
@@ -39,7 +43,18 @@ namespace Presentacion
 
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(ddlInstitucion.SelectedValue))
+            {
+                return;
+            }
 
+            if (ddlInstitucion.SelectedValue == "NUEVA")
+            {
+            }
+            else
+            {
+                int idInstitucion = int.Parse(ddlInstitucion.SelectedValue);
+            }
         }
 
         protected void btnCancelar_Click(object sender, EventArgs e)
