@@ -149,7 +149,7 @@ CREATE TABLE AdministradoresInstitucion (
   id INT NOT NULL AUTO_INCREMENT, 
   idPersona INT NOT NULL, 
   idUsuario INT NOT NULL, 
-  idInstitucion INT NOT NULL, 
+  idInstitucion INT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_administradores_persona (idPersona), 
   UNIQUE KEY uq_administradores_usuario (idUsuario), 

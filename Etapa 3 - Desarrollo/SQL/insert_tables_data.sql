@@ -3,10 +3,8 @@
 --
 -- Correr UNA vez, sobre la base DEV vacia, despues de create_tables.sql.
 --
--- REQUISITO: en create_tables.sql, Cursos.cicloLectivo debe ser SMALLINT
--- (con TINYINT no entra 2026). Si la base ya existe:
---   ALTER TABLE Cursos MODIFY cicloLectivo SMALLINT NOT NULL;
---
+-- Tipos de usuario de ejemplo: Responsable (1-10), Administrador (11-22) y
+-- DevCo (23-24).
 -- Todos los usuarios tienen clave 'test1234' (texto plano, temporal).
 -- Los ids van explicitos para que las referencias se puedan leer a ojo.
 -- Los telefonos, emails y URLs son ficticios.
@@ -57,11 +55,18 @@ INSERT INTO EstadosPostulacion (id, descripcion) VALUES
   (4, 'Rechazada'),
   (5, 'Lista de espera');
 
+INSERT INTO NivelesEscolares (id, descripcion) VALUES
+  (1, 'Preescolar'),
+  (2, 'Primaria'),
+  (3, 'Secundaria');
+
 -- ---------------------------------------------------------------------
--- 2. Personas (31)
+-- 2. Personas (33)
 --    1-10  responsables (el 6 tambien es alumno; el 7 tambien administra)
 --    11-19 administradores
 --    20-31 alumnos menores
+--    32    administrador nuevo, todavia sin institucion (solicitud pendiente)
+--    33    segundo administrador de una institucion que ya existe (pendiente)
 -- ---------------------------------------------------------------------
 
 INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimiento) VALUES
@@ -97,51 +102,80 @@ INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimient
   (28, 'Benjamín', 'Torres',     '55402981', 'Av. Libertador 2740, Boulogne',          '2019-06-06'),
   (29, 'Martina',  'Silva',      '51027384', 'Calle Alvear 96, Benavídez',             '2012-10-03'),
   (30, 'Santino',  'Gómez',      '56812074', 'Calle Rivadavia 640, Escobar',           '2021-04-15'),
-  (31, 'Delfina',  'Gómez',      '59460213', 'Calle Rivadavia 640, Escobar',           '2024-09-17');
+  (31, 'Delfina',  'Gómez',      '59460213', 'Calle Rivadavia 640, Escobar',           '2024-09-17'),
+
+  (32, 'Ramiro',   'Villalba',   '27318450', 'Calle Sarmiento 530, Escobar',           '1979-05-22'),
+  (33, 'Claudia',  'Montenegro', '25874310', 'Calle Belgrano 1220, Don Torcuato',      '1977-11-03');
 
 -- ---------------------------------------------------------------------
--- 3. Usuarios (20): 1-10 responsables, 11-20 administradores
+-- 3. Usuarios (24): 1-10 responsables, 11-22 administradores, 23-24 DevCo
 --    Gabriela (persona 7) tiene dos cuentas: una como responsable (7)
---    y otra como administradora (14).
+--    y otra como administradora (14), cada una con su email (UNIQUE).
+--    Tipos: 1 Responsable, 2 Administrador, 3 DevCo. Los usuarios DevCo
+--    (equipo de desarrollo) no tienen Persona ni fila en otra tabla.
 -- ---------------------------------------------------------------------
 
-INSERT INTO Usuarios (id, usuario, clave, activo, idTipoUsuario) VALUES
-  (1,  'lbenitez',    'test1234', TRUE,  1),
-  (2,  'cbenitez',    'test1234', TRUE,  1),
-  (3,  'aruiz',       'test1234', TRUE,  1),
-  (4,  'pfernandez',  'test1234', TRUE,  1),
-  (5,  'mdominguez',  'test1234', TRUE,  1),
-  (6,  'macosta',     'test1234', TRUE,  1),
-  (7,  'gtorres',     'test1234', TRUE,  2),
-  (8,  'rsilva',      'test1234', FALSE, 2),
-  (9,  'jgomez',      'test1234', TRUE,  2),
-  (10, 'vcastro',     'test1234', TRUE,  2),
-  (11, 'smaidana',    'test1234', TRUE,  2),
-  (12, 'rsalinas',    'test1234', TRUE,  2),
-  (13, 'mperalta',    'test1234', TRUE,  3),
-  (14, 'gtorres.adm', 'test1234', TRUE,  3),
-  (15, 'nocampo',     'test1234', TRUE,  3),
-  (16, 'dquiroga',    'test1234', TRUE,  3),
-  (17, 'vluna',       'test1234', TRUE,  3),
-  (18, 'hgimenez',    'test1234', FALSE, 3),
-  (19, 'lsosa',       'test1234', TRUE,  1),
-  (20, 'arojas',      'test1234', TRUE,  2);
+INSERT INTO Usuarios (id, usuario, clave, email, activo, idTipoUsuario) VALUES
+  (1,  'lbenitez',    'test1234', 'lbenitez@mail.test', TRUE,  1),
+  (2,  'cbenitez',    'test1234', 'cbenitez@mail.test', TRUE,  1),
+  (3,  'aruiz',       'test1234', 'aruiz@mail.test', TRUE,  1),
+  (4,  'pfernandez',  'test1234', 'pfernandez@mail.test', TRUE,  1),
+  (5,  'mdominguez',  'test1234', 'mdominguez@mail.test', TRUE,  1),
+  (6,  'macosta',     'test1234', 'macosta@mail.test', TRUE,  1),
+  (7,  'gtorres',     'test1234', 'gtorres@mail.test', TRUE,  1),
+  (8,  'rsilva',      'test1234', 'rsilva@mail.test', FALSE, 1),
+  (9,  'jgomez',      'test1234', 'jgomez@mail.test', TRUE,  1),
+  (10, 'vcastro',     'test1234', 'vcastro@mail.test', TRUE,  1),
+  (11, 'smaidana',    'test1234', 'smaidana@mail.test', TRUE,  2),
+  (12, 'rsalinas',    'test1234', 'rsalinas@mail.test', TRUE,  2),
+  (13, 'mperalta',    'test1234', 'mperalta@mail.test', TRUE,  2),
+  (14, 'gtorres.adm', 'test1234', 'gtorres.adm@mail.test', TRUE,  2),
+  (15, 'nocampo',     'test1234', 'nocampo@mail.test', TRUE,  2),
+  (16, 'dquiroga',    'test1234', 'dquiroga@mail.test', TRUE,  2),
+  (17, 'vluna',       'test1234', 'vluna@mail.test', TRUE,  2),
+  (18, 'hgimenez',    'test1234', 'hgimenez@mail.test', FALSE, 2),
+  (19, 'lsosa',       'test1234', 'lsosa@mail.test', TRUE,  2),
+  (20, 'arojas',      'test1234', 'arojas@mail.test', TRUE,  2),
+  (21, 'rvillalba',   'test1234', 'rvillalba@mail.test', FALSE, 2),
+  (22, 'cmontenegro', 'test1234', 'cmontenegro@mail.test', FALSE, 2),
+  (23, 'devco.admin', 'test1234', 'devco.admin@devco.test', TRUE,  3),
+  (24, 'devco.dev',   'test1234', 'devco.dev@devco.test', TRUE,  3);
 
 -- ---------------------------------------------------------------------
 -- 4. Instituciones (10) - zona norte del GBA
 -- ---------------------------------------------------------------------
 
-INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud, idTipoInstitucion) VALUES
-  (1,  'Jardín de Infantes N° 902 Arco Iris',      '30710000014', 'Av. Hipólito Yrigoyen 1250, Gral. Pacheco', 'jardin902@instired.test',                  -34.4586, -58.6431, 1),
-  (2,  'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022','Calle Cazón 456, Tigre',                      'primaria14@instired.test',                -34.4264, -58.5791, 2),
-  (3,  'Escuela Secundaria N° 6 Manuel Belgrano',  '30710000030', 'Av. Constituyentes 2300, Don Torcuato',    'secundaria6@instired.test',               -34.4999, -58.6169, 3),
-  (4,  'Instituto de Idiomas Lingua Norte',        '30710000049', 'Av. San Martín 800, Garín',                'info@linguanorte.instired.test',          -34.4256, -58.7447, 4),
-  (5,  'Jardín Maternal Pequeños Pasos',           '30710000057', 'Calle Moreno 345, San Fernando',           'maternal@pequenospasos.instired.test',    -34.4421, -58.5594, 1),
-  (6,  'Escuela Primaria Bilingüe St. Patrick',    '30710000065', 'Av. del Libertador 3100, Boulogne',        'admisiones@stpatrick.instired.test',      -34.4950, -58.5550, 2),
-  (7,  'Instituto Técnico San Martín',             '30710000073', 'Colectora Panamericana 4200, Benavídez',   'secretaria@itsanmartin.instired.test',    -34.4097, -58.6857, 3),
-  (8,  'Escuela Primaria N° 31 Juana Manso',       '30710000081', 'Calle Belgrano 120, Escobar',              'primaria31@instired.test',                -34.3496, -58.7918, 2),
-  (9,  'Jardín de Infantes N° 915 Mundo Mágico',   '30710000103', 'Av. Eva Perón 980, Del Viso',              'jardin915@instired.test',                 -34.4559, -58.7992, 1),
-  (10, 'Escuela Secundaria para Adultos N° 703',   '30710000111', 'Av. Hipólito Yrigoyen 1800, Gral. Pacheco','adultos703@instired.test',                -34.4540, -58.6380, 3);
+INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion) VALUES
+  (1,  'Jardín de Infantes N° 902 Arco Iris',      '30710000014', 'Av. Hipólito Yrigoyen 1250, Gral. Pacheco', 'jardin902@instired.test',                  -34.4586, -58.6431,
+   'Jardín de infantes público con salas de 4 y 5 años. Propuesta centrada en el juego y la expresión artística, con patio propio y talleres de música semanales.',
+   1),
+  (2,  'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022','Calle Cazón 456, Tigre',                      'primaria14@instired.test',                -34.4264, -58.5791,
+   'Escuela primaria de jornada simple con doble turno. Proyecto institucional basado en la lectoescritura y la convivencia, con biblioteca y huerta escolar.',
+   2),
+  (3,  'Escuela Secundaria N° 6 Manuel Belgrano',  '30710000030', 'Av. Constituyentes 2300, Don Torcuato',    'secundaria6@instired.test',               -34.4999, -58.6169,
+   'Escuela secundaria con orientación en ciencias naturales. Cuenta con laboratorio equipado, sala de informática y programa de tutorías para ingresantes.',
+   3),
+  (4,  'Instituto de Idiomas Lingua Norte',        '30710000049', 'Av. San Martín 800, Garín',                'info@linguanorte.instired.test',          -34.4256, -58.7447,
+   'Instituto de idiomas con cursos para niños y adultos en inglés, portugués, francés e italiano. Grupos reducidos y preparación para exámenes internacionales.',
+   4),
+  (5,  'Jardín Maternal Pequeños Pasos',           '30710000057', 'Calle Moreno 345, San Fernando',           'maternal@pequenospasos.instired.test',    -34.4421, -58.5594,
+   'Jardín maternal con salas desde los 45 días hasta los 2 años. Personal especializado en primera infancia y comunicación diaria con las familias.',
+   1),
+  (6,  'Escuela Primaria Bilingüe St. Patrick',    '30710000065', 'Av. del Libertador 3100, Boulogne',        'admisiones@stpatrick.instired.test',      -34.4950, -58.5550,
+   'Escuela primaria bilingüe con enseñanza en español e inglés en jornada completa. Biblioteca bilingüe, campo de deportes y orientación a la inclusión.',
+   2),
+  (7,  'Instituto Técnico San Martín',             '30710000073', 'Colectora Panamericana 4200, Benavídez',   'secretaria@itsanmartin.instired.test',    -34.4097, -58.6857,
+   'Instituto técnico con orientación en electrónica y programación. Talleres con prácticas profesionalizantes y convenios con empresas de la zona.',
+   3),
+  (8,  'Escuela Primaria N° 31 Juana Manso',       '30710000081', 'Calle Belgrano 120, Escobar',              'primaria31@instired.test',                -34.3496, -58.7918,
+   'Escuela primaria de barrio con trayectoria de más de 40 años. Sala de computación, comedor escolar y actividades deportivas después del horario de clase.',
+   2),
+  (9,  'Jardín de Infantes N° 915 Mundo Mágico',   '30710000103', 'Av. Eva Perón 980, Del Viso',              'jardin915@instired.test',                 -34.4559, -58.7992,
+   'Jardín de infantes con salas de 3 a 5 años. Cuenta con equipo de apoyo a la integración y espacios sensoriales para el trabajo con niños con discapacidad.',
+   1),
+  (10, 'Escuela Secundaria para Adultos N° 703',   '30710000111', 'Av. Hipólito Yrigoyen 1800, Gral. Pacheco','adultos703@instired.test',                -34.4540, -58.6380,
+   'Escuela secundaria para jóvenes y adultos en turno noche. Plan de tres años con tutorías, régimen de asistencia flexible y orientación laboral.',
+   3);
 
 -- Discapacidades: 1 fila por institucion (TRUE = la institucion cuenta con
 -- acceso o apoyo para esa condicion). El id coincide con Instituciones.id.
@@ -160,34 +194,29 @@ INSERT INTO Discapacidades (idInstitucion, movilidad, visual, auditiva, intelect
 INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma) VALUES
   (1, 1), (2, 1), (3, 1), (3, 2),
   (4, 2), (4, 3), (4, 4), (4, 5),
-  (5, 1), (6, 1), (6, 2), (7, 1), (7, 2),
-  (8, 1), (9, 1), (10, 1);
+  (5, 1), (6, 1), (6, 2), (7, 1), 
+  (7, 2), (8, 1), (9, 1), (10, 1);
 
 -- ---------------------------------------------------------------------
 -- 5. Cursos (14). inscriptos arranca en 0 y se recalcula al final.
 --    Los cursos 12 y 13 son del ciclo 2027 (postulaciones en curso).
 -- ---------------------------------------------------------------------
 
-INSERT INTO NivelesEscolares (id, descripcion) VALUES
-  (1, 'Preescolar'),
-  (2, 'Primaria'),
-  (3, 'Secundaria');
-
 INSERT INTO Cursos (id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos) VALUES
   (1,  1,  1, 2026, 1, NULL, 'Sala de 4',        'Azul',              20, 0),
   (2,  1,  2, 2026, 1, NULL, 'Sala de 5',        'Roja',              22, 0),
-  (3,  2,  1, 2026, 1, 1,    NULL,               'A',                 28, 0),
-  (4,  2,  2, 2026, 1, 4,    NULL,               'B',                 28, 0),
-  (5,  3,  1, 2026, 2, 1,    NULL,               'A',                 35, 0),
-  (6,  3,  2, 2026, 2, 3,    NULL,               'C',                 35, 0),
-  (7,  4,  2, 2026, 2, NULL, 'Kids 2',           '1',                 15, 0),
-  (8,  4,  3, 2026, 2, NULL, 'Adults Beginner',  'Lunes y Miércoles', 12, 0),
-  (9,  5,  4, 2026, 3, NULL, 'Sala de 2',        'Amarilla',          12, 0),
-  (10, 6,  4, 2026, 3, 2,    '2nd Grade',        'A',                 24, 0),
+  (3,  2,  1, 2026, 2, 1,    NULL,               'A',                 28, 0),
+  (4,  2,  2, 2026, 2, 4,    NULL,               'B',                 28, 0),
+  (5,  3,  1, 2026, 3, 1,    NULL,               'A',                 35, 0),
+  (6,  3,  2, 2026, 3, 3,    NULL,               'C',                 35, 0),
+  (7,  4,  2, 2026, NULL, NULL, 'Kids 2',        '1',                 15, 0),
+  (8,  4,  3, 2026, NULL, NULL, 'Adults Beginner','Lunes y Miércoles', 12, 0),
+  (9,  5,  4, 2026, 1, NULL, 'Sala de 2',        'Amarilla',          12, 0),
+  (10, 6,  4, 2026, 2, 2,    '2nd Grade',        'A',                 24, 0),
   (11, 7,  1, 2026, 3, 3,    NULL,               'B',                 30, 0),
-  (12, 8,  1, 2027, 3, 1,    NULL,               'A',                 26, 0),
+  (12, 8,  1, 2027, 2, 1,    NULL,               'A',                 26, 0),
   (13, 9,  2, 2027, 1, NULL, 'Sala de 3',        'Verde',             18, 0),
-  (14, 10, 3, 2026, 2, 1,    NULL,               '1',                 25, 0);
+  (14, 10, 3, 2026, 3, 1,    NULL,               '1',                 25, 0);
 
 INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
   (1,  1,  'https://instired.test/img/inst1/fachada.jpg',      'Fachada del jardín'),
@@ -206,25 +235,28 @@ INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
   (14, 10, 'https://instired.test/img/inst10/fachada.jpg',     'Ingreso al turno noche');
 
 -- ---------------------------------------------------------------------
--- 6. Alumnos (13), Responsables (10), Administradores (10)
+-- 6. Alumnos (13), Responsables (10), Administradores (12)
 --    Alumno 8 es Marcos (adulto, secundaria nocturna) y a la vez
---    responsable de Emma. Alumnos 12 y 13 todavia no tienen institucion.
+--    responsable de Emma; no tiene responsable propio a proposito (es su
+--    propio autogestor, mayor de edad). Alumnos 12 y 13 todavia no tienen
+--    curso asignado.
+--    La institucion de un alumno se obtiene por Alumnos.idCurso -> Cursos.
 -- ---------------------------------------------------------------------
 
-INSERT INTO Alumnos (id, idPersona, idInstitucion, idCurso) VALUES
-  (1,  20, 1,    1),
-  (2,  21, 1,    2),
-  (3,  22, 2,    3),
-  (4,  23, 2,    4),
-  (5,  24, 3,    5),
-  (6,  25, 3,    6),
-  (7,  26, 4,    7),
-  (8,  6,  10,   14),
-  (9,  27, 5,    9),
-  (10, 28, 6,    10),
-  (11, 29, 7,    11),
-  (12, 30, NULL, NULL),
-  (13, 31, NULL, NULL);
+INSERT INTO Alumnos (id, idPersona, idCurso) VALUES
+  (1,  20, 1),
+  (2,  21, 2),
+  (3,  22, 3),
+  (4,  23, 4),
+  (5,  24, 5),
+  (6,  25, 6),
+  (7,  26, 7),
+  (8,  6, 14),
+  (9,  27, 9),
+  (10, 28, 10),
+  (11, 29, 11),
+  (12, 30, NULL),
+  (13, 31, NULL);
 
 INSERT INTO Responsables (id, idPersona, idUsuario) VALUES
   (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
@@ -240,7 +272,9 @@ INSERT INTO AdministradoresInstitucion (id, idPersona, idUsuario, idInstitucion)
   (7,  16, 17, 7),
   (8,  17, 18, 8),
   (9,  18, 19, 9),
-  (10, 19, 20, 10);
+  (10, 19, 20, 10),
+  (11, 32, 21, NULL),
+  (12, 33, 22, NULL);
 
 -- Roles: 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo.
 -- Andrea (responsable 3) es madre de los alumnos 3 y 4 y tutora legal del 11.
@@ -264,7 +298,7 @@ INSERT INTO ResponsablesPorAlumno (id, idResponsable, idAlumno, idRol) VALUES
   (17, 10, 13, 2);
 
 -- ---------------------------------------------------------------------
--- 7. Postulaciones (15)
+-- 7. Postulaciones de alumnos a cursos (15)
 --    Estados: 1 Pendiente, 2 En revision, 3 Aceptada, 4 Rechazada,
 --    5 Lista de espera. Cada alumno con curso asignado tiene su
 --    postulacion aceptada a ese mismo curso.
@@ -288,23 +322,74 @@ INSERT INTO Postulaciones (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEs
   (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5);
 
 -- ---------------------------------------------------------------------
--- 8. Resenias (9): cada una la escribe un responsable con un alumno
---    en esa institucion. Calificacion de 1 a 5.
+-- 8. PostulacionesInstitucion (13): solicitudes de alta de administrador
+--    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados.
+--    - Aceptadas (la institucion queda vinculada), salvo la 9, 12 y 13.
+--    - 9: rechazada por DevCo (solicitud mal armada); idInstitucion NULL
+--      porque todavia no habia cargado la institucion. El administrador 10
+--      la volvio a enviar y es la 11.
+--    - 12: pendiente del administrador 11 (usuario inactivo y sin
+--      institucion: primero se crea el usuario y recien cuando DevCo lo
+--      acepta puede cargar o elegir su institucion).
+--    - 13: pendiente del administrador 12, segundo administrador de una
+--      institucion que ya existe (la 3): la solicitud ya nombra la
+--      institucion elegida, pero el administrador todavia no esta vinculado.
+--    - El administrador 8 (usuario inactivo) es un admin dado de baja
+--      despues de ser aceptado.
 -- ---------------------------------------------------------------------
 
-INSERT INTO Resenias (id, calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES
-  (1, 5, 'Las seños son un amor y mis hijos van felices todos los días. Muy buena comunicación con las familias.', '2026-04-10', 1, 1),
-  (2, 4, 'Excelente propuesta pedagógica. Solo mejoraría el horario de ingreso, que es un poco temprano.',          '2026-05-02', 1, 2),
-  (3, 5, 'Muy contenedores con los chicos. Valentina se adaptó enseguida y la directora siempre está disponible.', '2026-04-22', 2, 3),
-  (4, 4, 'Buen nivel académico y docentes comprometidos. Instalaciones algo antiguas pero bien cuidadas.',         '2026-06-15', 3, 4),
-  (5, 3, 'Los profesores son buenos, pero los grupos son grandes y a veces se cancelan clases sin aviso.',         '2026-07-01', 4, 5),
-  (6, 5, 'El mejor lugar para dejar a mi hija. Personal atento, sala luminosa y mucha comunicación diaria.',      '2026-03-12', 5, 6),
-  (7, 5, 'Muy buena propuesta bilingüe. Benjamín disfruta las clases en inglés y la infraestructura es excelente.','2026-05-20', 6, 7),
-  (8, 2, 'Falta comunicación con las familias y los reclamos tardan mucho en resolverse.',                        '2026-08-05', 7, 8),
-  (9, 4, 'Buenos talleres y orientación técnica. Martina está contenta, aunque llegar en transporte es complicado.','2026-08-19', 7, 3);
+INSERT INTO PostulacionesInstitucion (id, fecha, codigoSeguimiento, idInstitucion, idAdministradorInstitucion, idEstado) VALUES
+  (1,  '2025-09-08', 'PIN-20250908-0001', 1,    1,  3),
+  (2,  '2025-09-10', 'PIN-20250910-0002', 2,    2,  3),
+  (3,  '2025-09-15', 'PIN-20250915-0003', 3,    3,  3),
+  (4,  '2025-09-22', 'PIN-20250922-0004', 6,    6,  3),
+  (5,  '2025-10-01', 'PIN-20251001-0005', 5,    5,  3),
+  (6,  '2025-10-06', 'PIN-20251006-0006', 7,    7,  3),
+  (7,  '2025-10-20', 'PIN-20251020-0007', 8,    8,  3),
+  (8,  '2025-11-14', 'PIN-20251114-0008', 9,    9,  3),
+  (9,  '2025-12-05', 'PIN-20251205-0009', NULL, 10, 4),
+  (10, '2025-12-18', 'PIN-20251218-0010', 4,    4,  3),
+  (11, '2026-01-20', 'PIN-20260120-0011', 10,   10, 3),
+  (12, '2026-10-29', 'PIN-20261029-0012', NULL, 11, 1),
+  (13, '2026-10-30', 'PIN-20261030-0013', 3,    12, 1);
 
 -- ---------------------------------------------------------------------
--- 9. Telefonos (16). Un telefono puede tener mas de un dueno:
+-- 9. Resenias (9): cada una la escribe un responsable con un alumno
+--    en esa institucion. Calificacion de 1 a 5. Algunas tienen respuesta
+--    de la institucion (2, 5, 8 y 9); el resto la deja en NULL.
+-- ---------------------------------------------------------------------
+
+INSERT INTO Resenias (id, calificacion, comentario, respuestaInstitucion, fecha, idInstitucion, idResponsable) VALUES
+  (1, 5, 'Las seños son un amor y mis hijos van felices todos los días. Muy buena comunicación con las familias.',
+   NULL,
+   '2026-04-10', 1, 1),
+  (2, 4, 'Excelente propuesta pedagógica. Solo mejoraría el horario de ingreso, que es un poco temprano.',
+   'Gracias por el comentario. Vamos a evaluar con el equipo docente una franja de ingreso más flexible para el próximo ciclo.',
+   '2026-05-02', 1, 2),
+  (3, 5, 'Muy contenedores con los chicos. Valentina se adaptó enseguida y la directora siempre está disponible.',
+   NULL,
+   '2026-04-22', 2, 3),
+  (4, 4, 'Buen nivel académico y docentes comprometidos. Instalaciones algo antiguas pero bien cuidadas.',
+   NULL,
+   '2026-06-15', 3, 4),
+  (5, 3, 'Los profesores son buenos, pero los grupos son grandes y a veces se cancelan clases sin aviso.',
+   'Lamentamos los inconvenientes. Estamos armando un aviso por mail para cuando se reprograme una clase y reducimos el tamaño de los grupos.',
+   '2026-07-01', 4, 5),
+  (6, 5, 'El mejor lugar para dejar a mi hija. Personal atento, sala luminosa y mucha comunicación diaria.',
+   NULL,
+   '2026-03-12', 5, 6),
+  (7, 5, 'Muy buena propuesta bilingüe. Benjamín disfruta las clases en inglés y la infraestructura es excelente.',
+   NULL,
+   '2026-05-20', 6, 7),
+  (8, 2, 'Falta comunicación con las familias y los reclamos tardan mucho en resolverse.',
+   'Tomamos nota de su reclamo. Desde secretaría vamos a asignar un responsable para dar respuesta a las familias en un plazo máximo de 5 días.',
+   '2026-08-05', 7, 8),
+  (9, 4, 'Buenos talleres y orientación técnica. Martina está contenta, aunque llegar en transporte es complicado.',
+   'Nos alegra que Martina esté contenta. Estamos gestionando con el municipio una parada de transporte cerca de la entrada.',
+   '2026-08-19', 7, 3);
+
+-- ---------------------------------------------------------------------
+-- 10. Telefonos (16). Un telefono puede tener mas de un dueno:
 --    el 4 es de la institucion 4 y del administrador 4; el 16 es el
 --    celular de Gabriela como administradora 4 y como responsable 7.
 -- ---------------------------------------------------------------------
@@ -328,7 +413,7 @@ INSERT INTO Telefonos (id, idInstitucion, idAdministrador, idResponsable, telefo
   (16, NULL, 4,    7,    '+54 9 11 5555-1007');
 
 -- ---------------------------------------------------------------------
--- 10. inscriptos = alumnos realmente asignados a cada curso
+-- 11. inscriptos = alumnos realmente asignados a cada curso
 -- ---------------------------------------------------------------------
 SET SQL_SAFE_UPDATES = 0;
 UPDATE Cursos c
