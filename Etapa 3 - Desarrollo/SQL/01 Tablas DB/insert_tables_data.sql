@@ -194,8 +194,8 @@ INSERT INTO Discapacidades (idInstitucion, movilidad, visual, auditiva, intelect
 INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma) VALUES
   (1, 1), (2, 1), (3, 1), (3, 2),
   (4, 2), (4, 3), (4, 4), (4, 5),
-  (5, 1), (6, 1), (6, 2), (7, 1), 
-  (7, 2), (8, 1), (9, 1), (10, 1);
+  (5, 1), (6, 1), (6, 2), (7, 1), (7, 2),
+  (8, 1), (9, 1), (10, 1);
 
 -- ---------------------------------------------------------------------
 -- 5. Cursos (14). inscriptos arranca en 0 y se recalcula al final.
@@ -235,7 +235,7 @@ INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
   (14, 10, 'https://instired.test/img/inst10/fachada.jpg',     'Ingreso al turno noche');
 
 -- ---------------------------------------------------------------------
--- 6. Alumnos (13), Responsables (10), Administradores (12)
+-- 6. Alumnos (13), Responsables (10), Administradores (12), ResponsablesPorAlumno (12)
 --    Alumno 8 es Marcos (adulto, secundaria nocturna) y a la vez
 --    responsable de Emma; no tiene responsable propio a proposito (es su
 --    propio autogestor, mayor de edad). Alumnos 12 y 13 todavia no tienen
@@ -276,26 +276,23 @@ INSERT INTO AdministradoresInstitucion (id, idPersona, idUsuario, idInstitucion)
   (11, 32, 21, NULL),
   (12, 33, 22, NULL);
 
--- Roles: 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo.
--- Andrea (responsable 3) es madre de los alumnos 3 y 4 y tutora legal del 11.
+-- Un solo responsable por alumno. El alumno 8 (Marcos) no tiene ninguno: es su propio autogestor.
+-- Roles: 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo (en este seed no se usa el 3).
+-- Laura (1) y Carlos (2) tienen un hijo cada uno; Andrea (3) y Julian (9) / Valeria (10) tambien se reparten asi.
+-- Rosa (8) es la abuela de Martina (alumno 11): Familiar a cargo.
 INSERT INTO ResponsablesPorAlumno (id, idResponsable, idAlumno, idRol) VALUES
   (1,  1,  1,  2),
-  (2,  1,  2,  2),
-  (3,  2,  1,  1),
-  (4,  2,  2,  1),
-  (5,  3,  3,  2),
-  (6,  3,  4,  2),
-  (7,  4,  5,  1),
-  (8,  4,  6,  1),
-  (9,  5,  7,  2),
-  (10, 6,  9,  1),
-  (11, 7,  10, 2),
-  (12, 8,  11, 4),
-  (13, 3,  11, 3),
-  (14, 9,  12, 1),
-  (15, 9,  13, 1),
-  (16, 10, 12, 2),
-  (17, 10, 13, 2);
+  (2,  2,  2,  1),
+  (3,  3,  3,  2),
+  (4,  3,  4,  2),
+  (5,  4,  5,  1),
+  (6,  4,  6,  1),
+  (7,  5,  7,  2),
+  (8,  6,  9,  1),
+  (9,  7,  10, 2),
+  (10, 8,  11, 4),
+  (11, 9,  12, 1),
+  (12, 10, 13, 2);
 
 -- ---------------------------------------------------------------------
 -- 7. Postulaciones de alumnos a cursos (15)
@@ -354,13 +351,13 @@ INSERT INTO PostulacionesInstitucion (id, fecha, codigoSeguimiento, idInstitucio
   (13, '2026-10-30', 'PIN-20261030-0013', 3,    12, 1);
 
 -- ---------------------------------------------------------------------
--- 9. Resenias (9): cada una la escribe un responsable con un alumno
+-- 9. Resenias (8): cada una la escribe un responsable con un alumno
 --    en esa institucion. Calificacion de 1 a 5. Algunas tienen respuesta
---    de la institucion (2, 5, 8 y 9); el resto la deja en NULL.
+--    de la institucion (2, 5 y 8); el resto la deja en NULL.
 -- ---------------------------------------------------------------------
 
 INSERT INTO Resenias (id, calificacion, comentario, respuestaInstitucion, fecha, idInstitucion, idResponsable) VALUES
-  (1, 5, 'Las seños son un amor y mis hijos van felices todos los días. Muy buena comunicación con las familias.',
+  (1, 5, 'Las seños son un amor y mi hija va feliz todos los días. Muy buena comunicación con las familias.',
    NULL,
    '2026-04-10', 1, 1),
   (2, 4, 'Excelente propuesta pedagógica. Solo mejoraría el horario de ingreso, que es un poco temprano.',
@@ -383,10 +380,7 @@ INSERT INTO Resenias (id, calificacion, comentario, respuestaInstitucion, fecha,
    '2026-05-20', 6, 7),
   (8, 2, 'Falta comunicación con las familias y los reclamos tardan mucho en resolverse.',
    'Tomamos nota de su reclamo. Desde secretaría vamos a asignar un responsable para dar respuesta a las familias en un plazo máximo de 5 días.',
-   '2026-08-05', 7, 8),
-  (9, 4, 'Buenos talleres y orientación técnica. Martina está contenta, aunque llegar en transporte es complicado.',
-   'Nos alegra que Martina esté contenta. Estamos gestionando con el municipio una parada de transporte cerca de la entrada.',
-   '2026-08-19', 7, 3);
+   '2026-08-05', 7, 8);
 
 -- ---------------------------------------------------------------------
 -- 10. Telefonos (16). Un telefono puede tener mas de un dueno:

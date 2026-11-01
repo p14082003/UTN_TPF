@@ -1,0 +1,1 @@
+SELECT * FROM vw_ResponsablesConAlumnos ORDER BY idResponsable, idAlumno;

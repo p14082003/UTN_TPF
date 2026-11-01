@@ -165,6 +165,7 @@ CREATE TABLE ResponsablesPorAlumno (
   idRol TINYINT NOT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_responsablesporalumno_par (idResponsable, idAlumno), 
+  UNIQUE KEY uq_responsablesporalumno_alumno (idAlumno), 
   CONSTRAINT fk_rpa_responsable FOREIGN KEY (idResponsable) REFERENCES Responsables (id), 
   CONSTRAINT fk_rpa_alumno FOREIGN KEY (idAlumno) REFERENCES Alumnos (id), 
   CONSTRAINT fk_rpa_rol FOREIGN KEY (idRol) REFERENCES Roles (id)
