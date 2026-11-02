@@ -185,18 +185,18 @@ CREATE TABLE Postulaciones (
   CONSTRAINT fk_postulaciones_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
 );
 
-CREATE TABLE PostulacionesInstitucion (
+CREATE TABLE PostulacionesAdminInstitucion (
   id INT NOT NULL AUTO_INCREMENT, 
   fecha DATE NOT NULL, 
   codigoSeguimiento VARCHAR(30) NOT NULL, 
-  idInstitucion INT NULL, 
+  idInstitucion INT NULL,                    -- en general NULL; se completa solo si el admin lo es de una institución ya cargada
   idAdministradorInstitucion INT NOT NULL,
   idEstado INT NOT NULL, 
   PRIMARY KEY (id), 
-  UNIQUE KEY uq_postulacionesinstitucion_codigo (codigoSeguimiento), 
-  CONSTRAINT fk_postinst_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
-  CONSTRAINT fk_postinst_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id),
-  CONSTRAINT fk_admin_institucion FOREIGN KEY (idAdministradorInstitucion) REFERENCES AdministradoresInstitucion (id) 
+  UNIQUE KEY uq_postadmin_codigo (codigoSeguimiento), 
+  CONSTRAINT fk_postadmin_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
+  CONSTRAINT fk_postadmin_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id),
+  CONSTRAINT fk_postadmin_administrador FOREIGN KEY (idAdministradorInstitucion) REFERENCES AdministradoresInstitucion (id) 
 );
 
 
@@ -209,6 +209,7 @@ CREATE TABLE Resenias (
   idInstitucion INT NOT NULL, 
   idResponsable INT NOT NULL, 
   PRIMARY KEY (id), 
+  UNIQUE KEY uq_resenias_institucion_responsable (idInstitucion, idResponsable), -- un responsable solo puede tener una reseña por institución.
   CONSTRAINT fk_resenias_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
   CONSTRAINT fk_resenias_responsable FOREIGN KEY (idResponsable) REFERENCES Responsables (id), 
   CONSTRAINT ck_resenias_calificacion CHECK (calificacion BETWEEN 1 AND 5)
