@@ -2,7 +2,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS ResponsablesPorAlumno;
 DROP TABLE IF EXISTS Postulaciones;
-DROP TABLE IF EXISTS PostulacionesInstitucion;
+DROP TABLE IF EXISTS PostulacionesAdminInstitucion;
 DROP TABLE IF EXISTS Resenias;
 DROP TABLE IF EXISTS Telefonos;
 
