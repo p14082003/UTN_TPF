@@ -319,36 +319,38 @@ INSERT INTO Postulaciones (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEs
   (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5);
 
 -- ---------------------------------------------------------------------
--- 8. PostulacionesInstitucion (13): solicitudes de alta de administrador
+-- 8. PostulacionesAdminInstitucion (13): solicitudes de alta de administrador
 --    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados.
---    - Aceptadas (la institucion queda vinculada), salvo la 9, 12 y 13.
---    - 9: rechazada por DevCo (solicitud mal armada); idInstitucion NULL
---      porque todavia no habia cargado la institucion. El administrador 10
+--    - Lo normal es idInstitucion NULL: el administrador se postula primero
+--      como usuario y recien cuando DevCo lo acepta carga su institucion.
+--      Por eso las aceptadas (1 a 8, 10 y 11) quedan con NULL; el vinculo
+--      con la institucion queda en AdministradoresInstitucion.idInstitucion.
+--    - 9: rechazada por DevCo (solicitud mal armada). El administrador 10
 --      la volvio a enviar y es la 11.
 --    - 12: pendiente del administrador 11 (usuario inactivo y sin
---      institucion: primero se crea el usuario y recien cuando DevCo lo
---      acepta puede cargar o elegir su institucion).
---    - 13: pendiente del administrador 12, segundo administrador de una
---      institucion que ya existe (la 3): la solicitud ya nombra la
---      institucion elegida, pero el administrador todavia no esta vinculado.
+--      institucion todavia).
+--    - 13: unica con idInstitucion informado. Pendiente del administrador 12,
+--      segundo administrador de una institucion que ya existe (la 3): la
+--      solicitud ya nombra la institucion elegida, pero el administrador
+--      todavia no esta vinculado.
 --    - El administrador 8 (usuario inactivo) es un admin dado de baja
 --      despues de ser aceptado.
 -- ---------------------------------------------------------------------
 
-INSERT INTO PostulacionesInstitucion (id, fecha, codigoSeguimiento, idInstitucion, idAdministradorInstitucion, idEstado) VALUES
-  (1,  '2025-09-08', 'PIN-20250908-0001', 1,    1,  3),
-  (2,  '2025-09-10', 'PIN-20250910-0002', 2,    2,  3),
-  (3,  '2025-09-15', 'PIN-20250915-0003', 3,    3,  3),
-  (4,  '2025-09-22', 'PIN-20250922-0004', 6,    6,  3),
-  (5,  '2025-10-01', 'PIN-20251001-0005', 5,    5,  3),
-  (6,  '2025-10-06', 'PIN-20251006-0006', 7,    7,  3),
-  (7,  '2025-10-20', 'PIN-20251020-0007', 8,    8,  3),
-  (8,  '2025-11-14', 'PIN-20251114-0008', 9,    9,  3),
-  (9,  '2025-12-05', 'PIN-20251205-0009', NULL, 10, 4),
-  (10, '2025-12-18', 'PIN-20251218-0010', 4,    4,  3),
-  (11, '2026-01-20', 'PIN-20260120-0011', 10,   10, 3),
-  (12, '2026-10-29', 'PIN-20261029-0012', NULL, 11, 1),
-  (13, '2026-10-30', 'PIN-20261030-0013', 3,    12, 1);
+INSERT INTO PostulacionesAdminInstitucion (id, fecha, codigoSeguimiento, idInstitucion, idAdministradorInstitucion, idEstado) VALUES
+  (1,  '2025-09-08', 'PAI-20250908-0001', NULL, 1,  3),
+  (2,  '2025-09-10', 'PAI-20250910-0002', NULL, 2,  3),
+  (3,  '2025-09-15', 'PAI-20250915-0003', NULL, 3,  3),
+  (4,  '2025-09-22', 'PAI-20250922-0004', NULL, 6,  3),
+  (5,  '2025-10-01', 'PAI-20251001-0005', NULL, 5,  3),
+  (6,  '2025-10-06', 'PAI-20251006-0006', NULL, 7,  3),
+  (7,  '2025-10-20', 'PAI-20251020-0007', NULL, 8,  3),
+  (8,  '2025-11-14', 'PAI-20251114-0008', NULL, 9,  3),
+  (9,  '2025-12-05', 'PAI-20251205-0009', NULL, 10, 4),
+  (10, '2025-12-18', 'PAI-20251218-0010', NULL, 4,  3),
+  (11, '2026-01-20', 'PAI-20260120-0011', NULL, 10, 3),
+  (12, '2026-10-29', 'PAI-20261029-0012', NULL, 11, 1),
+  (13, '2026-10-30', 'PAI-20261030-0013', 3,    12, 1);
 
 -- ---------------------------------------------------------------------
 -- 9. Resenias (8): cada una la escribe un responsable con un alumno
@@ -404,7 +406,8 @@ INSERT INTO Telefonos (id, idInstitucion, idAdministrador, idResponsable, telefo
   (13, NULL, NULL, 3,    '+54 9 11 5555-1003'),
   (14, NULL, NULL, 9,    '+54 9 11 5555-1009'),
   (15, NULL, 1,    NULL, '+54 9 11 5555-2001'),
-  (16, NULL, 4,    7,    '+54 9 11 5555-1007');
+  (16, NULL, 4,    7,    '+54 9 11 5555-1007'),
+  (17, NULL, NULL, 7,    '+54 9 11 5555-1008');
 
 -- ---------------------------------------------------------------------
 -- 11. inscriptos = alumnos realmente asignados a cada curso
