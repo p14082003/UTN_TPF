@@ -60,7 +60,7 @@
                            </div>
                         </div>
                             <p class="text-secondary mb-4">Registrá tu institución, publicá vacantes y gestioná las solicitudes de admisión de nuevos estudiantes de manera centralizada.</p>
-                            <asp:Button ID="btnRegistroInstitucion" runat="server" Text="Registrar institución" CssClass="btn btn-lilaClaro w-100 py-2" PostBackUrl="~/RegistroInstitucion.aspx" />
+                            <asp:Button ID="btnRegistroInstitucion" runat="server" Text="Registrar institución" CssClass="btn btn-lilaClaro w-100 py-2" PostBackUrl="~/FormularioAdministradorInstitucion.aspx" />
                         </div>
                  </div>
 

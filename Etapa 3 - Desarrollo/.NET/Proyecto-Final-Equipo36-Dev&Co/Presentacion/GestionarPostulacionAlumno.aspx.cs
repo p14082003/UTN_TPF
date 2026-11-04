@@ -21,7 +21,6 @@ namespace Presentacion
             if (!IsPostBack)
             {
                 // TEMPORAL: datos de ejemplo para poder probar la pantalla.
-                // Reemplazar por la lectura real de postulaciones pendientes.
                 dgvPostulaciones.DataSource = new List<object>
                 {
                     new { IdPostulacion = 1, NombreAlumno = "Martina Gómez",  Curso = "1° año - Turno mañana", FechaPostulacion = DateTime.Today.AddDays(-2), NombreTutor = "Laura Gómez" },

@@ -28,22 +28,42 @@
 
                         <div class="mb-3">
                             <label for="<%= txtNombre.ClientID %>" class="form-label text-indigo fw-semibold">Nombre</label>
-                            <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="50" />
+                            <asp:TextBox ID="txtNombre" runat="server" placeholder="Nombre" CssClass="form-control" MaxLength="50" />
                         </div>
 
                         <div class="mb-3">
                             <label for="<%= txtApellido.ClientID %>" class="form-label text-indigo fw-semibold">Apellido</label>
-                            <asp:TextBox ID="txtApellido" runat="server" CssClass="form-control" MaxLength="50" />
+                            <asp:TextBox ID="txtApellido" runat="server" placeholder="Apellido" CssClass="form-control" MaxLength="50" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="<%= txtDocumento.ClientID %>" class="form-label text-indigo fw-semibold">Documento</label>
+                            <asp:TextBox ID="txtDocumento" runat="server" placeholder="12345678" CssClass="form-control" MaxLength="8" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="<%= txtDomicilio.ClientID %>" class="form-label text-indigo fw-semibold">Domicilio</label>
+                            <asp:TextBox ID="txtDomicilio" runat="server" placeholder="Av.Rivadavia 1234" CssClass="form-control" MaxLength="100" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="<%= txtFechaNacimiento.ClientID %>" class="form-label text-indigo fw-semibold">Fecha de nacimiento</label>
+                            <asp:TextBox ID="txtFechaNacimiento" runat="server" CssClass="form-control" TextMode="Date" />
                         </div>
 
                         <div class="mb-3">
                             <label for="<%= txtEmail.ClientID %>" class="form-label text-indigo fw-semibold">Correo electrónico</label>
-                            <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" />
+                            <asp:TextBox ID="txtEmail" runat="server" placeholder="email@extension.com" CssClass="form-control" TextMode="Email" MaxLength="100" />
                         </div>
 
                         <div class="mb-3">
                             <label for="<%= txtTelefono.ClientID %>" class="form-label text-indigo fw-semibold">Teléfono</label>
-                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" />
+                            <asp:TextBox ID="txtTelefono" runat="server" placeholder="12345678" CssClass="form-control" TextMode="Phone" MaxLength="30" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="<%= txtNombreUsuario.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de Usuario de la Plataforma</label>
+                            <asp:TextBox ID="txtNombreUsuario" runat="server" placeholder="User" CssClass="form-control" MaxLength="50" />
                         </div>
 
                         <!-- Selector de institución -->
@@ -61,17 +81,17 @@
                         <asp:Panel ID="pnlNuevaInstitucion" runat="server" CssClass="d-none border border-neutro rounded-3 p-3 mb-3">
 
                             <div class="mb-3">
-                                <label for="<%= txtNombreInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de la institución</label>
-                                <asp:TextBox ID="txtNombreInstitucion" runat="server" CssClass="form-control" MaxLength="100" />
+                                <label for="<%= txtNombreInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de la Institución</label>
+                                <asp:TextBox ID="txtNombreInstitucion" runat="server" placeholder="Institución" CssClass="form-control" MaxLength="100" />
                             </div>
 
                             <div class="mb-3">
                                 <label for="<%= txtCuit.ClientID %>" class="form-label text-indigo fw-semibold">CUIT</label>
-                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" />
+                                <asp:TextBox ID="txtCuit" runat="server" placeholder="11234567899" CssClass="form-control" MaxLength="11" />
                             </div>
 
                             <div class="mb-3">
-                                <label for="<%= ddlTipoInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Tipo de institución</label>
+                                <label for="<%= ddlTipoInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Tipo de Institución</label>
                                 <asp:DropDownList ID="ddlTipoInstitucion" runat="server" CssClass="form-select" />
                             </div>
 
