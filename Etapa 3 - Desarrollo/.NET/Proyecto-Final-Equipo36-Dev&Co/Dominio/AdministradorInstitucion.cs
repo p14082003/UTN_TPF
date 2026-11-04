@@ -8,9 +8,10 @@ namespace Dominio
 {
     public class AdministradorInstitucion
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public Usuario Usuario { get; set; }
         public Telefono Telefono { get; set; }
+        public Institucion Institucion { get; set; }
 
     }
 }

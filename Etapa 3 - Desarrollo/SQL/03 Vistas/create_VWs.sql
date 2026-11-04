@@ -99,6 +99,7 @@ SELECT po.id                 AS idPostulacion,
        po.codigoSeguimiento,
        po.idEstado,
        ep.descripcion        AS estado,
+       po.motivoRechazo,
        po.idAlumno,
        p.nombre              AS nombreAlumno,
        p.apellido            AS apellidoAlumno,
@@ -120,7 +121,7 @@ SELECT po.id                 AS idPostulacion,
        tu.descripcion        AS turno,
        c.idInstitucion,
        i.nombre              AS institucion
-FROM Postulaciones po
+FROM PostulacionesAlumnos po
 JOIN EstadosPostulacion ep          ON ep.id = po.idEstado
 JOIN Alumnos a                      ON a.id = po.idAlumno
 JOIN Personas p                     ON p.id = a.idPersona
@@ -145,6 +146,7 @@ SELECT r.id                  AS idResponsable,
        po.codigoSeguimiento,
        po.idEstado,
        ep.descripcion        AS estado,
+       po.motivoRechazo,                  
        po.idAlumno,
        p.nombre              AS nombreAlumno,
        p.apellido            AS apellidoAlumno,
@@ -157,7 +159,7 @@ SELECT r.id                  AS idResponsable,
        c.idInstitucion,
        i.nombre              AS institucion,
        i.direccion           AS direccionInstitucion
-FROM Postulaciones po
+FROM PostulacionesAlumnos po
 JOIN EstadosPostulacion ep          ON ep.id = po.idEstado
 JOIN Alumnos a                      ON a.id = po.idAlumno
 JOIN Personas p                     ON p.id = a.idPersona
@@ -187,6 +189,7 @@ SELECT i.id                  AS idInstitucion,
        d.movilidad,
        d.visual,
        d.auditiva,
+       d.verbal,
        d.intelectual,
        d.sindromeDown,
        d.autismo,

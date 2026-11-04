@@ -184,18 +184,19 @@ INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud
 
 -- Discapacidades: 1 fila por institucion (TRUE = la institucion cuenta con
 -- acceso o apoyo para esa condicion). El id coincide con Instituciones.id.
-INSERT INTO Discapacidades (idInstitucion, movilidad, visual, auditiva, intelectual, sindromeDown, autismo) VALUES
-  (1,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
-  (2,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE),
-  (3,  TRUE,  FALSE, TRUE,  FALSE, FALSE, FALSE),
-  (4,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (5,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
-  (6,  TRUE,  FALSE, FALSE, TRUE,  FALSE, TRUE),
-  (7,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
-  (8,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (9,  TRUE,  FALSE, FALSE, TRUE,  TRUE,  TRUE),
-  (10, TRUE,  TRUE,  TRUE,  FALSE, FALSE, FALSE);
-
+INSERT INTO Discapacidades (idInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo) VALUES
+  (1,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  (2,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE),
+  (3,  TRUE,  FALSE, TRUE,  TRUE,  FALSE, FALSE, FALSE),
+  (4,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  (5,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  (6,  TRUE,  FALSE, FALSE, TRUE,  TRUE,  FALSE, TRUE),
+  (7,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  (8,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  (9,  TRUE,  FALSE, FALSE, TRUE,  TRUE,  TRUE,  TRUE),
+  (10, TRUE,  TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE);
+  
+  
 INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma) VALUES
   (1, 1), (2, 1), (3, 1), (3, 2),
   (4, 2), (4, 3), (4, 4), (4, 5),
@@ -307,25 +308,45 @@ INSERT INTO ResponsablesPorAlumno (id, idResponsable, idAlumno, idRol) VALUES
 --    Estados: 1 Pendiente, 2 En revision, 3 Aceptada, 4 Rechazada,
 --    5 Lista de espera. Cada alumno con curso asignado tiene su
 --    postulacion aceptada a ese mismo curso.
+--    motivoRechazo solo se completa en las rechazadas (la 14).
 -- ---------------------------------------------------------------------
 
-INSERT INTO Postulaciones (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEstado) VALUES
-  (1,  '2025-11-12', 'PST-20251112-0001', 1,  1,  3),
-  (2,  '2025-11-12', 'PST-20251112-0002', 2,  2,  3),
-  (3,  '2025-11-20', 'PST-20251120-0003', 3,  3,  3),
-  (4,  '2025-11-20', 'PST-20251120-0004', 4,  4,  3),
-  (5,  '2025-12-03', 'PST-20251203-0005', 5,  5,  3),
-  (6,  '2025-12-03', 'PST-20251203-0006', 6,  6,  3),
-  (7,  '2026-02-10', 'PST-20260210-0007', 7,  7,  3),
-  (8,  '2026-02-16', 'PST-20260216-0008', 14, 8,  3),
-  (9,  '2025-12-15', 'PST-20251215-0009', 9,  9,  3),
-  (10, '2025-11-28', 'PST-20251128-0010', 10, 10, 3),
-  (11, '2025-12-09', 'PST-20251209-0011', 11, 11, 3),
-  (12, '2026-10-02', 'PST-20261002-0012', 12, 12, 2),
-  (13, '2026-10-05', 'PST-20261005-0013', 13, 13, 1),
-  (14, '2026-09-18', 'PST-20260918-0014', 11, 6,  4),
-  (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5);
+INSERT INTO PostulacionesAlumnos (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo) VALUES
+  (1,  '2025-11-12', 'PST-20251112-0001', 1,  1,  3, NULL),
+  (2,  '2025-11-12', 'PST-20251112-0002', 2,  2,  3, NULL),
+  (3,  '2025-11-20', 'PST-20251120-0003', 3,  3,  3, NULL),
+  (4,  '2025-11-20', 'PST-20251120-0004', 4,  4,  3, NULL),
+  (5,  '2025-12-03', 'PST-20251203-0005', 5,  5,  3, NULL),
+  (6,  '2025-12-03', 'PST-20251203-0006', 6,  6,  3, NULL),
+  (7,  '2026-02-10', 'PST-20260210-0007', 7,  7,  3, NULL),
+  (8,  '2026-02-16', 'PST-20260216-0008', 14, 8,  3, NULL),
+  (9,  '2025-12-15', 'PST-20251215-0009', 9,  9,  3, NULL),
+  (10, '2025-11-28', 'PST-20251128-0010', 10, 10, 3, NULL),
+  (11, '2025-12-09', 'PST-20251209-0011', 11, 11, 3, NULL),
+  (12, '2026-10-02', 'PST-20261002-0012', 12, 12, 2, NULL),
+  (13, '2026-10-05', 'PST-20261005-0013', 13, 13, 1, NULL),
+  (14, '2026-09-18', 'PST-20260918-0014', 11, 6,  4, 'Falta la partida de nacimiento del alumno.'),
+  (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5, NULL);
 
+-- ---------------------------------------------------------------------
+-- 7b. DocumentosPostulacion (9): archivos que adjunta el responsable al
+--     postular. Cada postulacion puede tener cantidad distinta de documentos (por certificados de discapacidad por ejemplo)
+--     - Las rutas son nombres de archivo ficticios: no existen en disco.
+--     - La 14 (rechazada) solo tiene el DNI: le falta la partida de nacimiento
+--       y ese es el motivo de rechazo.
+-- ---------------------------------------------------------------------
+
+INSERT INTO DocumentosPostulacion (id, idPostulacion, descripcion, ruta) VALUES
+  (1, 1,  'DNI del alumno',          'post1_dni.pdf'),
+  (2, 1,  'Partida de nacimiento',   'post1_partida.pdf'),
+  (3, 12, 'DNI del alumno',          'post12_dni.pdf'),
+  (4, 12, 'Partida de nacimiento',   'post12_partida.pdf'),
+  (5, 13, 'DNI del alumno',          'post13_dni.pdf'),
+  (6, 13, 'Certificado de estudios', 'post13_certificado.pdf'),
+  (7, 14, 'DNI del alumno',          'post14_dni.pdf'),
+  (8, 15, 'DNI del alumno',          'post15_dni.pdf'),
+  (9, 15, 'Certificado de estudios', 'post15_certificado.pdf');
+  
 -- ---------------------------------------------------------------------
 -- 8. PostulacionesAdminInstitucion (12): solicitudes de alta de administrador
 --    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados.

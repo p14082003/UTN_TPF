@@ -8,9 +8,9 @@ namespace Dominio
 {
     public class Alumno : Persona
     {
-        public int id {  get; set; }
+        public int IdAlumno {  get; set; }
         public List <Curso> Cursos { get; set; }
-        public List <Postulacion> Postulaciones { get; set; }
+        public List <PostulacionAlumno> Postulaciones { get; set; }
         
     }
 }

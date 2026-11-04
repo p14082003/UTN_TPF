@@ -10,7 +10,7 @@ namespace Dominio
     {
         public int Id { get; set; }
         public bool Visual { get; set;}
-        public bool Verbal { get; set;}
+        public bool Verbal { get; set;} // no existe en DB
         public bool Auditiva { get; set;}
         public bool Intelectual { get; set;}
         public bool Movilidad { get; set; }
