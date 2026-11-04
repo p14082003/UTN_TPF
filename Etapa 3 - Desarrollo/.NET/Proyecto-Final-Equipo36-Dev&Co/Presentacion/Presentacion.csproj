@@ -70,6 +70,7 @@
     <Content Include="EstilosInstiRed.css" />
     <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="FormularioInstitucion.aspx" />
+    <Content Include="GestionarPostulacionAlumno.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
@@ -90,6 +91,13 @@
     </Compile>
     <Compile Include="FormularioInstitucion.aspx.designer.cs">
       <DependentUpon>FormularioInstitucion.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="GestionarPostulacionAlumno.aspx.cs">
+      <DependentUpon>GestionarPostulacionAlumno.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GestionarPostulacionAlumno.aspx.designer.cs">
+      <DependentUpon>GestionarPostulacionAlumno.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
