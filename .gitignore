@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# file with sensitive fnfo
+appsettings.Local.json
