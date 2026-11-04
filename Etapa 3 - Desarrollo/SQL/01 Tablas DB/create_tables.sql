@@ -50,7 +50,7 @@ CREATE TABLE Usuarios (
   usuario VARCHAR(50) NOT NULL, 
   clave VARCHAR(255) NOT NULL, 
   email VARCHAR(100) NOT NULL UNIQUE, 
-  activo BOOLEAN NOT NULL DEFAULT TRUE, 
+  activo BOOLEAN NOT NULL DEFAULT FALSE, 
   idTipoUsuario TINYINT NOT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_usuarios_usuario (usuario), 
@@ -67,6 +67,7 @@ CREATE TABLE Instituciones (
   longitud DOUBLE NOT NULL,
   descripcion VARCHAR(3000) NOT NULL, 
   idTipoInstitucion TINYINT NOT NULL, 
+  estado BOOLEAN NOT NULL DEFAULT FALSE, #El SP debe cambiar el estado a true para ponerlo activo.
   PRIMARY KEY (id), 
   CONSTRAINT fk_instituciones_tipoinstitucion FOREIGN KEY (idTipoInstitucion) REFERENCES TipoInstitucion (id)
 );
@@ -189,12 +190,15 @@ CREATE TABLE PostulacionesAdminInstitucion (
   id INT NOT NULL AUTO_INCREMENT, 
   fecha DATE NOT NULL, 
   codigoSeguimiento VARCHAR(30) NOT NULL, 
-  idInstitucion INT NULL,                    -- en general NULL; se completa solo si el admin lo es de una institución ya cargada
   idAdministradorInstitucion INT NOT NULL,
   idEstado INT NOT NULL, 
+  nombreInstitucion VARCHAR(100) NOT NULL,
+  cuitInstitucion VARCHAR(11) NOT NULL,
+  rutaConstanciaFiscal VARCHAR(255) NOT NULL,
+  rutaHabilitacion VARCHAR(255) NOT NULL,
+  motivoRechazo VARCHAR(255) NULL,
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postadmin_codigo (codigoSeguimiento), 
-  CONSTRAINT fk_postadmin_institucion FOREIGN KEY (idInstitucion) REFERENCES Instituciones (id), 
   CONSTRAINT fk_postadmin_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id),
   CONSTRAINT fk_postadmin_administrador FOREIGN KEY (idAdministradorInstitucion) REFERENCES AdministradoresInstitucion (id) 
 );

@@ -79,16 +79,17 @@ SELECT pa.id                 AS idPostulacion,
        p.documento           AS docAdministrador,
        u.email               AS emailAdministrador,
        u.activo              AS usuarioActivo,
-       pa.idInstitucion,
-       i.nombre              AS institucion,
-       i.cuit
+       pa.nombreInstitucion,
+       pa.cuitInstitucion,
+       pa.rutaConstanciaFiscal,
+       pa.rutaHabilitacion,
+       pa.motivoRechazo,
+       a.idInstitucion       -- NULL hasta que el administrador cree la institucion
 FROM PostulacionesAdminInstitucion pa
 JOIN EstadosPostulacion ep        ON ep.id = pa.idEstado
 JOIN AdministradoresInstitucion a ON a.id = pa.idAdministradorInstitucion
 JOIN Personas p                   ON p.id = a.idPersona
-JOIN Usuarios u                   ON u.id = a.idUsuario
-LEFT JOIN Instituciones i         ON i.id = pa.idInstitucion;
-
+JOIN Usuarios u                   ON u.id = a.idUsuario;
 -- ==============================================================================
 -- ==============================================================================
 -- ==============================================================================
@@ -180,6 +181,7 @@ SELECT i.id                  AS idInstitucion,
        i.latitud,
        i.longitud,
        i.descripcion,
+       i.estado,
        i.idTipoInstitucion,
        ti.tipoInstitucion,
        d.movilidad,

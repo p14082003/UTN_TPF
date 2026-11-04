@@ -66,7 +66,8 @@ INSERT INTO NivelesEscolares (id, descripcion) VALUES
 --    11-19 administradores
 --    20-31 alumnos menores
 --    32    administrador nuevo, todavia sin institucion (solicitud pendiente)
---    33    segundo administrador de una institucion que ya existe (pendiente)
+--    33    administradora adicional de una institucion que ya existe (la 3),
+--          dada de alta por un administrador activo (sin solicitud)
 -- ---------------------------------------------------------------------
 
 INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimiento) VALUES
@@ -113,6 +114,8 @@ INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimient
 --    y otra como administradora (14), cada una con su email (UNIQUE).
 --    Tipos: 1 Responsable, 2 Administrador, 3 DevCo. Los usuarios DevCo
 --    (equipo de desarrollo) no tienen Persona ni fila en otra tabla.
+--    El usuario 22 (administrador adicional) esta activo porque lo creo
+--    un administrador ya activo, sin pasar por DevCo.
 -- ---------------------------------------------------------------------
 
 INSERT INTO Usuarios (id, usuario, clave, email, activo, idTipoUsuario) VALUES
@@ -137,45 +140,47 @@ INSERT INTO Usuarios (id, usuario, clave, email, activo, idTipoUsuario) VALUES
   (19, 'lsosa',       'test1234', 'lsosa@mail.test', TRUE,  2),
   (20, 'arojas',      'test1234', 'arojas@mail.test', TRUE,  2),
   (21, 'rvillalba',   'test1234', 'rvillalba@mail.test', FALSE, 2),
-  (22, 'cmontenegro', 'test1234', 'cmontenegro@mail.test', FALSE, 2),
+  (22, 'cmontenegro', 'test1234', 'cmontenegro@mail.test', TRUE,  2),
   (23, 'devco.admin', 'test1234', 'devco.admin@devco.test', TRUE,  3),
   (24, 'devco.dev',   'test1234', 'devco.dev@devco.test', TRUE,  3);
 
 -- ---------------------------------------------------------------------
 -- 4. Instituciones (10) - zona norte del GBA
+--    estado = TRUE: institucion habilitada y visible para las familias
+--    (la columna nace en FALSE por defecto, por eso va explicita).
 -- ---------------------------------------------------------------------
 
-INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion) VALUES
+INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion, estado) VALUES
   (1,  'Jardín de Infantes N° 902 Arco Iris',      '30710000014', 'Av. Hipólito Yrigoyen 1250, Gral. Pacheco', 'jardin902@instired.test',                  -34.4586, -58.6431,
    'Jardín de infantes público con salas de 4 y 5 años. Propuesta centrada en el juego y la expresión artística, con patio propio y talleres de música semanales.',
-   1),
+   1, TRUE),
   (2,  'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022','Calle Cazón 456, Tigre',                      'primaria14@instired.test',                -34.4264, -58.5791,
    'Escuela primaria de jornada simple con doble turno. Proyecto institucional basado en la lectoescritura y la convivencia, con biblioteca y huerta escolar.',
-   2),
+   2, TRUE),
   (3,  'Escuela Secundaria N° 6 Manuel Belgrano',  '30710000030', 'Av. Constituyentes 2300, Don Torcuato',    'secundaria6@instired.test',               -34.4999, -58.6169,
    'Escuela secundaria con orientación en ciencias naturales. Cuenta con laboratorio equipado, sala de informática y programa de tutorías para ingresantes.',
-   3),
+   3, TRUE),
   (4,  'Instituto de Idiomas Lingua Norte',        '30710000049', 'Av. San Martín 800, Garín',                'info@linguanorte.instired.test',          -34.4256, -58.7447,
    'Instituto de idiomas con cursos para niños y adultos en inglés, portugués, francés e italiano. Grupos reducidos y preparación para exámenes internacionales.',
-   4),
+   4, TRUE),
   (5,  'Jardín Maternal Pequeños Pasos',           '30710000057', 'Calle Moreno 345, San Fernando',           'maternal@pequenospasos.instired.test',    -34.4421, -58.5594,
    'Jardín maternal con salas desde los 45 días hasta los 2 años. Personal especializado en primera infancia y comunicación diaria con las familias.',
-   1),
+   1, TRUE),
   (6,  'Escuela Primaria Bilingüe St. Patrick',    '30710000065', 'Av. del Libertador 3100, Boulogne',        'admisiones@stpatrick.instired.test',      -34.4950, -58.5550,
    'Escuela primaria bilingüe con enseñanza en español e inglés en jornada completa. Biblioteca bilingüe, campo de deportes y orientación a la inclusión.',
-   2),
+   2, TRUE),
   (7,  'Instituto Técnico San Martín',             '30710000073', 'Colectora Panamericana 4200, Benavídez',   'secretaria@itsanmartin.instired.test',    -34.4097, -58.6857,
    'Instituto técnico con orientación en electrónica y programación. Talleres con prácticas profesionalizantes y convenios con empresas de la zona.',
-   3),
+   3, TRUE),
   (8,  'Escuela Primaria N° 31 Juana Manso',       '30710000081', 'Calle Belgrano 120, Escobar',              'primaria31@instired.test',                -34.3496, -58.7918,
    'Escuela primaria de barrio con trayectoria de más de 40 años. Sala de computación, comedor escolar y actividades deportivas después del horario de clase.',
-   2),
+   2, TRUE),
   (9,  'Jardín de Infantes N° 915 Mundo Mágico',   '30710000103', 'Av. Eva Perón 980, Del Viso',              'jardin915@instired.test',                 -34.4559, -58.7992,
    'Jardín de infantes con salas de 3 a 5 años. Cuenta con equipo de apoyo a la integración y espacios sensoriales para el trabajo con niños con discapacidad.',
-   1),
+   1, TRUE),
   (10, 'Escuela Secundaria para Adultos N° 703',   '30710000111', 'Av. Hipólito Yrigoyen 1800, Gral. Pacheco','adultos703@instired.test',                -34.4540, -58.6380,
    'Escuela secundaria para jóvenes y adultos en turno noche. Plan de tres años con tutorías, régimen de asistencia flexible y orientación laboral.',
-   3);
+   3, TRUE);
 
 -- Discapacidades: 1 fila por institucion (TRUE = la institucion cuenta con
 -- acceso o apoyo para esa condicion). El id coincide con Instituciones.id.
@@ -262,6 +267,9 @@ INSERT INTO Responsables (id, idPersona, idUsuario) VALUES
   (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
   (6, 6, 6), (7, 7, 7), (8, 8, 8), (9, 9, 9), (10, 10, 10);
 
+--    Administrador 11: nuevo, sin institucion (solicitud pendiente).
+--    Administrador 12: adicional de la institucion 3, creado por un
+--    administrador activo (no tiene solicitud).
 INSERT INTO AdministradoresInstitucion (id, idPersona, idUsuario, idInstitucion) VALUES
   (1,  11, 11, 1),
   (2,  12, 12, 2),
@@ -274,7 +282,7 @@ INSERT INTO AdministradoresInstitucion (id, idPersona, idUsuario, idInstitucion)
   (9,  18, 19, 9),
   (10, 19, 20, 10),
   (11, 32, 21, NULL),
-  (12, 33, 22, NULL);
+  (12, 33, 22, 3);
 
 -- Un solo responsable por alumno. El alumno 8 (Marcos) no tiene ninguno: es su propio autogestor.
 -- Roles: 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo (en este seed no se usa el 3).
@@ -319,38 +327,55 @@ INSERT INTO Postulaciones (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEs
   (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5);
 
 -- ---------------------------------------------------------------------
--- 8. PostulacionesAdminInstitucion (13): solicitudes de alta de administrador
+-- 8. PostulacionesAdminInstitucion (12): solicitudes de alta de administrador
 --    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados.
---    - Lo normal es idInstitucion NULL: el administrador se postula primero
---      como usuario y recien cuando DevCo lo acepta carga su institucion.
---      Por eso las aceptadas (1 a 8, 10 y 11) quedan con NULL; el vinculo
---      con la institucion queda en AdministradoresInstitucion.idInstitucion.
---    - 9: rechazada por DevCo (solicitud mal armada). El administrador 10
---      la volvio a enviar y es la 11.
+--    - El administrador se postula primero como usuario y declara el nombre
+--      y el CUIT de su institucion junto con dos documentos (constancia
+--      fiscal y habilitacion). DevCo los compara a mano y recien cuando
+--      acepta, el administrador carga la institucion. Por eso la tabla no
+--      tiene idInstitucion: el vinculo queda en
+--      AdministradoresInstitucion.idInstitucion.
+--    - En las aceptadas, nombreInstitucion y cuitInstitucion coinciden con
+--      los de la fila de Instituciones que se creo despues.
+--    - Las rutas son nombres de archivo ficticios: no existen en disco.
+--    - 9: rechazada por DevCo (con motivo). El administrador 10 la volvio
+--      a enviar y es la 11 (fila nueva; la 9 conserva su motivo).
 --    - 12: pendiente del administrador 11 (usuario inactivo y sin
---      institucion todavia).
---    - 13: unica con idInstitucion informado. Pendiente del administrador 12,
---      segundo administrador de una institucion que ya existe (la 3): la
---      solicitud ya nombra la institucion elegida, pero el administrador
---      todavia no esta vinculado.
+--      institucion todavia; la institucion declarada aun no existe).
 --    - El administrador 8 (usuario inactivo) es un admin dado de baja
 --      despues de ser aceptado.
+--    - Los administradores adicionales (como el 12) no tienen solicitud, 
+--      los crea un administrador activo y quedan activos de inmediato
 -- ---------------------------------------------------------------------
 
-INSERT INTO PostulacionesAdminInstitucion (id, fecha, codigoSeguimiento, idInstitucion, idAdministradorInstitucion, idEstado) VALUES
-  (1,  '2025-09-08', 'PAI-20250908-0001', NULL, 1,  3),
-  (2,  '2025-09-10', 'PAI-20250910-0002', NULL, 2,  3),
-  (3,  '2025-09-15', 'PAI-20250915-0003', NULL, 3,  3),
-  (4,  '2025-09-22', 'PAI-20250922-0004', NULL, 6,  3),
-  (5,  '2025-10-01', 'PAI-20251001-0005', NULL, 5,  3),
-  (6,  '2025-10-06', 'PAI-20251006-0006', NULL, 7,  3),
-  (7,  '2025-10-20', 'PAI-20251020-0007', NULL, 8,  3),
-  (8,  '2025-11-14', 'PAI-20251114-0008', NULL, 9,  3),
-  (9,  '2025-12-05', 'PAI-20251205-0009', NULL, 10, 4),
-  (10, '2025-12-18', 'PAI-20251218-0010', NULL, 4,  3),
-  (11, '2026-01-20', 'PAI-20260120-0011', NULL, 10, 3),
-  (12, '2026-10-29', 'PAI-20261029-0012', NULL, 11, 1),
-  (13, '2026-10-30', 'PAI-20261030-0013', 3,    12, 1);
+INSERT INTO PostulacionesAdminInstitucion
+  (id, fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado,
+   nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, motivoRechazo) VALUES
+  (1,  '2025-09-08', 'PAI-20250908-0001', 1,  3,
+   'Jardín de Infantes N° 902 Arco Iris',        '30710000014', 'constancia_inst1.pdf',  'habilitacion_inst1.pdf',  NULL),
+  (2,  '2025-09-10', 'PAI-20250910-0002', 2,  3,
+   'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022', 'constancia_inst2.pdf',  'habilitacion_inst2.pdf',  NULL),
+  (3,  '2025-09-15', 'PAI-20250915-0003', 3,  3,
+   'Escuela Secundaria N° 6 Manuel Belgrano',    '30710000030', 'constancia_inst3.pdf',  'habilitacion_inst3.pdf',  NULL),
+  (4,  '2025-09-22', 'PAI-20250922-0004', 6,  3,
+   'Escuela Primaria Bilingüe St. Patrick',      '30710000065', 'constancia_inst6.pdf',  'habilitacion_inst6.pdf',  NULL),
+  (5,  '2025-10-01', 'PAI-20251001-0005', 5,  3,
+   'Jardín Maternal Pequeños Pasos',             '30710000057', 'constancia_inst5.pdf',  'habilitacion_inst5.pdf',  NULL),
+  (6,  '2025-10-06', 'PAI-20251006-0006', 7,  3,
+   'Instituto Técnico San Martín',               '30710000073', 'constancia_inst7.pdf',  'habilitacion_inst7.pdf',  NULL),
+  (7,  '2025-10-20', 'PAI-20251020-0007', 8,  3,
+   'Escuela Primaria N° 31 Juana Manso',         '30710000081', 'constancia_inst8.pdf',  'habilitacion_inst8.pdf',  NULL),
+  (8,  '2025-11-14', 'PAI-20251114-0008', 9,  3,
+   'Jardín de Infantes N° 915 Mundo Mágico',     '30710000103', 'constancia_inst9.pdf',  'habilitacion_inst9.pdf',  NULL),
+  (9,  '2025-12-05', 'PAI-20251205-0009', 10, 4,
+   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v1.pdf', 'habilitacion_inst10_v1.pdf',
+   'La constancia fiscal no es legible y no se puede verificar el CUIT.'),
+  (10, '2025-12-18', 'PAI-20251218-0010', 4,  3,
+   'Instituto de Idiomas Lingua Norte',          '30710000049', 'constancia_inst4.pdf',  'habilitacion_inst4.pdf',  NULL),
+  (11, '2026-01-20', 'PAI-20260120-0011', 10, 3,
+   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v2.pdf', 'habilitacion_inst10_v2.pdf', NULL),
+  (12, '2026-10-29', 'PAI-20261029-0012', 11, 1,
+   'Instituto Nuevo Horizonte',                  '30710000120', 'constancia_nueva1.pdf', 'habilitacion_nueva1.pdf', NULL);
 
 -- ---------------------------------------------------------------------
 -- 9. Resenias (8): cada una la escribe un responsable con un alumno
@@ -385,7 +410,7 @@ INSERT INTO Resenias (id, calificacion, comentario, respuestaInstitucion, fecha,
    '2026-08-05', 7, 8);
 
 -- ---------------------------------------------------------------------
--- 10. Telefonos (16). Un telefono puede tener mas de un dueno:
+-- 10. Telefonos (17). Un telefono puede tener mas de un dueno:
 --    el 4 es de la institucion 4 y del administrador 4; el 16 es el
 --    celular de Gabriela como administradora 4 y como responsable 7.
 -- ---------------------------------------------------------------------
