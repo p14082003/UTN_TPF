@@ -336,7 +336,7 @@ INSERT INTO PostulacionesAlumnos (id, fecha, codigoSeguimiento, idCurso, idAlumn
 --       y ese es el motivo de rechazo.
 -- ---------------------------------------------------------------------
 
-INSERT INTO DocumentosPostulacion (id, idPostulacion, descripcion, ruta) VALUES
+INSERT INTO DocumentosPostulacion (id, idPostulacionAlumnos, descripcion, ruta) VALUES
   (1, 1,  'DNI del alumno',          'post1_dni.pdf'),
   (2, 1,  'Partida de nacimiento',   'post1_partida.pdf'),
   (3, 12, 'DNI del alumno',          'post12_dni.pdf'),

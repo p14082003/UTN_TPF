@@ -55,6 +55,7 @@
     <Compile Include="NivelEscolar.cs" />
     <Compile Include="Persona.cs" />
     <Compile Include="PostulacionAlumno.cs" />
+    <Compile Include="PostulacionesAdminInstitucion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resenia.cs" />
     <Compile Include="Responsable.cs" />

@@ -194,7 +194,7 @@ CREATE TABLE DocumentosPostulacion (
   descripcion VARCHAR(100) NOT NULL, 		#QUE DOCUMENTO ES: DNI del alumno, partida de nacimiento, certificado de estudios
   ruta VARCHAR(255) NOT NULL, 
   PRIMARY KEY (id), 
-CONSTRAINT fk_docpostulacion_postulacion FOREIGN KEY (idPostulacionAlumnos) REFERENCES PostulacionesAlumnos (id)
+  CONSTRAINT fk_docpostulacion_postulacion FOREIGN KEY (idPostulacionAlumnos) REFERENCES PostulacionesAlumnos (id)
 );
 
 CREATE TABLE PostulacionesAdminInstitucion (
