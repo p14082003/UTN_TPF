@@ -17,6 +17,7 @@ namespace Dominio
         public string CuitInstitucion { get; set; }
         public string RutaConstanciaFiscal { get; set; }
         public string RutaHabilitacion { get; set; }
+        public string RutaConstanciaLaboral { get; set; }
         public string MotivoRechazo { get; set; }
 
     }

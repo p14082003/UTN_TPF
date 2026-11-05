@@ -22,7 +22,9 @@ LEFT JOIN ResponsablesPorAlumno rpa ON rpa.idResponsable = r.id
 LEFT JOIN Alumnos a                 ON a.id = rpa.idAlumno
 LEFT JOIN Personas pa               ON pa.id = a.idPersona
 LEFT JOIN Roles ro                  ON ro.id = rpa.idRol
-LEFT JOIN Cursos c                  ON c.id = a.idCurso
+LEFT JOIN PostulacionesAlumnos po   ON po.idAlumno = a.id
+                                   AND po.idEstado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado')
+LEFT JOIN Cursos c                  ON c.id = po.idCurso
 LEFT JOIN Instituciones i           ON i.id = c.idInstitucion
 WHERE rpa.id IS NOT NULL
    OR NOT EXISTS (SELECT 1
@@ -41,7 +43,9 @@ FROM Responsables r
 JOIN Personas pr          ON pr.id = r.idPersona
 JOIN Usuarios u           ON u.id = r.idUsuario
 JOIN Alumnos a            ON a.idPersona = r.idPersona
-LEFT JOIN Cursos c        ON c.id = a.idCurso
+LEFT JOIN PostulacionesAlumnos po ON po.idAlumno = a.id
+                                 AND po.idEstado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado')
+LEFT JOIN Cursos c        ON c.id = po.idCurso
 LEFT JOIN Instituciones i ON i.id = c.idInstitucion
 WHERE NOT EXISTS (SELECT 1 FROM ResponsablesPorAlumno y WHERE y.idAlumno = a.id);
 
@@ -83,6 +87,7 @@ SELECT pa.id                 AS idPostulacion,
        pa.cuitInstitucion,
        pa.rutaConstanciaFiscal,
        pa.rutaHabilitacion,
+       pa.rutaConstanciaLaboral,
        pa.motivoRechazo,
        a.idInstitucion       -- NULL hasta que el administrador cree la institucion
 FROM PostulacionesAdminInstitucion pa

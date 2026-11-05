@@ -50,10 +50,9 @@ INSERT INTO Turnos (id, descripcion) VALUES
 
 INSERT INTO EstadosPostulacion (id, descripcion) VALUES
   (1, 'Pendiente'),
-  (2, 'En revisión'),
-  (3, 'Aceptada'),
-  (4, 'Rechazada'),
-  (5, 'Lista de espera');
+  (2, 'Aceptado'),
+  (3, 'Confirmado'),
+  (4, 'Rechazado');
 
 INSERT INTO NivelesEscolares (id, descripcion) VALUES
   (1, 'Preescolar'),
@@ -116,33 +115,34 @@ INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimient
 --    (equipo de desarrollo) no tienen Persona ni fila en otra tabla.
 --    El usuario 22 (administrador adicional) esta activo porque lo creo
 --    un administrador ya activo, sin pasar por DevCo.
+--    No hay nombre de usuario: se ingresa con el email (UNIQUE).
 -- ---------------------------------------------------------------------
 
-INSERT INTO Usuarios (id, usuario, clave, email, activo, idTipoUsuario) VALUES
-  (1,  'lbenitez',    'test1234', 'lbenitez@mail.test', TRUE,  1),
-  (2,  'cbenitez',    'test1234', 'cbenitez@mail.test', TRUE,  1),
-  (3,  'aruiz',       'test1234', 'aruiz@mail.test', TRUE,  1),
-  (4,  'pfernandez',  'test1234', 'pfernandez@mail.test', TRUE,  1),
-  (5,  'mdominguez',  'test1234', 'mdominguez@mail.test', TRUE,  1),
-  (6,  'macosta',     'test1234', 'macosta@mail.test', TRUE,  1),
-  (7,  'gtorres',     'test1234', 'gtorres@mail.test', TRUE,  1),
-  (8,  'rsilva',      'test1234', 'rsilva@mail.test', FALSE, 1),
-  (9,  'jgomez',      'test1234', 'jgomez@mail.test', TRUE,  1),
-  (10, 'vcastro',     'test1234', 'vcastro@mail.test', TRUE,  1),
-  (11, 'smaidana',    'test1234', 'smaidana@mail.test', TRUE,  2),
-  (12, 'rsalinas',    'test1234', 'rsalinas@mail.test', TRUE,  2),
-  (13, 'mperalta',    'test1234', 'mperalta@mail.test', TRUE,  2),
-  (14, 'gtorres.adm', 'test1234', 'gtorres.adm@mail.test', TRUE,  2),
-  (15, 'nocampo',     'test1234', 'nocampo@mail.test', TRUE,  2),
-  (16, 'dquiroga',    'test1234', 'dquiroga@mail.test', TRUE,  2),
-  (17, 'vluna',       'test1234', 'vluna@mail.test', TRUE,  2),
-  (18, 'hgimenez',    'test1234', 'hgimenez@mail.test', FALSE, 2),
-  (19, 'lsosa',       'test1234', 'lsosa@mail.test', TRUE,  2),
-  (20, 'arojas',      'test1234', 'arojas@mail.test', TRUE,  2),
-  (21, 'rvillalba',   'test1234', 'rvillalba@mail.test', FALSE, 2),
-  (22, 'cmontenegro', 'test1234', 'cmontenegro@mail.test', TRUE,  2),
-  (23, 'devco.admin', 'test1234', 'devco.admin@devco.test', TRUE,  3),
-  (24, 'devco.dev',   'test1234', 'devco.dev@devco.test', TRUE,  3);
+INSERT INTO Usuarios (id, clave, email, activo, idTipoUsuario) VALUES
+  (1,  'test1234', 'lbenitez@mail.test', TRUE,  1),
+  (2,  'test1234', 'cbenitez@mail.test', TRUE,  1),
+  (3,  'test1234', 'aruiz@mail.test', TRUE,  1),
+  (4,  'test1234', 'pfernandez@mail.test', TRUE,  1),
+  (5,  'test1234', 'mdominguez@mail.test', TRUE,  1),
+  (6,  'test1234', 'macosta@mail.test', TRUE,  1),
+  (7,  'test1234', 'gtorres@mail.test', TRUE,  1),
+  (8,  'test1234', 'rsilva@mail.test', FALSE, 1),
+  (9,  'test1234', 'jgomez@mail.test', TRUE,  1),
+  (10, 'test1234', 'vcastro@mail.test', TRUE,  1),
+  (11, 'test1234', 'smaidana@mail.test', TRUE,  2),
+  (12, 'test1234', 'rsalinas@mail.test', TRUE,  2),
+  (13, 'test1234', 'mperalta@mail.test', TRUE,  2),
+  (14, 'test1234', 'gtorres.adm@mail.test', TRUE,  2),
+  (15, 'test1234', 'nocampo@mail.test', TRUE,  2),
+  (16, 'test1234', 'dquiroga@mail.test', TRUE,  2),
+  (17, 'test1234', 'vluna@mail.test', TRUE,  2),
+  (18, 'test1234', 'hgimenez@mail.test', FALSE, 2),
+  (19, 'test1234', 'lsosa@mail.test', TRUE,  2),
+  (20, 'test1234', 'arojas@mail.test', TRUE,  2),
+  (21, 'test1234', 'rvillalba@mail.test', FALSE, 2),
+  (22, 'test1234', 'cmontenegro@mail.test', TRUE,  2),
+  (23, 'test1234', 'devco.admin@devco.test', TRUE,  3),
+  (24, 'test1234', 'devco.dev@devco.test', TRUE,  3);
 
 -- ---------------------------------------------------------------------
 -- 4. Instituciones (10) - zona norte del GBA
@@ -204,8 +204,11 @@ INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma) VALUES
   (8, 1), (9, 1), (10, 1);
 
 -- ---------------------------------------------------------------------
--- 5. Cursos (14). inscriptos arranca en 0 y se recalcula al final.
---    Los cursos 12 y 13 son del ciclo 2027 (postulaciones en curso).
+-- 5. Cursos (15). inscriptos arranca en 0 y se recalcula al final
+--    (cuenta las postulaciones Confirmado de cada curso).
+--    Los cursos 12, 13 y 15 son del ciclo 2027 (postulaciones en curso).
+--    El curso 15 tiene capacidad 1 a proposito: sirve para probar el caso
+--    de cupo completo.
 -- ---------------------------------------------------------------------
 
 INSERT INTO Cursos (id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos) VALUES
@@ -222,7 +225,8 @@ INSERT INTO Cursos (id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, niv
   (11, 7,  1, 2026, 3, 3,    NULL,               'B',                 30, 0),
   (12, 8,  1, 2027, 2, 1,    NULL,               'A',                 26, 0),
   (13, 9,  2, 2027, 1, NULL, 'Sala de 3',        'Verde',             18, 0),
-  (14, 10, 3, 2026, 3, 1,    NULL,               '1',                 25, 0);
+  (14, 10, 3, 2026, 3, 1,    NULL,               '1',                 25, 0),
+  (15, 9,  1, 2027, 1, NULL, 'Sala de 3',        'Naranja',           1,  0);
 
 INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
   (1,  1,  'https://instired.test/img/inst1/fachada.jpg',      'Fachada del jardín'),
@@ -244,25 +248,26 @@ INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
 -- 6. Alumnos (13), Responsables (10), Administradores (12), ResponsablesPorAlumno (12)
 --    Alumno 8 es Marcos (adulto, secundaria nocturna) y a la vez
 --    responsable de Emma; no tiene responsable propio a proposito (es su
---    propio autogestor, mayor de edad). Alumnos 12 y 13 todavia no tienen
---    curso asignado.
---    La institucion de un alumno se obtiene por Alumnos.idCurso -> Cursos.
+--    propio autogestor, mayor de edad).
+--    Un alumno no tiene curso propio: sus cursos son las postulaciones en
+--    estado Confirmado (PostulacionesAlumnos -> Cursos -> Instituciones).
+--    Puede tener varios (el alumno 3 tiene dos).
 -- ---------------------------------------------------------------------
 
-INSERT INTO Alumnos (id, idPersona, idCurso) VALUES
-  (1,  20, 1),
-  (2,  21, 2),
-  (3,  22, 3),
-  (4,  23, 4),
-  (5,  24, 5),
-  (6,  25, 6),
-  (7,  26, 7),
-  (8,  6, 14),
-  (9,  27, 9),
-  (10, 28, 10),
-  (11, 29, 11),
-  (12, 30, NULL),
-  (13, 31, NULL);
+INSERT INTO Alumnos (id, idPersona) VALUES
+  (1,  20),
+  (2,  21),
+  (3,  22),
+  (4,  23),
+  (5,  24),
+  (6,  25),
+  (7,  26),
+  (8,  6),
+  (9,  27),
+  (10, 28),
+  (11, 29),
+  (12, 30),
+  (13, 31);
 
 INSERT INTO Responsables (id, idPersona, idUsuario) VALUES
   (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
@@ -304,11 +309,19 @@ INSERT INTO ResponsablesPorAlumno (id, idResponsable, idAlumno, idRol) VALUES
   (12, 10, 13, 2);
 
 -- ---------------------------------------------------------------------
--- 7. Postulaciones de alumnos a cursos (15)
---    Estados: 1 Pendiente, 2 En revision, 3 Aceptada, 4 Rechazada,
---    5 Lista de espera. Cada alumno con curso asignado tiene su
---    postulacion aceptada a ese mismo curso.
---    motivoRechazo solo se completa en las rechazadas (la 14).
+-- 7. Postulaciones de alumnos a cursos (18)
+--    Estados: 1 Pendiente (espera a la escuela), 2 Aceptado (la escuela
+--    acepto y espera que el responsable confirme), 3 Confirmado (el
+--    responsable confirmo: recien ahi se ocupa un lugar del curso),
+--    4 Rechazado.
+--    motivoRechazo se completa en las rechazadas.
+--    - 1 a 11: confirmadas (los alumnos que ya cursan).
+--    - 12, 13: pendientes de respuesta de la escuela.
+--    - 14: rechazada por la escuela (falta documentacion).
+--    - 15: aceptada por la escuela, esperando la confirmacion del responsable.
+--    - 16: el alumno 3 cursa tambien un segundo curso (confirmada).
+--    - 17 y 18: curso 15 (cupo 1). La 17 se confirmo y completo el cupo; la 18
+--      estaba aceptada y se rechazo sola por cupo completo.
 -- ---------------------------------------------------------------------
 
 INSERT INTO PostulacionesAlumnos (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo) VALUES
@@ -323,10 +336,13 @@ INSERT INTO PostulacionesAlumnos (id, fecha, codigoSeguimiento, idCurso, idAlumn
   (9,  '2025-12-15', 'PST-20251215-0009', 9,  9,  3, NULL),
   (10, '2025-11-28', 'PST-20251128-0010', 10, 10, 3, NULL),
   (11, '2025-12-09', 'PST-20251209-0011', 11, 11, 3, NULL),
-  (12, '2026-10-02', 'PST-20261002-0012', 12, 12, 2, NULL),
+  (12, '2026-10-02', 'PST-20261002-0012', 12, 12, 1, NULL),
   (13, '2026-10-05', 'PST-20261005-0013', 13, 13, 1, NULL),
   (14, '2026-09-18', 'PST-20260918-0014', 11, 6,  4, 'Falta la partida de nacimiento del alumno.'),
-  (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  5, NULL);
+  (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  2, NULL),
+  (16, '2026-02-25', 'PST-20260225-0016', 7,  3,  3, NULL),
+  (17, '2026-10-20', 'PST-20261020-0017', 15, 13, 3, NULL),
+  (18, '2026-10-12', 'PST-20261012-0018', 15, 9,  4, 'Cupo completo: el curso alcanzó su capacidad antes de que el responsable confirmara.');
 
 -- ---------------------------------------------------------------------
 -- 7b. DocumentosPostulacion (9): archivos que adjunta el responsable al
@@ -349,10 +365,11 @@ INSERT INTO DocumentosPostulacion (id, idPostulacionAlumnos, descripcion, ruta) 
   
 -- ---------------------------------------------------------------------
 -- 8. PostulacionesAdminInstitucion (12): solicitudes de alta de administrador
---    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados.
+--    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados
+--    (Pendiente; Confirmado cuando DevCo la acepta; Rechazado).
 --    - El administrador se postula primero como usuario y declara el nombre
---      y el CUIT de su institucion junto con dos documentos (constancia
---      fiscal y habilitacion). DevCo los compara a mano y recien cuando
+--      y el CUIT de su institucion junto con tres documentos (constancia
+--      fiscal, habilitacion y constancia laboral). DevCo los compara a mano y recien cuando
 --      acepta, el administrador carga la institucion. Por eso la tabla no
 --      tiene idInstitucion: el vinculo queda en
 --      AdministradoresInstitucion.idInstitucion.
@@ -371,32 +388,32 @@ INSERT INTO DocumentosPostulacion (id, idPostulacionAlumnos, descripcion, ruta) 
 
 INSERT INTO PostulacionesAdminInstitucion
   (id, fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado,
-   nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, motivoRechazo) VALUES
+   nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, rutaConstanciaLaboral, motivoRechazo) VALUES
   (1,  '2025-09-08', 'PAI-20250908-0001', 1,  3,
-   'Jardín de Infantes N° 902 Arco Iris',        '30710000014', 'constancia_inst1.pdf',  'habilitacion_inst1.pdf',  NULL),
+   'Jardín de Infantes N° 902 Arco Iris',        '30710000014', 'constancia_inst1.pdf',  'habilitacion_inst1.pdf', 'laboral_inst1.pdf',  NULL),
   (2,  '2025-09-10', 'PAI-20250910-0002', 2,  3,
-   'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022', 'constancia_inst2.pdf',  'habilitacion_inst2.pdf',  NULL),
+   'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022', 'constancia_inst2.pdf',  'habilitacion_inst2.pdf', 'laboral_inst2.pdf',  NULL),
   (3,  '2025-09-15', 'PAI-20250915-0003', 3,  3,
-   'Escuela Secundaria N° 6 Manuel Belgrano',    '30710000030', 'constancia_inst3.pdf',  'habilitacion_inst3.pdf',  NULL),
+   'Escuela Secundaria N° 6 Manuel Belgrano',    '30710000030', 'constancia_inst3.pdf',  'habilitacion_inst3.pdf', 'laboral_inst3.pdf',  NULL),
   (4,  '2025-09-22', 'PAI-20250922-0004', 6,  3,
-   'Escuela Primaria Bilingüe St. Patrick',      '30710000065', 'constancia_inst6.pdf',  'habilitacion_inst6.pdf',  NULL),
+   'Escuela Primaria Bilingüe St. Patrick',      '30710000065', 'constancia_inst6.pdf',  'habilitacion_inst6.pdf', 'laboral_inst6.pdf',  NULL),
   (5,  '2025-10-01', 'PAI-20251001-0005', 5,  3,
-   'Jardín Maternal Pequeños Pasos',             '30710000057', 'constancia_inst5.pdf',  'habilitacion_inst5.pdf',  NULL),
+   'Jardín Maternal Pequeños Pasos',             '30710000057', 'constancia_inst5.pdf',  'habilitacion_inst5.pdf', 'laboral_inst5.pdf',  NULL),
   (6,  '2025-10-06', 'PAI-20251006-0006', 7,  3,
-   'Instituto Técnico San Martín',               '30710000073', 'constancia_inst7.pdf',  'habilitacion_inst7.pdf',  NULL),
+   'Instituto Técnico San Martín',               '30710000073', 'constancia_inst7.pdf',  'habilitacion_inst7.pdf', 'laboral_inst7.pdf',  NULL),
   (7,  '2025-10-20', 'PAI-20251020-0007', 8,  3,
-   'Escuela Primaria N° 31 Juana Manso',         '30710000081', 'constancia_inst8.pdf',  'habilitacion_inst8.pdf',  NULL),
+   'Escuela Primaria N° 31 Juana Manso',         '30710000081', 'constancia_inst8.pdf',  'habilitacion_inst8.pdf', 'laboral_inst8.pdf',  NULL),
   (8,  '2025-11-14', 'PAI-20251114-0008', 9,  3,
-   'Jardín de Infantes N° 915 Mundo Mágico',     '30710000103', 'constancia_inst9.pdf',  'habilitacion_inst9.pdf',  NULL),
+   'Jardín de Infantes N° 915 Mundo Mágico',     '30710000103', 'constancia_inst9.pdf',  'habilitacion_inst9.pdf', 'laboral_inst9.pdf',  NULL),
   (9,  '2025-12-05', 'PAI-20251205-0009', 10, 4,
-   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v1.pdf', 'habilitacion_inst10_v1.pdf',
+   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v1.pdf', 'habilitacion_inst10_v1.pdf', 'laboral_inst10_v1.pdf',
    'La constancia fiscal no es legible y no se puede verificar el CUIT.'),
   (10, '2025-12-18', 'PAI-20251218-0010', 4,  3,
-   'Instituto de Idiomas Lingua Norte',          '30710000049', 'constancia_inst4.pdf',  'habilitacion_inst4.pdf',  NULL),
+   'Instituto de Idiomas Lingua Norte',          '30710000049', 'constancia_inst4.pdf',  'habilitacion_inst4.pdf', 'laboral_inst4.pdf',  NULL),
   (11, '2026-01-20', 'PAI-20260120-0011', 10, 3,
-   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v2.pdf', 'habilitacion_inst10_v2.pdf', NULL),
+   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v2.pdf', 'habilitacion_inst10_v2.pdf', 'laboral_inst10_v2.pdf', NULL),
   (12, '2026-10-29', 'PAI-20261029-0012', 11, 1,
-   'Instituto Nuevo Horizonte',                  '30710000120', 'constancia_nueva1.pdf', 'habilitacion_nueva1.pdf', NULL);
+   'Instituto Nuevo Horizonte',                  '30710000120', 'constancia_nueva1.pdf', 'habilitacion_nueva1.pdf', 'laboral_nueva1.pdf', NULL);
 
 -- ---------------------------------------------------------------------
 -- 9. Resenias (8): cada una la escribe un responsable con un alumno
@@ -456,9 +473,11 @@ INSERT INTO Telefonos (id, idInstitucion, idAdministrador, idResponsable, telefo
   (17, NULL, NULL, 7,    '+54 9 11 5555-1008');
 
 -- ---------------------------------------------------------------------
--- 11. inscriptos = alumnos realmente asignados a cada curso
+-- 11. inscriptos = postulaciones Confirmado de cada curso
 -- ---------------------------------------------------------------------
 SET SQL_SAFE_UPDATES = 0;
 UPDATE Cursos c
-SET c.inscriptos = (SELECT COUNT(*) FROM Alumnos a WHERE a.idCurso = c.id);
+SET c.inscriptos = (SELECT COUNT(*) FROM PostulacionesAlumnos p
+                    WHERE p.idCurso = c.id
+                      AND p.idEstado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado'));
 SET SQL_SAFE_UPDATES = 1;

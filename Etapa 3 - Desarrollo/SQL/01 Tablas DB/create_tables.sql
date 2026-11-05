@@ -47,13 +47,11 @@ CREATE TABLE Personas (
 
 CREATE TABLE Usuarios (
   id INT NOT NULL AUTO_INCREMENT, 
-  usuario VARCHAR(50) NOT NULL, 
   clave VARCHAR(255) NOT NULL, 
   email VARCHAR(100) NOT NULL UNIQUE, 
   activo BOOLEAN NOT NULL DEFAULT FALSE, 
   idTipoUsuario TINYINT NOT NULL, 
   PRIMARY KEY (id), 
-  UNIQUE KEY uq_usuarios_usuario (usuario), 
   CONSTRAINT fk_usuarios_tipousuario FOREIGN KEY (idTipoUsuario) REFERENCES TipoUsuario (id)
 );
 
@@ -129,11 +127,9 @@ CREATE TABLE Imagenes (
 CREATE TABLE Alumnos (
   id INT NOT NULL AUTO_INCREMENT, 
   idPersona INT NOT NULL, 
-  idCurso INT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_alumnos_persona (idPersona), 
-  CONSTRAINT fk_alumnos_persona FOREIGN KEY (idPersona) REFERENCES Personas (id), 
-  CONSTRAINT fk_alumnos_curso FOREIGN KEY (idCurso) REFERENCES Cursos (id)
+  CONSTRAINT fk_alumnos_persona FOREIGN KEY (idPersona) REFERENCES Personas (id)
 );
 
 CREATE TABLE Responsables (
@@ -207,6 +203,7 @@ CREATE TABLE PostulacionesAdminInstitucion (
   cuitInstitucion VARCHAR(11) NOT NULL,
   rutaConstanciaFiscal VARCHAR(255) NOT NULL,
   rutaHabilitacion VARCHAR(255) NOT NULL,
+  rutaConstanciaLaboral VARCHAR(255) NOT NULL,
   motivoRechazo VARCHAR(255) NULL,
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postadmin_codigo (codigoSeguimiento), 

@@ -10,7 +10,6 @@ DELIMITER $$
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_Registrar_Responsable$$
 CREATE PROCEDURE sp_Registrar_Responsable(
-    IN p_usuario         VARCHAR(50),
     IN p_clave           VARCHAR(255),
     IN p_email           VARCHAR(100),
     IN p_nombre          VARCHAR(50),
@@ -34,7 +33,6 @@ BEGIN
     END;
 
     -- Limpieza
-    SET p_usuario   = TRIM(p_usuario);
     SET p_clave     = TRIM(p_clave);
     SET p_email     = TRIM(p_email);
     SET p_nombre    = TRIM(p_nombre);
@@ -44,8 +42,8 @@ BEGIN
     SET p_telefono  = TRIM(p_telefono);
 
     -- Validaciones
-    IF p_usuario IS NULL OR p_usuario = '' OR p_clave IS NULL OR p_clave = '' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario y la clave son obligatorios.';
+    IF p_clave IS NULL OR p_clave = '' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La clave es obligatoria.';
     END IF;
 
     IF p_email IS NULL OR p_email = '' THEN
@@ -62,10 +60,6 @@ BEGIN
 
     IF LEFT(p_documento, 1) = '0' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El documento no puede empezar con 0.';
-    END IF;
-
-    IF EXISTS (SELECT 1 FROM Usuarios WHERE usuario = p_usuario) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nombre de usuario ya existe.';
     END IF;
 
     IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
@@ -121,8 +115,8 @@ BEGIN
         SET v_idPersona = LAST_INSERT_ID();
     END IF;
 
-    INSERT INTO Usuarios (usuario, clave, email, activo, idTipoUsuario)
-    VALUES (p_usuario, p_clave, p_email, TRUE, 1);
+    INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
+    VALUES (p_clave, p_email, TRUE, 1);
     SET v_idUsuario = LAST_INSERT_ID();
 
     INSERT INTO Responsables (idPersona, idUsuario)
@@ -144,8 +138,8 @@ END$$
 
 -- ------------------------------------------------------------
 -- 2) sp_Registrar_Alumno
--- Crea Persona (o reutiliza por DNI) + Alumno (sin curso todavia; la
--- institucion se obtiene por el curso) + vinculo en ResponsablesPorAlumno
+-- Crea Persona (o reutiliza por DNI) + Alumno (sin cursos: se vinculan
+-- por sus postulaciones confirmadas) + vinculo en ResponsablesPorAlumno
 -- con su rol.
 -- Solo se reutiliza una Persona existente si es el propio responsable
 -- (autogestor: un adulto que se carga a si mismo). En ese caso NO se crea el
@@ -258,8 +252,8 @@ BEGIN
         SET v_idPersona = LAST_INSERT_ID();
     END IF;
 
-    INSERT INTO Alumnos (idPersona, idCurso)
-    VALUES (v_idPersona, NULL);
+    INSERT INTO Alumnos (idPersona)
+    VALUES (v_idPersona);
     SET v_idAlumno = LAST_INSERT_ID();
 
     IF NOT v_esAutogestor THEN

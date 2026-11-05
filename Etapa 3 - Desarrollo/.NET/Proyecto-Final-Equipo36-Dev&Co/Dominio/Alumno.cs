@@ -9,7 +9,7 @@ namespace Dominio
     public class Alumno : Persona
     {
         public int IdAlumno {  get; set; }
-        public Curso Curso { get; set; }
+        public List<Curso> Cursos { get; set; }
         public List <PostulacionAlumno> Postulaciones { get; set; }
         
     }
