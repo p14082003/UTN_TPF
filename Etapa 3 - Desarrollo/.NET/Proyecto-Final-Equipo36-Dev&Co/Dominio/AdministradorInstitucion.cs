@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Dominio
 {
-    public class AdministradorInstitucion
+    public class AdministradorInstitucion : Persona
     {
-        public int ID { get; set; }
+        public int IdAdministradorInstitucion { get; set; }
         public Usuario Usuario { get; set; }
         public Telefono Telefono { get; set; }
+        public Institucion Institucion { get; set; }
 
     }
 }

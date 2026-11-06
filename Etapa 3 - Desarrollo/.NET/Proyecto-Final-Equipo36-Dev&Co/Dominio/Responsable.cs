@@ -9,11 +9,10 @@ namespace Dominio
 {
     public class Responsable : Persona
     {
-        public int Id { get; set; }
+        public int IdResponsable { get; set; }
         public Usuario Usuario { get; set; }
-        public List <Alumno> Alumnos { get; set; }
-        public Rol Rol { get; set; }
-        public Telefono Telefono    { get; set; }
+        public List <AlumnoACargo> Alumnos { get; set; }
+        public Telefono Telefono { get; set; }
 
     }
 }
