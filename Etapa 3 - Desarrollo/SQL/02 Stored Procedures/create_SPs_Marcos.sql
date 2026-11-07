@@ -110,7 +110,7 @@ BEGIN
   IF v_idPersona IS NOT NULL THEN
     IF EXISTS (SELECT 1 FROM AdministradoresInstitucion WHERE idPersona = v_idPersona) THEN
       SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento. Iniciá sesión para ver tu solicitud.';
+        SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento. Consultá el estado de tu solicitud con el código de seguimiento que te enviamos por mail.';
     END IF;
     SET v_fechaNac = (SELECT fechaNacimiento FROM Personas WHERE id = v_idPersona);
   ELSE
