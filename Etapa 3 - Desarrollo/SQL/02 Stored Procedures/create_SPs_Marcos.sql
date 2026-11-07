@@ -10,7 +10,6 @@ CREATE PROCEDURE sp_AdministradorInstitucion_Registrar(
   IN  p_domicilio            VARCHAR(100),
   IN  p_fechaNacimiento      DATE,
   -- Cuenta
-  IN  p_usuario              VARCHAR(50),
   IN  p_clave                VARCHAR(255),   -- se guarda tal cual llega, ver tema hash
   IN  p_email                VARCHAR(100),
   IN  p_telefono             VARCHAR(30),
@@ -19,6 +18,7 @@ CREATE PROCEDURE sp_AdministradorInstitucion_Registrar(
   IN  p_cuitInstitucion      VARCHAR(11),
   IN  p_rutaConstanciaFiscal VARCHAR(255),
   IN  p_rutaHabilitacion     VARCHAR(255),
+  IN  p_rutaConstanciaLaboral VARCHAR(255),
   -- Seguimiento (lo genera C#, el SP solo lo guarda)
   IN  p_codigoSeguimiento    VARCHAR(30),
   -- Salida
@@ -27,7 +27,7 @@ CREATE PROCEDURE sp_AdministradorInstitucion_Registrar(
 BEGIN
   DECLARE v_idTipoAdministrador TINYINT;
   DECLARE v_idEstadoPendiente   INT;
-  DECLARE v_idEstadoRechazada   INT;
+  DECLARE v_idEstadoRechazado   INT;
   DECLARE v_idPersona           INT;
   DECLARE v_idUsuario           INT;
   DECLARE v_idAdministrador     INT;
@@ -39,7 +39,7 @@ BEGIN
   BEGIN
     ROLLBACK;
     SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Ya existe un registro con esos datos (documento, usuario, email o código de seguimiento).';
+      SET MESSAGE_TEXT = 'Ya existe un registro con esos datos (documento, email o código de seguimiento).';
   END;
 
   -- Cualquier otro error (incluidos los SIGNAL de validación): revierte y relanza
@@ -54,7 +54,6 @@ BEGIN
   SET p_apellido          = TRIM(p_apellido);
   SET p_documento         = TRIM(p_documento);
   SET p_domicilio         = TRIM(p_domicilio);
-  SET p_usuario           = TRIM(p_usuario);
   SET p_email             = LOWER(TRIM(p_email));
   SET p_telefono          = TRIM(p_telefono);
   SET p_nombreInstitucion = TRIM(p_nombreInstitucion);
@@ -63,10 +62,11 @@ BEGIN
   -- 2. Validaciones que no necesitan la base
   IF COALESCE(p_nombre,'') = '' OR COALESCE(p_apellido,'') = '' OR COALESCE(p_documento,'') = ''
      OR COALESCE(p_domicilio,'') = '' OR p_fechaNacimiento IS NULL
-     OR COALESCE(p_usuario,'') = '' OR COALESCE(p_clave,'') = '' OR COALESCE(p_email,'') = ''
+     OR COALESCE(p_clave,'') = '' OR COALESCE(p_email,'') = ''
      OR COALESCE(p_telefono,'') = '' OR COALESCE(p_nombreInstitucion,'') = ''
      OR COALESCE(p_cuitInstitucion,'') = ''
      OR COALESCE(p_rutaConstanciaFiscal,'') = '' OR COALESCE(p_rutaHabilitacion,'') = ''
+     OR COALESCE(p_rutaConstanciaLaboral,'') = ''
      OR COALESCE(p_codigoSeguimiento,'') = '' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
   END IF;
@@ -89,19 +89,15 @@ BEGIN
   -- 3. Catálogos: se buscan por descripción (no por id), igual que en el archivo de INSERTs
   SET v_idTipoAdministrador = (SELECT id FROM TipoUsuario        WHERE descripcion = 'Administrador');
   SET v_idEstadoPendiente   = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
-  SET v_idEstadoRechazada   = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazada');
+  SET v_idEstadoRechazado   = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
 
 -- Validacion DB Cargada con tipos de administrador y estados.
-  IF v_idTipoAdministrador IS NULL OR v_idEstadoPendiente IS NULL OR v_idEstadoRechazada IS NULL THEN
+  IF v_idTipoAdministrador IS NULL OR v_idEstadoPendiente IS NULL OR v_idEstadoRechazado IS NULL THEN
     SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Catálogos incompletos: falta Administrador, Pendiente o Rechazada.';
+      SET MESSAGE_TEXT = 'Catálogos incompletos: falta Administrador, Pendiente o Rechazado.';
   END IF;
 
   -- 4. Validaciones contra la DB
-  IF EXISTS (SELECT 1 FROM Usuarios WHERE usuario = p_usuario) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese nombre de usuario ya está en uso.';
-  END IF;
-
   IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese email ya está registrado.';
   END IF;
@@ -133,7 +129,7 @@ BEGIN
   -- volver a enviar una postulacion en caso de tener una rechazada.
   IF EXISTS (SELECT 1 FROM PostulacionesAdminInstitucion
              WHERE cuitInstitucion = p_cuitInstitucion
-               AND idEstado <> v_idEstadoRechazada) THEN
+               AND idEstado <> v_idEstadoRechazado) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una solicitud en curso o aprobada con ese CUIT.';
   END IF;
 
@@ -146,8 +142,8 @@ BEGIN
     SET v_idPersona = LAST_INSERT_ID();
   END IF;
 
-  INSERT INTO Usuarios (usuario, clave, email, activo, idTipoUsuario)
-  VALUES (p_usuario, p_clave, p_email, FALSE, v_idTipoAdministrador); -- se crea con estado dado de inactivo
+  INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
+  VALUES (p_clave, p_email, FALSE, v_idTipoAdministrador); -- se crea con estado dado de inactivo
   SET v_idUsuario = LAST_INSERT_ID();
 
   INSERT INTO AdministradoresInstitucion (idPersona, idUsuario, idInstitucion)
@@ -159,10 +155,10 @@ BEGIN
 
   INSERT INTO PostulacionesAdminInstitucion
     (fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado,
-     nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, motivoRechazo)
+     nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, rutaConstanciaLaboral, motivoRechazo)
   VALUES
     (v_fecha, p_codigoSeguimiento, v_idAdministrador, v_idEstadoPendiente,
-     p_nombreInstitucion, p_cuitInstitucion, p_rutaConstanciaFiscal, p_rutaHabilitacion, NULL);
+     p_nombreInstitucion, p_cuitInstitucion, p_rutaConstanciaFiscal, p_rutaHabilitacion, p_rutaConstanciaLaboral, NULL);
   SET p_idPostulacion = LAST_INSERT_ID();
 
   COMMIT;

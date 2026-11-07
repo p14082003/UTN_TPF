@@ -11,6 +11,8 @@ namespace Dominio
         public int Id { get; set; }
         public int Calificacion { get; set; }
         public string Comentario { get; set; }
+        public string RespuestaInstitucion { get; set; }
+
         public DateTime Fecha { get; set; }
         public Responsable Responsable { get; set; }
     }

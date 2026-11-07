@@ -13,12 +13,14 @@ namespace Dominio
         public string Cuit { get; set; }
         public string Direccion { get; set; }
         public string Email { get; set;}
+        public string Descripcion { get; set; }
         public double Latitud { get; set; }
         public double Longitud { get; set; }
         public Discapacidad Discapacidad { get; set; }
         public List <Idioma> Idiomas { get; set; }
         public List <Curso> Cursos { get; set; }
         public TipoInstitucion TipoInstitucion { get; set; }
+        public bool Estado {  get; set; }
         public List <AdministradorInstitucion> AdministradoresInstitucion { get; set; }
         public List <Telefono> Telefonos { get; set; }
         public List <Resenia>  Resenias { get; set; }

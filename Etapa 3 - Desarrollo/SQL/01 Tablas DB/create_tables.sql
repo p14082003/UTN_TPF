@@ -47,13 +47,11 @@ CREATE TABLE Personas (
 
 CREATE TABLE Usuarios (
   id INT NOT NULL AUTO_INCREMENT, 
-  usuario VARCHAR(50) NOT NULL, 
   clave VARCHAR(255) NOT NULL, 
   email VARCHAR(100) NOT NULL UNIQUE, 
   activo BOOLEAN NOT NULL DEFAULT FALSE, 
   idTipoUsuario TINYINT NOT NULL, 
   PRIMARY KEY (id), 
-  UNIQUE KEY uq_usuarios_usuario (usuario), 
   CONSTRAINT fk_usuarios_tipousuario FOREIGN KEY (idTipoUsuario) REFERENCES TipoUsuario (id)
 );
 
@@ -77,6 +75,7 @@ CREATE TABLE Discapacidades ( #Hecho aparte de la tabla "Instituciones" por orde
   movilidad BOOL NOT NULL,
   visual BOOL NOT NULL,
   auditiva BOOL NOT NULL,
+  verbal BOOL NOT NULL,
   intelectual BOOL NOT NULL,
   sindromeDown BOOL NOT NULL,
   autismo BOOL NOT NULL,
@@ -128,11 +127,9 @@ CREATE TABLE Imagenes (
 CREATE TABLE Alumnos (
   id INT NOT NULL AUTO_INCREMENT, 
   idPersona INT NOT NULL, 
-  idCurso INT NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_alumnos_persona (idPersona), 
-  CONSTRAINT fk_alumnos_persona FOREIGN KEY (idPersona) REFERENCES Personas (id), 
-  CONSTRAINT fk_alumnos_curso FOREIGN KEY (idCurso) REFERENCES Cursos (id)
+  CONSTRAINT fk_alumnos_persona FOREIGN KEY (idPersona) REFERENCES Personas (id)
 );
 
 CREATE TABLE Responsables (
@@ -172,18 +169,28 @@ CREATE TABLE ResponsablesPorAlumno (
   CONSTRAINT fk_rpa_rol FOREIGN KEY (idRol) REFERENCES Roles (id)
 );
 
-CREATE TABLE Postulaciones (
+CREATE TABLE PostulacionesAlumnos (
   id INT NOT NULL AUTO_INCREMENT, 
   fecha DATE NOT NULL, 
   codigoSeguimiento VARCHAR(30) NOT NULL, 
   idCurso INT NOT NULL, 
   idAlumno INT NOT NULL, 
   idEstado INT NOT NULL, 
+  motivoRechazo VARCHAR(255) NULL, 
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postulaciones_codigo (codigoSeguimiento), 
   CONSTRAINT fk_postulaciones_curso FOREIGN KEY (idCurso) REFERENCES Cursos (id), 
   CONSTRAINT fk_postulaciones_alumno FOREIGN KEY (idAlumno) REFERENCES Alumnos (id), 
   CONSTRAINT fk_postulaciones_estado FOREIGN KEY (idEstado) REFERENCES EstadosPostulacion (id)
+);
+
+CREATE TABLE DocumentosPostulacion (
+  id INT NOT NULL AUTO_INCREMENT, 
+  idPostulacionAlumnos INT NOT NULL, 
+  descripcion VARCHAR(100) NOT NULL, 		#QUE DOCUMENTO ES: DNI del alumno, partida de nacimiento, certificado de estudios
+  ruta VARCHAR(255) NOT NULL, 
+  PRIMARY KEY (id), 
+  CONSTRAINT fk_docpostulacion_postulacion FOREIGN KEY (idPostulacionAlumnos) REFERENCES PostulacionesAlumnos (id)
 );
 
 CREATE TABLE PostulacionesAdminInstitucion (
@@ -196,6 +203,7 @@ CREATE TABLE PostulacionesAdminInstitucion (
   cuitInstitucion VARCHAR(11) NOT NULL,
   rutaConstanciaFiscal VARCHAR(255) NOT NULL,
   rutaHabilitacion VARCHAR(255) NOT NULL,
+  rutaConstanciaLaboral VARCHAR(255) NOT NULL,
   motivoRechazo VARCHAR(255) NULL,
   PRIMARY KEY (id), 
   UNIQUE KEY uq_postadmin_codigo (codigoSeguimiento), 
@@ -232,6 +240,8 @@ CREATE TABLE Telefonos (
   CONSTRAINT fk_telefonos_responsable FOREIGN KEY (idResponsable) REFERENCES Responsables (id), 
   CONSTRAINT ck_telefonos_dueno CHECK (idInstitucion IS NOT NULL OR idAdministrador IS NOT NULL OR idResponsable IS NOT NULL)
 );
+
+
 
 #A FUTURO: 
 #historial de cursos

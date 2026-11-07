@@ -11,7 +11,7 @@ namespace Dominio
         public int Id { get; set;}
         public Institucion Institucion { get; set;}
         public Turno Turno { get; set;}
-        public int anio { get; set;}
+        public int Anio { get; set;}
         public NivelEscolar NivelEscolar {  get; set;}
         public int CicloLectivo {get; set;}
         public string NivelPersonalizado { get; set;}
