@@ -1,0 +1,2027 @@
+{
+  "info": {
+    "_postman_id": "aa4a5f0d-c6db-473c-8642-f8df0c34aff3",
+    "name": "InstiRed DEV API",
+    "description": "Endpoints de entidades. Configurar baseUrl y apiKey en las variables de la colección. La autorización API Key se hereda en todas las requests. Los IDs están en 1 por defecto y se editan directamente en las URLs y los bodies. Los cuerpos son ejemplos editables. Cambiar estado no recibe body: invierte el valor y devuelve el resultado. Las operaciones de escritura modifican la base al enviarse. No se ejecutan peticiones ni scripts automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Api-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://TU_SERVIDOR:PUERTO",
+      "type": "string",
+      "description": "URL de la API remota, sin /api ni barra final."
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string",
+      "description": "API key que se enviará en X-Api-Key. Completar en Postman."
+    }
+  ],
+  "item": [
+    {
+      "name": "entidades",
+      "item": [
+        {
+          "name": "AdministradoresInstitucion",
+          "description": "Operaciones de la entidad AdministradoresInstitucion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
+                "description": "GET /api/AdministradoresInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/AdministradoresInstitucion/1",
+                "description": "GET /api/AdministradoresInstitucion/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
+                "description": "POST /api/AdministradoresInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPersona\": 1,\n  \"idUsuario\": 1,\n  \"idInstitucion\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
+                "description": "PUT /api/AdministradoresInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1,\n  \"idUsuario\": 1,\n  \"idInstitucion\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/AdministradoresInstitucion/1",
+                "description": "DELETE /api/AdministradoresInstitucion/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Alumnos",
+          "description": "Operaciones de la entidad Alumnos. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Alumnos",
+                "description": "GET /api/Alumnos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Alumnos/1",
+                "description": "GET /api/Alumnos/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Alumnos",
+                "description": "POST /api/Alumnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPersona\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Alumnos",
+                "description": "PUT /api/Alumnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Alumnos/1",
+                "description": "DELETE /api/Alumnos/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Cursos",
+          "description": "Operaciones de la entidad Cursos. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Cursos",
+                "description": "GET /api/Cursos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Cursos/1",
+                "description": "GET /api/Cursos/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Cursos",
+                "description": "POST /api/Cursos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idTurno\": 1,\n  \"cicloLectivo\": 2026,\n  \"idNivel\": null,\n  \"anio\": null,\n  \"nivelPersonalizado\": null,\n  \"division\": \"A\",\n  \"capacidad\": 30,\n  \"inscriptos\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Cursos",
+                "description": "PUT /api/Cursos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"idTurno\": 1,\n  \"cicloLectivo\": 2026,\n  \"idNivel\": null,\n  \"anio\": null,\n  \"nivelPersonalizado\": null,\n  \"division\": \"A\",\n  \"capacidad\": 30,\n  \"inscriptos\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Cursos/1",
+                "description": "DELETE /api/Cursos/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Discapacidades",
+          "description": "Operaciones de la entidad Discapacidades. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Discapacidades",
+                "description": "GET /api/Discapacidades. El ID corresponde a IdInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Discapacidades/1",
+                "description": "GET /api/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Discapacidades",
+                "description": "POST /api/Discapacidades. El ID corresponde a IdInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Discapacidades",
+                "description": "PUT /api/Discapacidades. El ID corresponde a IdInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Discapacidades/1",
+                "description": "DELETE /api/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "DocumentosPostulacion",
+          "description": "Operaciones de la entidad DocumentosPostulacion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/DocumentosPostulacion",
+                "description": "GET /api/DocumentosPostulacion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/DocumentosPostulacion/1",
+                "description": "GET /api/DocumentosPostulacion/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/DocumentosPostulacion",
+                "description": "POST /api/DocumentosPostulacion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacionAlumnos\": 1,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"ruta\": \"/documentos/archivo.pdf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/DocumentosPostulacion",
+                "description": "PUT /api/DocumentosPostulacion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idPostulacionAlumnos\": 1,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"ruta\": \"/documentos/archivo.pdf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/DocumentosPostulacion/1",
+                "description": "DELETE /api/DocumentosPostulacion/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "EstadosPostulacion",
+          "description": "Operaciones de la entidad EstadosPostulacion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/EstadosPostulacion",
+                "description": "GET /api/EstadosPostulacion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/EstadosPostulacion/1",
+                "description": "GET /api/EstadosPostulacion/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/EstadosPostulacion",
+                "description": "POST /api/EstadosPostulacion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/EstadosPostulacion",
+                "description": "PUT /api/EstadosPostulacion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/EstadosPostulacion/1",
+                "description": "DELETE /api/EstadosPostulacion/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "IdiomaInstitucion",
+          "description": "Operaciones de la entidad IdiomaInstitucion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/IdiomaInstitucion",
+                "description": "GET /api/IdiomaInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
+                "description": "GET /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/IdiomaInstitucion",
+                "description": "POST /api/IdiomaInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
+                "description": "PUT /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}. La ruta identifica el vínculo actual; el body indica la nueva combinación.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
+                "description": "DELETE /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Idiomas",
+          "description": "Operaciones de la entidad Idiomas. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Idiomas",
+                "description": "GET /api/Idiomas."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Idiomas/1",
+                "description": "GET /api/Idiomas/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Idiomas",
+                "description": "POST /api/Idiomas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreIdioma\": \"Idioma ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Idiomas",
+                "description": "PUT /api/Idiomas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"nombreIdioma\": \"Idioma ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Idiomas/1",
+                "description": "DELETE /api/Idiomas/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Imagenes",
+          "description": "Operaciones de la entidad Imagenes. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Imagenes",
+                "description": "GET /api/Imagenes."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Imagenes/1",
+                "description": "GET /api/Imagenes/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Imagenes",
+                "description": "POST /api/Imagenes.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"urlImagen\": \"https://ejemplo.com/imagen.jpg\",\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Imagenes",
+                "description": "PUT /api/Imagenes.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"urlImagen\": \"https://ejemplo.com/imagen.jpg\",\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Imagenes/1",
+                "description": "DELETE /api/Imagenes/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Instituciones",
+          "description": "Operaciones de la entidad Instituciones. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Instituciones",
+                "description": "GET /api/Instituciones."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Instituciones/1",
+                "description": "GET /api/Instituciones/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Instituciones",
+                "description": "POST /api/Instituciones.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Nombre de ejemplo\",\n  \"cuit\": \"30999999991\",\n  \"direccion\": \"Calle de ejemplo 123\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"idTipoInstitucion\": 1,\n  \"estado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Instituciones",
+                "description": "PUT /api/Instituciones. El estado se modifica exclusivamente desde Cambiar estado.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"nombre\": \"Nombre de ejemplo\",\n  \"cuit\": \"30999999991\",\n  \"direccion\": \"Calle de ejemplo 123\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"idTipoInstitucion\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cambiar estado",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/api/Instituciones/1/estado",
+                "description": "Invierte el estado actual (activo/inactivo). No recibe body. Devuelve el ID y el nuevo estado."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "NivelesEscolares",
+          "description": "Operaciones de la entidad NivelesEscolares. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/NivelesEscolares",
+                "description": "GET /api/NivelesEscolares."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/NivelesEscolares/1",
+                "description": "GET /api/NivelesEscolares/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/NivelesEscolares",
+                "description": "POST /api/NivelesEscolares.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/NivelesEscolares",
+                "description": "PUT /api/NivelesEscolares.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/NivelesEscolares/1",
+                "description": "DELETE /api/NivelesEscolares/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Personas",
+          "description": "Operaciones de la entidad Personas. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Personas",
+                "description": "GET /api/Personas."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Personas/1",
+                "description": "GET /api/Personas/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Personas",
+                "description": "POST /api/Personas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Nombre de ejemplo\",\n  \"apellido\": \"Apellido de ejemplo\",\n  \"documento\": \"99000001\",\n  \"domicilio\": \"Calle de ejemplo 123\",\n  \"fechaNacimiento\": \"2000-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Personas",
+                "description": "PUT /api/Personas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"nombre\": \"Nombre de ejemplo\",\n  \"apellido\": \"Apellido de ejemplo\",\n  \"documento\": \"99000001\",\n  \"domicilio\": \"Calle de ejemplo 123\",\n  \"fechaNacimiento\": \"2000-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Personas/1",
+                "description": "DELETE /api/Personas/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesAdminInstitucion",
+          "description": "Operaciones de la entidad PostulacionesAdminInstitucion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
+                "description": "GET /api/PostulacionesAdminInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion/1",
+                "description": "GET /api/PostulacionesAdminInstitucion/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
+                "description": "POST /api/PostulacionesAdminInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idAdministradorInstitucion\": 1,\n  \"idEstado\": 1,\n  \"nombreInstitucion\": \"Institución de ejemplo\",\n  \"cuitInstitucion\": \"30999999991\",\n  \"rutaConstanciaFiscal\": \"/documentos/constancia-fiscal.pdf\",\n  \"rutaHabilitacion\": \"/documentos/habilitacion.pdf\",\n  \"rutaConstanciaLaboral\": \"/documentos/constancia-laboral.pdf\",\n  \"motivoRechazo\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
+                "description": "PUT /api/PostulacionesAdminInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idAdministradorInstitucion\": 1,\n  \"idEstado\": 1,\n  \"nombreInstitucion\": \"Institución de ejemplo\",\n  \"cuitInstitucion\": \"30999999991\",\n  \"rutaConstanciaFiscal\": \"/documentos/constancia-fiscal.pdf\",\n  \"rutaHabilitacion\": \"/documentos/habilitacion.pdf\",\n  \"rutaConstanciaLaboral\": \"/documentos/constancia-laboral.pdf\",\n  \"motivoRechazo\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion/1",
+                "description": "DELETE /api/PostulacionesAdminInstitucion/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesAlumnos",
+          "description": "Operaciones de la entidad PostulacionesAlumnos. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
+                "description": "GET /api/PostulacionesAlumnos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAlumnos/1",
+                "description": "GET /api/PostulacionesAlumnos/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
+                "description": "POST /api/PostulacionesAlumnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idCurso\": 1,\n  \"idAlumno\": 1,\n  \"idEstado\": 1,\n  \"motivoRechazo\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
+                "description": "PUT /api/PostulacionesAlumnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idCurso\": 1,\n  \"idAlumno\": 1,\n  \"idEstado\": 1,\n  \"motivoRechazo\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/PostulacionesAlumnos/1",
+                "description": "DELETE /api/PostulacionesAlumnos/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Resenias",
+          "description": "Operaciones de la entidad Resenias. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Resenias",
+                "description": "GET /api/Resenias."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Resenias/1",
+                "description": "GET /api/Resenias/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Resenias",
+                "description": "POST /api/Resenias.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"calificacion\": 5,\n  \"comentario\": \"Comentario de prueba\",\n  \"respuestaInstitucion\": null,\n  \"fecha\": \"2026-11-07\",\n  \"idInstitucion\": 1,\n  \"idResponsable\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Resenias",
+                "description": "PUT /api/Resenias.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"calificacion\": 5,\n  \"comentario\": \"Comentario de prueba\",\n  \"respuestaInstitucion\": null,\n  \"fecha\": \"2026-11-07\",\n  \"idInstitucion\": 1,\n  \"idResponsable\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Resenias/1",
+                "description": "DELETE /api/Resenias/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Responsables",
+          "description": "Operaciones de la entidad Responsables. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Responsables",
+                "description": "GET /api/Responsables."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Responsables/1",
+                "description": "GET /api/Responsables/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Responsables",
+                "description": "POST /api/Responsables.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPersona\": 1,\n  \"idUsuario\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Responsables",
+                "description": "PUT /api/Responsables.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1,\n  \"idUsuario\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Responsables/1",
+                "description": "DELETE /api/Responsables/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ResponsablesPorAlumno",
+          "description": "Operaciones de la entidad ResponsablesPorAlumno. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
+                "description": "GET /api/ResponsablesPorAlumno."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/ResponsablesPorAlumno/1",
+                "description": "GET /api/ResponsablesPorAlumno/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
+                "description": "POST /api/ResponsablesPorAlumno.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idResponsable\": 1,\n  \"idAlumno\": 1,\n  \"idRol\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
+                "description": "PUT /api/ResponsablesPorAlumno.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idResponsable\": 1,\n  \"idAlumno\": 1,\n  \"idRol\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/ResponsablesPorAlumno/1",
+                "description": "DELETE /api/ResponsablesPorAlumno/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Roles",
+          "description": "Operaciones de la entidad Roles. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Roles",
+                "description": "GET /api/Roles."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Roles/1",
+                "description": "GET /api/Roles/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Roles",
+                "description": "POST /api/Roles.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Roles",
+                "description": "PUT /api/Roles.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Roles/1",
+                "description": "DELETE /api/Roles/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Telefonos",
+          "description": "Operaciones de la entidad Telefonos. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Telefonos",
+                "description": "GET /api/Telefonos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Telefonos/1",
+                "description": "GET /api/Telefonos/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Telefonos",
+                "description": "POST /api/Telefonos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idAdministrador\": null,\n  \"idResponsable\": null,\n  \"numeroTelefono\": \"1100000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Telefonos",
+                "description": "PUT /api/Telefonos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"idAdministrador\": null,\n  \"idResponsable\": null,\n  \"numeroTelefono\": \"1100000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Telefonos/1",
+                "description": "DELETE /api/Telefonos/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "TipoInstitucion",
+          "description": "Operaciones de la entidad TipoInstitucion. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoInstitucion",
+                "description": "GET /api/TipoInstitucion."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoInstitucion/1",
+                "description": "GET /api/TipoInstitucion/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/TipoInstitucion",
+                "description": "POST /api/TipoInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipoDeInstitucion\": \"Institución ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/TipoInstitucion",
+                "description": "PUT /api/TipoInstitucion.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"tipoDeInstitucion\": \"Institución ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoInstitucion/1",
+                "description": "DELETE /api/TipoInstitucion/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "TipoUsuario",
+          "description": "Operaciones de la entidad TipoUsuario. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoUsuario",
+                "description": "GET /api/TipoUsuario."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoUsuario/1",
+                "description": "GET /api/TipoUsuario/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/TipoUsuario",
+                "description": "POST /api/TipoUsuario.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/TipoUsuario",
+                "description": "PUT /api/TipoUsuario.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/TipoUsuario/1",
+                "description": "DELETE /api/TipoUsuario/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Turnos",
+          "description": "Operaciones de la entidad Turnos. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Turnos",
+                "description": "GET /api/Turnos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Turnos/1",
+                "description": "GET /api/Turnos/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Turnos",
+                "description": "POST /api/Turnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Turnos",
+                "description": "PUT /api/Turnos.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/Turnos/1",
+                "description": "DELETE /api/Turnos/{id:int}."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Usuarios",
+          "description": "Operaciones de la entidad Usuarios. Las claves foráneas deben existir en la base.",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Usuarios",
+                "description": "GET /api/Usuarios."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/Usuarios/1",
+                "description": "GET /api/Usuarios/{id:int}."
+              },
+              "response": []
+            },
+            {
+              "name": "Insertar",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Usuarios",
+                "description": "Ejemplo con clave test1234 editable en el body. La respuesta no incluye la clave. ",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clave\": \"test1234\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"activo\": false,\n  \"idTipoUsuario\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/Usuarios",
+                "description": "Ejemplo con clave test1234 editable en el body. La respuesta no incluye la clave. El estado se modifica desde Cambiar estado.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"clave\": \"test1234\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"idTipoUsuario\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cambiar estado",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/api/Usuarios/1/estado",
+                "description": "Invierte el estado actual (activo/inactivo). No recibe body. Devuelve el ID y el nuevo estado."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
