@@ -159,4 +159,53 @@ COMMIT;
 END $$
 DELIMITER ;
 
+DELIMITER $$
+-- sp_Responder_Resenia
+-- Recibo el id de la resenia, p_respuestaInstitucion, p_idIsntitucion 
+DROP PROCEDURE IF EXISTS sp_Responder_Resenia $$
 
+CREATE PROCEDURE sp_Responder_Resenia(
+IN p_idInstitucion                 INT,
+IN p_idResenia                     INT,
+IN p_respuestaInstitucion          TEXT -- (Lo declaro como text para que alcance a mostrar el error personalizado de la validación de longitud, con VARCHAR(255) no lleha a mostrarmelo)
+)
+
+BEGIN 
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN 
+	ROLLBACK;
+    RESIGNAL;
+END;
+-- Validaciones
+-- valido que la respuesta no sea null, ni vacía 
+IF p_respuestaInstitucion IS NULL OR TRIM(p_respuestaInstitucion) = '' THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una respuesta en la reseña.';
+END IF;
+-- valido que la longitud no sea mayor a 255 caracteres
+IF CHAR_LENGTH(p_respuestaInstitucion) > 255 THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres peritidos';
+END IF;
+-- valido que la resenia exista 
+IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada.';
+END IF;
+-- valido que la isntitucion este activa
+IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = p_idInstitucion AND estado = TRUE) THEN 
+	SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
+END IF;
+-- valido que la resenia sea de la institucion correspondiente 
+IF NOT EXISTS(SELECT 1 FROM Resenias WHERE idInstitucion = p_idInstitucion AND id = p_idResenia) THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no pertenece a su institución.';
+END IF;
+-- valido que la respuesta sea null
+IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
+END IF;
+-- comienzo la transacción
+START TRANSACTION;
+-- actualizo el campo respuesta institucion 
+	UPDATE Resenias SET respuestaInstitucion = p_respuestaInstitucion WHERE id = p_idResenia AND idInstitucion = p_idInstitucion AND respuestaInstitucion IS NULL;
+COMMIT;
+END$$
+DELIMITER ;
