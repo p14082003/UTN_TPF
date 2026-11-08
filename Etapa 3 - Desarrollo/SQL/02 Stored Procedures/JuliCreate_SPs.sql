@@ -69,7 +69,6 @@ BEGIN
 END$$
 DELIMITER ;
 
-
 DELIMITER $$
 -- -----------------------------------------------------------------------------
 -- sp_Registrar_Resenia
@@ -100,20 +99,25 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 -- validaciones
 
 IF p_calificacion IS NULL OR p_calificacion < 1 OR p_calificacion > 5 THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La calificacion debe ser entre 1 y 5'; 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La calificacion debe ser entre 1 y 5.'; 
 END IF;
 
 IF p_comentario IS NULL OR TRIM(p_comentario) = '' THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio'; -- campo obligatorio porque en la tabla se creo como not null
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio.'; -- campo obligatorio porque en la tabla se creo como not null
 END IF;
 
 -- compruebo que exista la postulacion
-IF NOT EXISTS( SELECT 1 FROM Postulaciones WHERE id = p_idPostulacion) THEN 
+IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
 	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no fue confirmada.';
 END IF; 
 
 -- recupero valor de variables con consulta
-SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM Postulaciones pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
+SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
+
+-- Valido que el reponsable exista 
+IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+END IF;
 
 -- Valido que el usuario responsable este activo 
 IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
@@ -121,15 +125,16 @@ IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.id
 	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
 END IF;
 
--- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable
-IF NOT EXISTS (SELECT 1 FROM  ResponsablesPorAlumno  
-                                            WHERE idResponsable = p_idResponsable AND idAlumno = v_idAlumno) THEN 
+-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulacion
+IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
+                                            LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
+                                            WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
 	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
 END IF;
 
 -- Valido que la institucion se encuentre activa
 IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo';
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
 END IF; 
 
 -- valido que no haya una reseña previa para la institucion por ese responsable 
@@ -138,9 +143,9 @@ THEN
 	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
 END IF;
 
--- valido que el estado sea aprobado
-IF NOT EXISTS( SELECT 1 FROM Postulaciones po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
-                                              WHERE e.descripcion = 'Aprobado' AND po.id = p_idPostulacion) THEN 
+-- valido que el estado sea confirmado
+IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
+                                              WHERE e.descripcion = 'Confirmado' AND po.id = p_idPostulacion) THEN 
 	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta aprobada.';
 END IF;
 
@@ -153,4 +158,5 @@ COMMIT;
 
 END $$
 DELIMITER ;
+
 
