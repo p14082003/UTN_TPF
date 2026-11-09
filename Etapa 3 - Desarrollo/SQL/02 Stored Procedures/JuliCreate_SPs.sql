@@ -1,4 +1,7 @@
 USE InstiRed_DEV;
+
+DELIMITER $$
+-- ------------------------------------------------------------------------------
 -- sp_Validar_Usuario_Login
 -- Ingresan parametros email y clave.
 -- Devuelve una fila con los datos para iniciar sesion: ids del usuario, de la persona
@@ -63,5 +66,146 @@ BEGIN
     LEFT JOIN Personas p                  ON p.id = COALESCE(r.idPersona, ad.idPersona)
     LEFT JOIN Alumnos al                  ON al.idPersona = r.idPersona -- solo si es autogestor
     WHERE u.id = v_idUsuario;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+-- -----------------------------------------------------------------------------
+-- sp_Registrar_Resenia
+-- solo postulaciones de alumnos en estado aprobado dejan resenia
+-- por decisión de UNIQUE KEY uq_resenias_institucion_responsable (idInstitucion, idResponsable) 
+   -- en la creación de tabla solo se puede dejar una resenia por institucion. Permite solo una
+   -- Combinacion entre institucion y responsable. Ej:  2 hijos solo 1 resenia en misma institucion.
+-- ------------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Registrar_Resenia$$
+
+CREATE PROCEDURE sp_Registrar_Resenia(
+IN p_comentario     VARCHAR(255),
+IN p_calificacion   TINYINT,
+IN p_idPostulacion  INT,
+IN p_idResponsable  INT
+)
+BEGIN
+
+DECLARE v_idAlumno INT;
+DECLARE v_idInstitucion INT;
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN 
+		ROLLBACK;
+		RESIGNAL;
+	END;
+
+-- validaciones
+
+IF p_calificacion IS NULL OR p_calificacion < 1 OR p_calificacion > 5 THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La calificacion debe ser entre 1 y 5.'; 
+END IF;
+
+IF p_comentario IS NULL OR TRIM(p_comentario) = '' THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio.'; -- campo obligatorio porque en la tabla se creo como not null
+END IF;
+
+-- compruebo que exista la postulacion
+IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no fue confirmada.';
+END IF; 
+
+-- recupero valor de variables con consulta
+SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
+
+-- Valido que el reponsable exista 
+IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+END IF;
+
+-- Valido que el usuario responsable este activo 
+IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
+                                            WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
+END IF;
+
+-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulacion
+IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
+                                            LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
+                                            WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
+END IF;
+
+-- Valido que la institucion se encuentre activa
+IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
+END IF; 
+
+-- valido que no haya una reseña previa para la institucion por ese responsable 
+IF EXISTS (SELECT 1 FROM Resenias r WHERE r.idResponsable = p_idResponsable AND r.idInstitucion = v_idInstitucion) 
+THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
+END IF;
+
+-- valido que el estado sea confirmado
+IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
+                                              WHERE e.descripcion = 'Confirmado' AND po.id = p_idPostulacion) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta aprobada.';
+END IF;
+
+-- comenzamos con la transaccion a la BD
+START TRANSACTION;
+
+INSERT INTO Resenias (calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES (p_calificacion, p_comentario, CURDATE(), v_idInstitucion, p_idResponsable);
+
+COMMIT;
+
+END $$
+DELIMITER ;
+
+DELIMITER $$
+-- sp_Responder_Resenia
+-- Recibo el id de la resenia, p_respuestaInstitucion, p_idIsntitucion 
+DROP PROCEDURE IF EXISTS sp_Responder_Resenia $$
+
+CREATE PROCEDURE sp_Responder_Resenia(
+IN p_idInstitucion                 INT,
+IN p_idResenia                     INT,
+IN p_respuestaInstitucion          TEXT -- (Lo declaro como text para que alcance a mostrar el error personalizado de la validación de longitud, con VARCHAR(255) no lleha a mostrarmelo)
+)
+
+BEGIN 
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN 
+	ROLLBACK;
+    RESIGNAL;
+END;
+-- Validaciones
+-- valido que la respuesta no sea null, ni vacía 
+IF p_respuestaInstitucion IS NULL OR TRIM(p_respuestaInstitucion) = '' THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una respuesta en la reseña.';
+END IF;
+-- valido que la longitud no sea mayor a 255 caracteres
+IF CHAR_LENGTH(p_respuestaInstitucion) > 255 THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres peritidos';
+END IF;
+-- valido que la resenia exista 
+IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada.';
+END IF;
+-- valido que la isntitucion este activa
+IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = p_idInstitucion AND estado = TRUE) THEN 
+	SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
+END IF;
+-- valido que la resenia sea de la institucion correspondiente 
+IF NOT EXISTS(SELECT 1 FROM Resenias WHERE idInstitucion = p_idInstitucion AND id = p_idResenia) THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no pertenece a su institución.';
+END IF;
+-- valido que la respuesta sea null
+IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
+END IF;
+-- comienzo la transacción
+START TRANSACTION;
+-- actualizo el campo respuesta institucion 
+	UPDATE Resenias SET respuestaInstitucion = p_respuestaInstitucion WHERE id = p_idResenia AND idInstitucion = p_idInstitucion AND respuestaInstitucion IS NULL;
+COMMIT;
 END$$
 DELIMITER ;
