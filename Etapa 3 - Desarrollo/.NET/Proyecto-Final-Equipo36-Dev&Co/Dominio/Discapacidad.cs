@@ -17,5 +17,20 @@ namespace Dominio
         public bool SindromeDown { get; set; }
         public bool Autismo { get; set; }
 
+        public List<string> ObtenerAccesibilidades()
+        {
+            List<string> lista = new List<string>();
+
+            if (Visual) lista.Add("Visual");
+            if (Verbal) lista.Add("Verbal");
+            if (Auditiva) lista.Add("Auditiva");
+            if (Intelectual) lista.Add("Intelectual");
+            if (Movilidad) lista.Add("Movilidad");
+            if (SindromeDown) lista.Add("Síndrome de Down");
+            if (Autismo) lista.Add("Autismo");
+
+            return lista;
+        }
+
     }
 }
