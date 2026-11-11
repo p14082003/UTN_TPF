@@ -209,3 +209,96 @@ START TRANSACTION;
 COMMIT;
 END$$
 DELIMITER ;
+
+DELIMITER $$ 
+-- ----------------------------
+-- sp_Registrar_Postulacion_Alumno
+-- Parametros: p_idResponsable, p_idAlumno, p_idCurso
+-- ----------------------------
+DROP PROCEDURE IF EXISTS sp_Registrar_Postulacion_Alumno $$
+
+CREATE PROCEDURE sp_Registrar_Postulacion_Alumno(
+IN p_idResponsable      INT,
+IN p_idAlumno           INT,
+IN p_idCurso            INT
+)
+BEGIN 
+DECLARE v_idPostulacion     INT;
+DECLARE v_codigoSeguimiento VARCHAR(30);
+DECLARE v_capacidad         INT;
+DECLARE v_inscriptos        INT;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+	ROLLBACK;
+    RESIGNAL;
+END;
+
+-- inicio la transaccion 
+START TRANSACTION; 
+
+SELECT capacidad, inscriptos INTO v_capacidad, v_inscriptos FROM Cursos WHERE id = p_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de postular, paralelamente otro usuario este confirmando el ultimo cupo y cuando esta postulacion se acepte lo haga sin vacante disponible. 
+
+-- Validaciones                                                                                          -- el bloqueo se mantiene hasta terminar transaccion (commit o rollback)
+-- Curso existente 
+IF v_capacidad IS NULL THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Curso inexistente';
+END IF;
+
+-- Verificar cupo
+IF (v_capacidad - v_inscriptos) <= 0 THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso no tiene cupos disponibles';
+END IF;
+
+-- Usuario activo o existente
+IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario
+                                            WHERE r.id = p_idResponsable AND u.Activo = TRUE) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable inexistente o usuario inactivo.';
+END IF;
+-- Alumno existente 
+IF NOT EXISTS (SELECT 1 FROM Alumnos WHERE id = p_idAlumno) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Alumno inexistente.';
+END IF;
+-- Alumno a cargo o autogesto
+IF NOT EXISTS(SELECT 1 FROM Responsables r INNER JOIN Alumnos a ON a.idPersona = r.idPersona WHERE r.id = p_idResponsable AND r.idPersona = a.idPersona AND a.id = p_idAlumno)
+										 AND NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN ResponsablesPorAlumno ra ON r.id = ra.idResponsable WHERE ra.idAlumno = p_idAlumno AND r.id = p_idResponsable) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra asociado a la cuenta responsable.';
+END IF;
+
+-- Institucion activa
+IF NOT EXISTS (SELECT 1 FROM Cursos c INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+									  WHERE i.estado = TRUE AND c.id = p_idCurso) THEN 
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institucion se encuentra inactiva';
+END IF;
+-- Postulacion duplicada 
+IF EXISTS(SELECT 1 FROM Alumnos a INNER JOIN PostulacionesAlumnos p ON a.id = p.idAlumno WHERE a.id = p_idAlumno AND p.idCurso = p_idCurso AND p.idEstado IN(1,2,3)) THEN -- no permite duplicados cuando fue confirmado el estado de postulacion pero si fue rechazado si se puede volver a postular
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya generó una postulación al curso.';
+END IF;
+
+INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado ) VALUES (CURDATE(),'temporal', p_idCurso, p_idAlumno, 1); -- insertamos un valor temporal en el codigo de seguimiento porque no acepta null
+SET v_idPostulacion = LAST_INSERT_ID();
+SET v_codigoSeguimiento = CONCAT('PST-', LPAD(v_idPostulacion, 6, '0')); -- concatenando pst-idPosutlacion No deberia repetirse nunca 
+UPDATE PostulacionesAlumnos SET codigoSeguimiento = v_codigoSeguimiento WHERE id = v_idPostulacion; 
+COMMIT;
+
+-- retornamos los valores de los campos del sp.
+SELECT 
+p.id AS IdPostulacion,
+p.fecha AS FechaPostulacion, 
+p.codigoSeguimiento AS CodigoSeguimiento,
+p.idCurso AS IdCurso,
+p.idAlumno AS IdAlumno, 
+p.idEstado AS IdEstado,
+i.id AS IdInstitucion,
+pe.nombre AS Nombre,
+pe.apellido AS Apellido,
+pe.documento AS Documento,
+e.descripcion AS Descripcion
+FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+							INNER JOIN Personas pe ON pe.id = a.idPersona
+							INNER JOIN Cursos c ON c.id = p.idCurso
+                            INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+                            INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
+WHERE p.id = v_idPostulacion ;
+
+END$$
+DELIMITER ;

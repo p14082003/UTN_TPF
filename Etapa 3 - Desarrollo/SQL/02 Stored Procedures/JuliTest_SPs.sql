@@ -37,3 +37,16 @@ CALL sp_Responder_Resenia( 1, 2,'Gracias por su reseña, hacemos todo lo que est
 CALL sp_Responder_Resenia( 1, 1,'Gracias por su reseña, hacemos todo lo que este en nuestras manos para que nuestros alumnos alcancen la excelencia. (Caso de éxito.)'); -- esta si deberia funcionar
 -- UPDATE Resenias SET respuestaInstitucion = NULL WHERE id = 1;
 -- SELECT * FROM Resenias WHERE id = 1;
+
+-- ----Test sp registar postulacion alumno -----------
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 1002); -- curso existente 
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 15); -- cupo disponible 
+CALL sp_Registrar_Postulacion_Alumno(1002, 1, 12);-- usuario inexistente 
+CALL sp_Registrar_Postulacion_Alumno(8, 11, 12);-- usuario inactivo
+CALL sp_Registrar_Postulacion_Alumno(1, 1002, 12);-- alumno inexistente 
+CALL sp_Registrar_Postulacion_Alumno(1, 2, 12); -- reponsable a cargo del alumno o autogestor 
+-- UPDATE Instituciones SET estado = FALSE WHERE id = 9;
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 13); -- institucion activa
+-- UPDATE Instituciones SET estado = TRUE WHERE id = 9;
+CALL sp_Registrar_Postulacion_Alumno(9, 12, 12); -- postulacion duplicada 
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 12); -- caso exitoso
