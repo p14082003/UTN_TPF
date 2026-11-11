@@ -32,5 +32,20 @@ namespace Dominio
             return lista;
         }
 
+        public static List<String> ObtenerTiposDiscapacidad()
+        {
+            List<string> lista = new List<string>();
+
+            lista.Add("Visual");
+            lista.Add("Verbal");
+            lista.Add("Auditiva");
+            lista.Add("Intelectual");
+            lista.Add("Movilidad");
+            lista.Add("Síndrome de Down");
+            lista.Add("Autismo");
+
+            return lista;
+        }
+
     }
 }
