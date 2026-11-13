@@ -165,3 +165,165 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_PostulacionAdmin_Aprobar
+-- Dev&Co aprueba la postulacion de un administrador de institucion:
+--   * la postulacion pasa de Pendiente a Confirmado
+--   * el usuario del administrador pasa a activo (ya puede iniciar sesion)
+--  mail de aviso via C# (por fuera del SP)
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_PostulacionAdmin_Aprobar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_PostulacionAdmin_Aprobar(
+  IN p_idPostulacion  INT,
+  IN p_idUsuarioDevCo INT     -- usuario Dev&Co que resuelve (lo toma C# de la sesion)
+)
+BEGIN
+  DECLARE v_idTipoDevCo         TINYINT;
+  DECLARE v_idEstadoPendiente   INT;
+  DECLARE v_idEstadoConfirmado  INT;
+  DECLARE v_idAdministrador     INT;
+
+  -- Cualquier error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF p_idPostulacion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Catalogos: se buscan por descripcion, igual que en el archivo de inserts
+  SET v_idTipoDevCo        = (SELECT id FROM TipoUsuario        WHERE descripcion = 'DevCo');
+  SET v_idEstadoPendiente  = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
+  SET v_idEstadoConfirmado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado');
+
+  IF v_idTipoDevCo IS NULL OR v_idEstadoPendiente IS NULL OR v_idEstadoConfirmado IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Solo un usuario Dev&Co activo puede resolver postulaciones
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para resolver postulaciones.';
+  END IF;
+
+  SET v_idAdministrador = (SELECT idAdministradorInstitucion
+                           FROM PostulacionesAdminInstitucion
+                           WHERE id = p_idPostulacion);
+
+  IF v_idAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
+  END IF;
+
+  -- de Pendiente a Confirmado en un solo UPDATE. Si la postulacion ya fue resuelta
+  -- (aunque sea un instante antes por otra persona) no se modifica ninguna fila.
+  UPDATE PostulacionesAdminInstitucion
+  SET idEstado = v_idEstadoConfirmado
+  WHERE id = p_idPostulacion
+    AND idEstado = v_idEstadoPendiente;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación ya fue resuelta.';
+  END IF;
+
+  -- Se activa el usuario del administrador
+  UPDATE Usuarios
+  SET activo = TRUE
+  WHERE id = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = v_idAdministrador);
+
+  COMMIT;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_PostulacionAdmin_Rechazar
+-- Dev&Co rechaza la postulacion de un administrador de institucion:
+--   * la postulacion pasa de Pendiente a Rechazado y guarda el motivo
+--   * el usuario sigue inactivo. Para volver a intentar, el administrador
+--     envia una postulacion nueva (el historial se conserva).
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_PostulacionAdmin_Rechazar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_PostulacionAdmin_Rechazar(
+  IN p_idPostulacion  INT,
+  IN p_idUsuarioDevCo INT,
+  IN p_motivoRechazo  VARCHAR(255)
+)
+BEGIN
+  DECLARE v_idTipoDevCo         TINYINT;
+  DECLARE v_idEstadoPendiente   INT;
+  DECLARE v_idEstadoRechazado   INT;
+  DECLARE v_idAdministrador     INT;
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  SET p_motivoRechazo = TRIM(p_motivoRechazo);
+
+  IF p_idPostulacion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF COALESCE(p_motivoRechazo, '') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El motivo de rechazo es obligatorio.';
+  END IF;
+
+  START TRANSACTION;
+
+  SET v_idTipoDevCo       = (SELECT id FROM TipoUsuario        WHERE descripcion = 'DevCo');
+  SET v_idEstadoPendiente = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
+  SET v_idEstadoRechazado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
+
+  IF v_idTipoDevCo IS NULL OR v_idEstadoPendiente IS NULL OR v_idEstadoRechazado IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para resolver postulaciones.';
+  END IF;
+
+  SET v_idAdministrador = (SELECT idAdministradorInstitucion
+                           FROM PostulacionesAdminInstitucion
+                           WHERE id = p_idPostulacion);
+
+  IF v_idAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
+  END IF;
+
+  UPDATE PostulacionesAdminInstitucion
+  SET idEstado = v_idEstadoRechazado,
+      motivoRechazo = p_motivoRechazo
+  WHERE id = p_idPostulacion
+    AND idEstado = v_idEstadoPendiente;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación ya fue resuelta.';
+  END IF;
+
+  COMMIT;
+END$$
+
+DELIMITER ;
