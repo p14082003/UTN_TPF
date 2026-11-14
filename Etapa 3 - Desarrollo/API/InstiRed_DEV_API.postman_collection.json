@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "aa4a5f0d-c6db-473c-8642-f8df0c34aff3",
     "name": "InstiRed DEV API",
-    "description": "Endpoints de entidades. Configurar baseUrl y apiKey en las variables de la colección. La autorización API Key se hereda en todas las requests. Los IDs están en 1 por defecto y se editan directamente en las URLs y los bodies. Los cuerpos son ejemplos editables. Cambiar estado no recibe body: invierte el valor y devuelve el resultado. Las operaciones de escritura modifican la base al enviarse. No se ejecutan peticiones ni scripts automáticamente.",
+    "description": "InstiRed API: entidades, procedimientos y vistas. baseUrl debe ser configurado con el URL base de la API (sin /ent, /sp ni /vw) y apiKey debe ser configurado con la clave de validación esperada por el servidor, que es secreta.\n\nLos cuerpos son ejemplos, para poder cambiarlos por datos reales luego.\n\nEl registro de administrador usa multipart/form-data para poder adjuntar archivos PDF, JPG o PNG. Las descargas están en archivos.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -28,15 +28,15 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://TU_SERVIDOR:PUERTO",
+      "value": "https://api.nummis.com.ar",
       "type": "string",
-      "description": "URL de la API remota, sin /api ni barra final."
+      "description": "URL del servidor, sin /ent, /sp, /vw ni barra final."
     },
     {
       "key": "apiKey",
       "value": "",
       "type": "string",
-      "description": "API key que se enviará en X-Api-Key. Completar en Postman."
+      "description": "API key de la API. Completar localmente en Postman."
     }
   ],
   "item": [
@@ -45,15 +45,14 @@
       "item": [
         {
           "name": "AdministradoresInstitucion",
-          "description": "Operaciones de la entidad AdministradoresInstitucion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
-                "description": "GET /api/AdministradoresInstitucion."
+                "url": "{{baseUrl}}/ent/AdministradoresInstitucion",
+                "description": "GET /ent/AdministradoresInstitucion."
               },
               "response": []
             },
@@ -62,8 +61,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/AdministradoresInstitucion/1",
-                "description": "GET /api/AdministradoresInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/AdministradoresInstitucion/1",
+                "description": "GET /ent/AdministradoresInstitucion/{id:int}."
               },
               "response": []
             },
@@ -78,8 +77,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
-                "description": "POST /api/AdministradoresInstitucion.",
+                "url": "{{baseUrl}}/ent/AdministradoresInstitucion",
+                "description": "POST /ent/AdministradoresInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idPersona\": 1,\n  \"idUsuario\": 1,\n  \"idInstitucion\": null\n}",
@@ -103,8 +102,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/AdministradoresInstitucion",
-                "description": "PUT /api/AdministradoresInstitucion.",
+                "url": "{{baseUrl}}/ent/AdministradoresInstitucion",
+                "description": "PUT /ent/AdministradoresInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1,\n  \"idUsuario\": 1,\n  \"idInstitucion\": null\n}",
@@ -122,8 +121,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/AdministradoresInstitucion/1",
-                "description": "DELETE /api/AdministradoresInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/AdministradoresInstitucion/1",
+                "description": "DELETE /ent/AdministradoresInstitucion/{id:int}."
               },
               "response": []
             }
@@ -131,15 +130,14 @@
         },
         {
           "name": "Alumnos",
-          "description": "Operaciones de la entidad Alumnos. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Alumnos",
-                "description": "GET /api/Alumnos."
+                "url": "{{baseUrl}}/ent/Alumnos",
+                "description": "GET /ent/Alumnos."
               },
               "response": []
             },
@@ -148,8 +146,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Alumnos/1",
-                "description": "GET /api/Alumnos/{id:int}."
+                "url": "{{baseUrl}}/ent/Alumnos/1",
+                "description": "GET /ent/Alumnos/{id:int}."
               },
               "response": []
             },
@@ -164,8 +162,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Alumnos",
-                "description": "POST /api/Alumnos.",
+                "url": "{{baseUrl}}/ent/Alumnos",
+                "description": "POST /ent/Alumnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idPersona\": 1\n}",
@@ -189,8 +187,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Alumnos",
-                "description": "PUT /api/Alumnos.",
+                "url": "{{baseUrl}}/ent/Alumnos",
+                "description": "PUT /ent/Alumnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1\n}",
@@ -208,8 +206,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Alumnos/1",
-                "description": "DELETE /api/Alumnos/{id:int}."
+                "url": "{{baseUrl}}/ent/Alumnos/1",
+                "description": "DELETE /ent/Alumnos/{id:int}."
               },
               "response": []
             }
@@ -217,15 +215,14 @@
         },
         {
           "name": "Cursos",
-          "description": "Operaciones de la entidad Cursos. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Cursos",
-                "description": "GET /api/Cursos."
+                "url": "{{baseUrl}}/ent/Cursos",
+                "description": "GET /ent/Cursos."
               },
               "response": []
             },
@@ -234,8 +231,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Cursos/1",
-                "description": "GET /api/Cursos/{id:int}."
+                "url": "{{baseUrl}}/ent/Cursos/1",
+                "description": "GET /ent/Cursos/{id:int}."
               },
               "response": []
             },
@@ -250,8 +247,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Cursos",
-                "description": "POST /api/Cursos.",
+                "url": "{{baseUrl}}/ent/Cursos",
+                "description": "POST /ent/Cursos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"idTurno\": 1,\n  \"cicloLectivo\": 2026,\n  \"idNivel\": null,\n  \"anio\": null,\n  \"nivelPersonalizado\": null,\n  \"division\": \"A\",\n  \"capacidad\": 30,\n  \"inscriptos\": 0\n}",
@@ -275,8 +272,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Cursos",
-                "description": "PUT /api/Cursos.",
+                "url": "{{baseUrl}}/ent/Cursos",
+                "description": "PUT /ent/Cursos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"idTurno\": 1,\n  \"cicloLectivo\": 2026,\n  \"idNivel\": null,\n  \"anio\": null,\n  \"nivelPersonalizado\": null,\n  \"division\": \"A\",\n  \"capacidad\": 30,\n  \"inscriptos\": 0\n}",
@@ -294,8 +291,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Cursos/1",
-                "description": "DELETE /api/Cursos/{id:int}."
+                "url": "{{baseUrl}}/ent/Cursos/1",
+                "description": "DELETE /ent/Cursos/{id:int}."
               },
               "response": []
             }
@@ -303,15 +300,14 @@
         },
         {
           "name": "Discapacidades",
-          "description": "Operaciones de la entidad Discapacidades. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Discapacidades",
-                "description": "GET /api/Discapacidades. El ID corresponde a IdInstitucion."
+                "url": "{{baseUrl}}/ent/Discapacidades",
+                "description": "GET /ent/Discapacidades. El ID corresponde a IdInstitucion."
               },
               "response": []
             },
@@ -320,8 +316,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Discapacidades/1",
-                "description": "GET /api/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
+                "url": "{{baseUrl}}/ent/Discapacidades/1",
+                "description": "GET /ent/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
               },
               "response": []
             },
@@ -336,8 +332,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Discapacidades",
-                "description": "POST /api/Discapacidades. El ID corresponde a IdInstitucion.",
+                "url": "{{baseUrl}}/ent/Discapacidades",
+                "description": "POST /ent/Discapacidades. El ID corresponde a IdInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
@@ -361,8 +357,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Discapacidades",
-                "description": "PUT /api/Discapacidades. El ID corresponde a IdInstitucion.",
+                "url": "{{baseUrl}}/ent/Discapacidades",
+                "description": "PUT /ent/Discapacidades. El ID corresponde a IdInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
@@ -380,8 +376,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Discapacidades/1",
-                "description": "DELETE /api/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
+                "url": "{{baseUrl}}/ent/Discapacidades/1",
+                "description": "DELETE /ent/Discapacidades/{id:int}. El ID corresponde a IdInstitucion."
               },
               "response": []
             }
@@ -389,15 +385,14 @@
         },
         {
           "name": "DocumentosPostulacion",
-          "description": "Operaciones de la entidad DocumentosPostulacion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/DocumentosPostulacion",
-                "description": "GET /api/DocumentosPostulacion."
+                "url": "{{baseUrl}}/ent/DocumentosPostulacion",
+                "description": "GET /ent/DocumentosPostulacion."
               },
               "response": []
             },
@@ -406,8 +401,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/DocumentosPostulacion/1",
-                "description": "GET /api/DocumentosPostulacion/{id:int}."
+                "url": "{{baseUrl}}/ent/DocumentosPostulacion/1",
+                "description": "GET /ent/DocumentosPostulacion/{id:int}."
               },
               "response": []
             },
@@ -422,8 +417,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/DocumentosPostulacion",
-                "description": "POST /api/DocumentosPostulacion.",
+                "url": "{{baseUrl}}/ent/DocumentosPostulacion",
+                "description": "POST /ent/DocumentosPostulacion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idPostulacionAlumnos\": 1,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"ruta\": \"/documentos/archivo.pdf\"\n}",
@@ -447,8 +442,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/DocumentosPostulacion",
-                "description": "PUT /api/DocumentosPostulacion.",
+                "url": "{{baseUrl}}/ent/DocumentosPostulacion",
+                "description": "PUT /ent/DocumentosPostulacion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idPostulacionAlumnos\": 1,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"ruta\": \"/documentos/archivo.pdf\"\n}",
@@ -466,8 +461,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/DocumentosPostulacion/1",
-                "description": "DELETE /api/DocumentosPostulacion/{id:int}."
+                "url": "{{baseUrl}}/ent/DocumentosPostulacion/1",
+                "description": "DELETE /ent/DocumentosPostulacion/{id:int}."
               },
               "response": []
             }
@@ -475,15 +470,14 @@
         },
         {
           "name": "EstadosPostulacion",
-          "description": "Operaciones de la entidad EstadosPostulacion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/EstadosPostulacion",
-                "description": "GET /api/EstadosPostulacion."
+                "url": "{{baseUrl}}/ent/EstadosPostulacion",
+                "description": "GET /ent/EstadosPostulacion."
               },
               "response": []
             },
@@ -492,8 +486,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/EstadosPostulacion/1",
-                "description": "GET /api/EstadosPostulacion/{id:int}."
+                "url": "{{baseUrl}}/ent/EstadosPostulacion/1",
+                "description": "GET /ent/EstadosPostulacion/{id:int}."
               },
               "response": []
             },
@@ -508,8 +502,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/EstadosPostulacion",
-                "description": "POST /api/EstadosPostulacion.",
+                "url": "{{baseUrl}}/ent/EstadosPostulacion",
+                "description": "POST /ent/EstadosPostulacion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -533,8 +527,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/EstadosPostulacion",
-                "description": "PUT /api/EstadosPostulacion.",
+                "url": "{{baseUrl}}/ent/EstadosPostulacion",
+                "description": "PUT /ent/EstadosPostulacion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -552,8 +546,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/EstadosPostulacion/1",
-                "description": "DELETE /api/EstadosPostulacion/{id:int}."
+                "url": "{{baseUrl}}/ent/EstadosPostulacion/1",
+                "description": "DELETE /ent/EstadosPostulacion/{id:int}."
               },
               "response": []
             }
@@ -561,15 +555,14 @@
         },
         {
           "name": "IdiomaInstitucion",
-          "description": "Operaciones de la entidad IdiomaInstitucion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/IdiomaInstitucion",
-                "description": "GET /api/IdiomaInstitucion."
+                "url": "{{baseUrl}}/ent/IdiomaInstitucion",
+                "description": "GET /ent/IdiomaInstitucion."
               },
               "response": []
             },
@@ -578,8 +571,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
-                "description": "GET /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
+                "url": "{{baseUrl}}/ent/IdiomaInstitucion/1/1",
+                "description": "GET /ent/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
               },
               "response": []
             },
@@ -594,8 +587,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/IdiomaInstitucion",
-                "description": "POST /api/IdiomaInstitucion.",
+                "url": "{{baseUrl}}/ent/IdiomaInstitucion",
+                "description": "POST /ent/IdiomaInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
@@ -619,8 +612,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
-                "description": "PUT /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}. La ruta identifica el vínculo actual; el body indica la nueva combinación.",
+                "url": "{{baseUrl}}/ent/IdiomaInstitucion/1/1",
+                "description": "PUT /ent/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}. La ruta identifica el vínculo actual; el body indica la nueva combinación.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
@@ -638,8 +631,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/IdiomaInstitucion/1/1",
-                "description": "DELETE /api/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
+                "url": "{{baseUrl}}/ent/IdiomaInstitucion/1/1",
+                "description": "DELETE /ent/IdiomaInstitucion/{idInstitucion:int}/{idIdioma:int}."
               },
               "response": []
             }
@@ -647,15 +640,14 @@
         },
         {
           "name": "Idiomas",
-          "description": "Operaciones de la entidad Idiomas. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Idiomas",
-                "description": "GET /api/Idiomas."
+                "url": "{{baseUrl}}/ent/Idiomas",
+                "description": "GET /ent/Idiomas."
               },
               "response": []
             },
@@ -664,8 +656,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Idiomas/1",
-                "description": "GET /api/Idiomas/{id:int}."
+                "url": "{{baseUrl}}/ent/Idiomas/1",
+                "description": "GET /ent/Idiomas/{id:int}."
               },
               "response": []
             },
@@ -680,8 +672,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Idiomas",
-                "description": "POST /api/Idiomas.",
+                "url": "{{baseUrl}}/ent/Idiomas",
+                "description": "POST /ent/Idiomas.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombreIdioma\": \"Idioma ejemplo\"\n}",
@@ -705,8 +697,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Idiomas",
-                "description": "PUT /api/Idiomas.",
+                "url": "{{baseUrl}}/ent/Idiomas",
+                "description": "PUT /ent/Idiomas.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"nombreIdioma\": \"Idioma ejemplo\"\n}",
@@ -724,8 +716,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Idiomas/1",
-                "description": "DELETE /api/Idiomas/{id:int}."
+                "url": "{{baseUrl}}/ent/Idiomas/1",
+                "description": "DELETE /ent/Idiomas/{id:int}."
               },
               "response": []
             }
@@ -733,15 +725,14 @@
         },
         {
           "name": "Imagenes",
-          "description": "Operaciones de la entidad Imagenes. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Imagenes",
-                "description": "GET /api/Imagenes."
+                "url": "{{baseUrl}}/ent/Imagenes",
+                "description": "GET /ent/Imagenes."
               },
               "response": []
             },
@@ -750,8 +741,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Imagenes/1",
-                "description": "GET /api/Imagenes/{id:int}."
+                "url": "{{baseUrl}}/ent/Imagenes/1",
+                "description": "GET /ent/Imagenes/{id:int}."
               },
               "response": []
             },
@@ -766,8 +757,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Imagenes",
-                "description": "POST /api/Imagenes.",
+                "url": "{{baseUrl}}/ent/Imagenes",
+                "description": "POST /ent/Imagenes.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"urlImagen\": \"https://ejemplo.com/imagen.jpg\",\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -791,8 +782,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Imagenes",
-                "description": "PUT /api/Imagenes.",
+                "url": "{{baseUrl}}/ent/Imagenes",
+                "description": "PUT /ent/Imagenes.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"urlImagen\": \"https://ejemplo.com/imagen.jpg\",\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -810,8 +801,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Imagenes/1",
-                "description": "DELETE /api/Imagenes/{id:int}."
+                "url": "{{baseUrl}}/ent/Imagenes/1",
+                "description": "DELETE /ent/Imagenes/{id:int}."
               },
               "response": []
             }
@@ -819,15 +810,14 @@
         },
         {
           "name": "Instituciones",
-          "description": "Operaciones de la entidad Instituciones. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Instituciones",
-                "description": "GET /api/Instituciones."
+                "url": "{{baseUrl}}/ent/Instituciones",
+                "description": "GET /ent/Instituciones."
               },
               "response": []
             },
@@ -836,8 +826,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Instituciones/1",
-                "description": "GET /api/Instituciones/{id:int}."
+                "url": "{{baseUrl}}/ent/Instituciones/1",
+                "description": "GET /ent/Instituciones/{id:int}."
               },
               "response": []
             },
@@ -852,8 +842,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Instituciones",
-                "description": "POST /api/Instituciones.",
+                "url": "{{baseUrl}}/ent/Instituciones",
+                "description": "POST /ent/Instituciones.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Nombre de ejemplo\",\n  \"cuit\": \"30999999991\",\n  \"direccion\": \"Calle de ejemplo 123\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"idTipoInstitucion\": 1,\n  \"estado\": false\n}",
@@ -877,8 +867,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Instituciones",
-                "description": "PUT /api/Instituciones. El estado se modifica exclusivamente desde Cambiar estado.",
+                "url": "{{baseUrl}}/ent/Instituciones",
+                "description": "PUT /ent/Instituciones. El estado se modifica exclusivamente desde Cambiar estado.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"nombre\": \"Nombre de ejemplo\",\n  \"cuit\": \"30999999991\",\n  \"direccion\": \"Calle de ejemplo 123\",\n  \"email\": \"prueba.{{$timestamp}}@ejemplo.com\",\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"descripcion\": \"Descripción de ejemplo\",\n  \"idTipoInstitucion\": 1\n}",
@@ -896,7 +886,7 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": "{{baseUrl}}/api/Instituciones/1/estado",
+                "url": "{{baseUrl}}/ent/Instituciones/1/estado",
                 "description": "Invierte el estado actual (activo/inactivo). No recibe body. Devuelve el ID y el nuevo estado."
               },
               "response": []
@@ -905,15 +895,14 @@
         },
         {
           "name": "NivelesEscolares",
-          "description": "Operaciones de la entidad NivelesEscolares. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/NivelesEscolares",
-                "description": "GET /api/NivelesEscolares."
+                "url": "{{baseUrl}}/ent/NivelesEscolares",
+                "description": "GET /ent/NivelesEscolares."
               },
               "response": []
             },
@@ -922,8 +911,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/NivelesEscolares/1",
-                "description": "GET /api/NivelesEscolares/{id:int}."
+                "url": "{{baseUrl}}/ent/NivelesEscolares/1",
+                "description": "GET /ent/NivelesEscolares/{id:int}."
               },
               "response": []
             },
@@ -938,8 +927,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/NivelesEscolares",
-                "description": "POST /api/NivelesEscolares.",
+                "url": "{{baseUrl}}/ent/NivelesEscolares",
+                "description": "POST /ent/NivelesEscolares.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -963,8 +952,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/NivelesEscolares",
-                "description": "PUT /api/NivelesEscolares.",
+                "url": "{{baseUrl}}/ent/NivelesEscolares",
+                "description": "PUT /ent/NivelesEscolares.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -982,8 +971,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/NivelesEscolares/1",
-                "description": "DELETE /api/NivelesEscolares/{id:int}."
+                "url": "{{baseUrl}}/ent/NivelesEscolares/1",
+                "description": "DELETE /ent/NivelesEscolares/{id:int}."
               },
               "response": []
             }
@@ -991,15 +980,14 @@
         },
         {
           "name": "Personas",
-          "description": "Operaciones de la entidad Personas. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Personas",
-                "description": "GET /api/Personas."
+                "url": "{{baseUrl}}/ent/Personas",
+                "description": "GET /ent/Personas."
               },
               "response": []
             },
@@ -1008,8 +996,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Personas/1",
-                "description": "GET /api/Personas/{id:int}."
+                "url": "{{baseUrl}}/ent/Personas/1",
+                "description": "GET /ent/Personas/{id:int}."
               },
               "response": []
             },
@@ -1024,8 +1012,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Personas",
-                "description": "POST /api/Personas.",
+                "url": "{{baseUrl}}/ent/Personas",
+                "description": "POST /ent/Personas.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Nombre de ejemplo\",\n  \"apellido\": \"Apellido de ejemplo\",\n  \"documento\": \"99000001\",\n  \"domicilio\": \"Calle de ejemplo 123\",\n  \"fechaNacimiento\": \"2000-01-01\"\n}",
@@ -1049,8 +1037,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Personas",
-                "description": "PUT /api/Personas.",
+                "url": "{{baseUrl}}/ent/Personas",
+                "description": "PUT /ent/Personas.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"nombre\": \"Nombre de ejemplo\",\n  \"apellido\": \"Apellido de ejemplo\",\n  \"documento\": \"99000001\",\n  \"domicilio\": \"Calle de ejemplo 123\",\n  \"fechaNacimiento\": \"2000-01-01\"\n}",
@@ -1068,8 +1056,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Personas/1",
-                "description": "DELETE /api/Personas/{id:int}."
+                "url": "{{baseUrl}}/ent/Personas/1",
+                "description": "DELETE /ent/Personas/{id:int}."
               },
               "response": []
             }
@@ -1077,15 +1065,14 @@
         },
         {
           "name": "PostulacionesAdminInstitucion",
-          "description": "Operaciones de la entidad PostulacionesAdminInstitucion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
-                "description": "GET /api/PostulacionesAdminInstitucion."
+                "url": "{{baseUrl}}/ent/PostulacionesAdminInstitucion",
+                "description": "GET /ent/PostulacionesAdminInstitucion."
               },
               "response": []
             },
@@ -1094,8 +1081,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion/1",
-                "description": "GET /api/PostulacionesAdminInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/PostulacionesAdminInstitucion/1",
+                "description": "GET /ent/PostulacionesAdminInstitucion/{id:int}."
               },
               "response": []
             },
@@ -1110,8 +1097,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
-                "description": "POST /api/PostulacionesAdminInstitucion.",
+                "url": "{{baseUrl}}/ent/PostulacionesAdminInstitucion",
+                "description": "POST /ent/PostulacionesAdminInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idAdministradorInstitucion\": 1,\n  \"idEstado\": 1,\n  \"nombreInstitucion\": \"Institución de ejemplo\",\n  \"cuitInstitucion\": \"30999999991\",\n  \"rutaConstanciaFiscal\": \"/documentos/constancia-fiscal.pdf\",\n  \"rutaHabilitacion\": \"/documentos/habilitacion.pdf\",\n  \"rutaConstanciaLaboral\": \"/documentos/constancia-laboral.pdf\",\n  \"motivoRechazo\": null\n}",
@@ -1135,8 +1122,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion",
-                "description": "PUT /api/PostulacionesAdminInstitucion.",
+                "url": "{{baseUrl}}/ent/PostulacionesAdminInstitucion",
+                "description": "PUT /ent/PostulacionesAdminInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idAdministradorInstitucion\": 1,\n  \"idEstado\": 1,\n  \"nombreInstitucion\": \"Institución de ejemplo\",\n  \"cuitInstitucion\": \"30999999991\",\n  \"rutaConstanciaFiscal\": \"/documentos/constancia-fiscal.pdf\",\n  \"rutaHabilitacion\": \"/documentos/habilitacion.pdf\",\n  \"rutaConstanciaLaboral\": \"/documentos/constancia-laboral.pdf\",\n  \"motivoRechazo\": null\n}",
@@ -1154,8 +1141,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAdminInstitucion/1",
-                "description": "DELETE /api/PostulacionesAdminInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/PostulacionesAdminInstitucion/1",
+                "description": "DELETE /ent/PostulacionesAdminInstitucion/{id:int}."
               },
               "response": []
             }
@@ -1163,15 +1150,14 @@
         },
         {
           "name": "PostulacionesAlumnos",
-          "description": "Operaciones de la entidad PostulacionesAlumnos. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
-                "description": "GET /api/PostulacionesAlumnos."
+                "url": "{{baseUrl}}/ent/PostulacionesAlumnos",
+                "description": "GET /ent/PostulacionesAlumnos."
               },
               "response": []
             },
@@ -1180,8 +1166,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAlumnos/1",
-                "description": "GET /api/PostulacionesAlumnos/{id:int}."
+                "url": "{{baseUrl}}/ent/PostulacionesAlumnos/1",
+                "description": "GET /ent/PostulacionesAlumnos/{id:int}."
               },
               "response": []
             },
@@ -1196,8 +1182,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
-                "description": "POST /api/PostulacionesAlumnos.",
+                "url": "{{baseUrl}}/ent/PostulacionesAlumnos",
+                "description": "POST /ent/PostulacionesAlumnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idCurso\": 1,\n  \"idAlumno\": 1,\n  \"idEstado\": 1,\n  \"motivoRechazo\": null\n}",
@@ -1221,8 +1207,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/PostulacionesAlumnos",
-                "description": "PUT /api/PostulacionesAlumnos.",
+                "url": "{{baseUrl}}/ent/PostulacionesAlumnos",
+                "description": "PUT /ent/PostulacionesAlumnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"fecha\": \"2026-11-07\",\n  \"codigoSeguimiento\": \"PRUEBA-{{$timestamp}}\",\n  \"idCurso\": 1,\n  \"idAlumno\": 1,\n  \"idEstado\": 1,\n  \"motivoRechazo\": null\n}",
@@ -1240,8 +1226,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/PostulacionesAlumnos/1",
-                "description": "DELETE /api/PostulacionesAlumnos/{id:int}."
+                "url": "{{baseUrl}}/ent/PostulacionesAlumnos/1",
+                "description": "DELETE /ent/PostulacionesAlumnos/{id:int}."
               },
               "response": []
             }
@@ -1249,15 +1235,14 @@
         },
         {
           "name": "Resenias",
-          "description": "Operaciones de la entidad Resenias. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Resenias",
-                "description": "GET /api/Resenias."
+                "url": "{{baseUrl}}/ent/Resenias",
+                "description": "GET /ent/Resenias."
               },
               "response": []
             },
@@ -1266,8 +1251,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Resenias/1",
-                "description": "GET /api/Resenias/{id:int}."
+                "url": "{{baseUrl}}/ent/Resenias/1",
+                "description": "GET /ent/Resenias/{id:int}."
               },
               "response": []
             },
@@ -1282,8 +1267,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Resenias",
-                "description": "POST /api/Resenias.",
+                "url": "{{baseUrl}}/ent/Resenias",
+                "description": "POST /ent/Resenias.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"calificacion\": 5,\n  \"comentario\": \"Comentario de prueba\",\n  \"respuestaInstitucion\": null,\n  \"fecha\": \"2026-11-07\",\n  \"idInstitucion\": 1,\n  \"idResponsable\": 1\n}",
@@ -1307,8 +1292,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Resenias",
-                "description": "PUT /api/Resenias.",
+                "url": "{{baseUrl}}/ent/Resenias",
+                "description": "PUT /ent/Resenias.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"calificacion\": 5,\n  \"comentario\": \"Comentario de prueba\",\n  \"respuestaInstitucion\": null,\n  \"fecha\": \"2026-11-07\",\n  \"idInstitucion\": 1,\n  \"idResponsable\": 1\n}",
@@ -1326,8 +1311,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Resenias/1",
-                "description": "DELETE /api/Resenias/{id:int}."
+                "url": "{{baseUrl}}/ent/Resenias/1",
+                "description": "DELETE /ent/Resenias/{id:int}."
               },
               "response": []
             }
@@ -1335,15 +1320,14 @@
         },
         {
           "name": "Responsables",
-          "description": "Operaciones de la entidad Responsables. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Responsables",
-                "description": "GET /api/Responsables."
+                "url": "{{baseUrl}}/ent/Responsables",
+                "description": "GET /ent/Responsables."
               },
               "response": []
             },
@@ -1352,8 +1336,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Responsables/1",
-                "description": "GET /api/Responsables/{id:int}."
+                "url": "{{baseUrl}}/ent/Responsables/1",
+                "description": "GET /ent/Responsables/{id:int}."
               },
               "response": []
             },
@@ -1368,8 +1352,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Responsables",
-                "description": "POST /api/Responsables.",
+                "url": "{{baseUrl}}/ent/Responsables",
+                "description": "POST /ent/Responsables.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idPersona\": 1,\n  \"idUsuario\": 1\n}",
@@ -1393,8 +1377,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Responsables",
-                "description": "PUT /api/Responsables.",
+                "url": "{{baseUrl}}/ent/Responsables",
+                "description": "PUT /ent/Responsables.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idPersona\": 1,\n  \"idUsuario\": 1\n}",
@@ -1412,8 +1396,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Responsables/1",
-                "description": "DELETE /api/Responsables/{id:int}."
+                "url": "{{baseUrl}}/ent/Responsables/1",
+                "description": "DELETE /ent/Responsables/{id:int}."
               },
               "response": []
             }
@@ -1421,15 +1405,14 @@
         },
         {
           "name": "ResponsablesPorAlumno",
-          "description": "Operaciones de la entidad ResponsablesPorAlumno. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
-                "description": "GET /api/ResponsablesPorAlumno."
+                "url": "{{baseUrl}}/ent/ResponsablesPorAlumno",
+                "description": "GET /ent/ResponsablesPorAlumno."
               },
               "response": []
             },
@@ -1438,8 +1421,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/ResponsablesPorAlumno/1",
-                "description": "GET /api/ResponsablesPorAlumno/{id:int}."
+                "url": "{{baseUrl}}/ent/ResponsablesPorAlumno/1",
+                "description": "GET /ent/ResponsablesPorAlumno/{id:int}."
               },
               "response": []
             },
@@ -1454,8 +1437,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
-                "description": "POST /api/ResponsablesPorAlumno.",
+                "url": "{{baseUrl}}/ent/ResponsablesPorAlumno",
+                "description": "POST /ent/ResponsablesPorAlumno.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idResponsable\": 1,\n  \"idAlumno\": 1,\n  \"idRol\": 1\n}",
@@ -1479,8 +1462,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/ResponsablesPorAlumno",
-                "description": "PUT /api/ResponsablesPorAlumno.",
+                "url": "{{baseUrl}}/ent/ResponsablesPorAlumno",
+                "description": "PUT /ent/ResponsablesPorAlumno.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idResponsable\": 1,\n  \"idAlumno\": 1,\n  \"idRol\": 1\n}",
@@ -1498,8 +1481,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/ResponsablesPorAlumno/1",
-                "description": "DELETE /api/ResponsablesPorAlumno/{id:int}."
+                "url": "{{baseUrl}}/ent/ResponsablesPorAlumno/1",
+                "description": "DELETE /ent/ResponsablesPorAlumno/{id:int}."
               },
               "response": []
             }
@@ -1507,15 +1490,14 @@
         },
         {
           "name": "Roles",
-          "description": "Operaciones de la entidad Roles. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Roles",
-                "description": "GET /api/Roles."
+                "url": "{{baseUrl}}/ent/Roles",
+                "description": "GET /ent/Roles."
               },
               "response": []
             },
@@ -1524,8 +1506,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Roles/1",
-                "description": "GET /api/Roles/{id:int}."
+                "url": "{{baseUrl}}/ent/Roles/1",
+                "description": "GET /ent/Roles/{id:int}."
               },
               "response": []
             },
@@ -1540,8 +1522,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Roles",
-                "description": "POST /api/Roles.",
+                "url": "{{baseUrl}}/ent/Roles",
+                "description": "POST /ent/Roles.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1565,8 +1547,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Roles",
-                "description": "PUT /api/Roles.",
+                "url": "{{baseUrl}}/ent/Roles",
+                "description": "PUT /ent/Roles.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1584,8 +1566,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Roles/1",
-                "description": "DELETE /api/Roles/{id:int}."
+                "url": "{{baseUrl}}/ent/Roles/1",
+                "description": "DELETE /ent/Roles/{id:int}."
               },
               "response": []
             }
@@ -1593,15 +1575,14 @@
         },
         {
           "name": "Telefonos",
-          "description": "Operaciones de la entidad Telefonos. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Telefonos",
-                "description": "GET /api/Telefonos."
+                "url": "{{baseUrl}}/ent/Telefonos",
+                "description": "GET /ent/Telefonos."
               },
               "response": []
             },
@@ -1610,8 +1591,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Telefonos/1",
-                "description": "GET /api/Telefonos/{id:int}."
+                "url": "{{baseUrl}}/ent/Telefonos/1",
+                "description": "GET /ent/Telefonos/{id:int}."
               },
               "response": []
             },
@@ -1626,8 +1607,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Telefonos",
-                "description": "POST /api/Telefonos.",
+                "url": "{{baseUrl}}/ent/Telefonos",
+                "description": "POST /ent/Telefonos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"idInstitucion\": 1,\n  \"idAdministrador\": null,\n  \"idResponsable\": null,\n  \"numeroTelefono\": \"1100000000\"\n}",
@@ -1651,8 +1632,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Telefonos",
-                "description": "PUT /api/Telefonos.",
+                "url": "{{baseUrl}}/ent/Telefonos",
+                "description": "PUT /ent/Telefonos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"idInstitucion\": 1,\n  \"idAdministrador\": null,\n  \"idResponsable\": null,\n  \"numeroTelefono\": \"1100000000\"\n}",
@@ -1670,8 +1651,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Telefonos/1",
-                "description": "DELETE /api/Telefonos/{id:int}."
+                "url": "{{baseUrl}}/ent/Telefonos/1",
+                "description": "DELETE /ent/Telefonos/{id:int}."
               },
               "response": []
             }
@@ -1679,15 +1660,14 @@
         },
         {
           "name": "TipoInstitucion",
-          "description": "Operaciones de la entidad TipoInstitucion. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoInstitucion",
-                "description": "GET /api/TipoInstitucion."
+                "url": "{{baseUrl}}/ent/TipoInstitucion",
+                "description": "GET /ent/TipoInstitucion."
               },
               "response": []
             },
@@ -1696,8 +1676,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoInstitucion/1",
-                "description": "GET /api/TipoInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/TipoInstitucion/1",
+                "description": "GET /ent/TipoInstitucion/{id:int}."
               },
               "response": []
             },
@@ -1712,8 +1692,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/TipoInstitucion",
-                "description": "POST /api/TipoInstitucion.",
+                "url": "{{baseUrl}}/ent/TipoInstitucion",
+                "description": "POST /ent/TipoInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"tipoDeInstitucion\": \"Institución ejemplo\"\n}",
@@ -1737,8 +1717,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/TipoInstitucion",
-                "description": "PUT /api/TipoInstitucion.",
+                "url": "{{baseUrl}}/ent/TipoInstitucion",
+                "description": "PUT /ent/TipoInstitucion.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"tipoDeInstitucion\": \"Institución ejemplo\"\n}",
@@ -1756,8 +1736,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoInstitucion/1",
-                "description": "DELETE /api/TipoInstitucion/{id:int}."
+                "url": "{{baseUrl}}/ent/TipoInstitucion/1",
+                "description": "DELETE /ent/TipoInstitucion/{id:int}."
               },
               "response": []
             }
@@ -1765,15 +1745,14 @@
         },
         {
           "name": "TipoUsuario",
-          "description": "Operaciones de la entidad TipoUsuario. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoUsuario",
-                "description": "GET /api/TipoUsuario."
+                "url": "{{baseUrl}}/ent/TipoUsuario",
+                "description": "GET /ent/TipoUsuario."
               },
               "response": []
             },
@@ -1782,8 +1761,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoUsuario/1",
-                "description": "GET /api/TipoUsuario/{id:int}."
+                "url": "{{baseUrl}}/ent/TipoUsuario/1",
+                "description": "GET /ent/TipoUsuario/{id:int}."
               },
               "response": []
             },
@@ -1798,8 +1777,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/TipoUsuario",
-                "description": "POST /api/TipoUsuario.",
+                "url": "{{baseUrl}}/ent/TipoUsuario",
+                "description": "POST /ent/TipoUsuario.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1823,8 +1802,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/TipoUsuario",
-                "description": "PUT /api/TipoUsuario.",
+                "url": "{{baseUrl}}/ent/TipoUsuario",
+                "description": "PUT /ent/TipoUsuario.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1842,8 +1821,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/TipoUsuario/1",
-                "description": "DELETE /api/TipoUsuario/{id:int}."
+                "url": "{{baseUrl}}/ent/TipoUsuario/1",
+                "description": "DELETE /ent/TipoUsuario/{id:int}."
               },
               "response": []
             }
@@ -1851,15 +1830,14 @@
         },
         {
           "name": "Turnos",
-          "description": "Operaciones de la entidad Turnos. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Turnos",
-                "description": "GET /api/Turnos."
+                "url": "{{baseUrl}}/ent/Turnos",
+                "description": "GET /ent/Turnos."
               },
               "response": []
             },
@@ -1868,8 +1846,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Turnos/1",
-                "description": "GET /api/Turnos/{id:int}."
+                "url": "{{baseUrl}}/ent/Turnos/1",
+                "description": "GET /ent/Turnos/{id:int}."
               },
               "response": []
             },
@@ -1884,8 +1862,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Turnos",
-                "description": "POST /api/Turnos.",
+                "url": "{{baseUrl}}/ent/Turnos",
+                "description": "POST /ent/Turnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1909,8 +1887,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Turnos",
-                "description": "PUT /api/Turnos.",
+                "url": "{{baseUrl}}/ent/Turnos",
+                "description": "PUT /ent/Turnos.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"id\": 1,\n  \"descripcion\": \"Descripción de ejemplo\"\n}",
@@ -1928,8 +1906,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/api/Turnos/1",
-                "description": "DELETE /api/Turnos/{id:int}."
+                "url": "{{baseUrl}}/ent/Turnos/1",
+                "description": "DELETE /ent/Turnos/{id:int}."
               },
               "response": []
             }
@@ -1937,15 +1915,14 @@
         },
         {
           "name": "Usuarios",
-          "description": "Operaciones de la entidad Usuarios. Las claves foráneas deben existir en la base.",
           "item": [
             {
               "name": "Listar",
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Usuarios",
-                "description": "GET /api/Usuarios."
+                "url": "{{baseUrl}}/ent/Usuarios",
+                "description": "GET /ent/Usuarios."
               },
               "response": []
             },
@@ -1954,8 +1931,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/api/Usuarios/1",
-                "description": "GET /api/Usuarios/{id:int}."
+                "url": "{{baseUrl}}/ent/Usuarios/1",
+                "description": "GET /ent/Usuarios/{id:int}."
               },
               "response": []
             },
@@ -1970,7 +1947,7 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Usuarios",
+                "url": "{{baseUrl}}/ent/Usuarios",
                 "description": "Ejemplo con clave test1234 editable en el body. La respuesta no incluye la clave. ",
                 "body": {
                   "mode": "raw",
@@ -1995,7 +1972,7 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/Usuarios",
+                "url": "{{baseUrl}}/ent/Usuarios",
                 "description": "Ejemplo con clave test1234 editable en el body. La respuesta no incluye la clave. El estado se modifica desde Cambiar estado.",
                 "body": {
                   "mode": "raw",
@@ -2014,8 +1991,716 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": "{{baseUrl}}/api/Usuarios/1/estado",
+                "url": "{{baseUrl}}/ent/Usuarios/1/estado",
                 "description": "Invierte el estado actual (activo/inactivo). No recibe body. Devuelve el ID y el nuevo estado."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "procedimientos",
+      "item": [
+        {
+          "name": "RegistrarResponsable",
+          "item": [
+            {
+              "name": "Registrar responsable",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clave\": \"test1234\",\n  \"email\": \"poc.responsable@mail.test\",\n  \"documento\": \"40999123\",\n  \"nombre\": \"Prueba\",\n  \"apellido\": \"Responsable\",\n  \"domicilio\": \"Calle de prueba 123\",\n  \"fechaNacimiento\": \"1990-01-01\",\n  \"telefono\": \"+54 11 5555-9999\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RegistrarResponsable",
+                "description": "POC de registro y login. Usa una cuenta nueva y una contraseña sin hashear; la API se encarga del hash."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "item": [
+            {
+              "name": "Login correcto",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"poc.responsable@mail.test\",\n  \"clave\": \"test1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/Login",
+                "description": "POC de registro y login. Usa una cuenta nueva y una contraseña sin hashear; la API se encarga del hash."
+              },
+              "response": []
+            },
+            {
+              "name": "Login con clave incorrecta",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"poc.responsable@mail.test\",\n  \"clave\": \"clave-incorrecta\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/Login",
+                "description": "POC de registro y login. Usa una cuenta nueva y una contraseña sin hashear; la API se encarga del hash."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RegistrarAlumno",
+          "item": [
+            {
+              "name": "Registrar alumno",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idResponsable\": 1,\n  \"idRol\": 2,\n  \"documento\": \"55999123\",\n  \"nombre\": \"Alumno\",\n  \"apellido\": \"Prueba\",\n  \"domicilio\": \"Calle de prueba 123\",\n  \"fechaNacimiento\": \"2018-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RegistrarAlumno",
+                "description": "Crea Persona, Alumno y vínculo. Cambiar documento si ya fue registrado."
+              },
+              "response": []
+            },
+            {
+              "name": "Registrar autogestor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idResponsable\": 1,\n  \"idRol\": null,\n  \"documento\": \"33456872\",\n  \"nombre\": null,\n  \"apellido\": null,\n  \"domicilio\": null,\n  \"fechaNacimiento\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RegistrarAlumno",
+                "description": "Ejemplo del seed: el responsable 1 se registra a sí mismo usando el documento de su Persona. No crea vínculo en ResponsablesPorAlumno. Ejecutar solo si esa persona todavía no es Alumno."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RegistrarAdministradorInstitucion",
+          "item": [
+            {
+              "name": "Registrar administrador e iniciar postulación",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "nombre",
+                      "value": "Administrador",
+                      "type": "text"
+                    },
+                    {
+                      "key": "apellido",
+                      "value": "Prueba",
+                      "type": "text"
+                    },
+                    {
+                      "key": "documento",
+                      "value": "40999124",
+                      "type": "text"
+                    },
+                    {
+                      "key": "domicilio",
+                      "value": "Calle de prueba 124",
+                      "type": "text"
+                    },
+                    {
+                      "key": "fechaNacimiento",
+                      "value": "1990-01-01",
+                      "type": "text"
+                    },
+                    {
+                      "key": "clave",
+                      "value": "test1234",
+                      "type": "text"
+                    },
+                    {
+                      "key": "email",
+                      "value": "poc.administrador@mail.test",
+                      "type": "text"
+                    },
+                    {
+                      "key": "telefono",
+                      "value": "+54 11 5555-9998",
+                      "type": "text"
+                    },
+                    {
+                      "key": "nombreInstitucion",
+                      "value": "Institución de prueba",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cuitInstitucion",
+                      "value": "30999999991",
+                      "type": "text"
+                    },
+                    {
+                      "key": "constanciaFiscal",
+                      "type": "file",
+                      "src": [],
+                      "description": "Seleccionar PDF, JPG/JPEG o PNG, de hasta 5 MB."
+                    },
+                    {
+                      "key": "habilitacion",
+                      "type": "file",
+                      "src": [],
+                      "description": "Seleccionar PDF, JPG/JPEG o PNG, de hasta 5 MB."
+                    },
+                    {
+                      "key": "constanciaLaboral",
+                      "type": "file",
+                      "src": [],
+                      "description": "Seleccionar PDF, JPG/JPEG o PNG, de hasta 5 MB."
+                    }
+                  ]
+                },
+                "url": "{{baseUrl}}/sp/RegistrarAdministradorInstitucion",
+                "description": "Registro con datos y tres archivos en un único multipart/form-data. Elegir los archivos en Body > form-data. Postman genera Content-Type con su boundary automáticamente. PDF, JPG/JPEG o PNG, máximo 5 MB por archivo. La API genera las rutas y el código de seguimiento, y hashea la clave. No enviar rutaConstanciaFiscal, rutaHabilitacion ni rutaConstanciaLaboral. El usuario nace inactivo. El servidor requiere Archivos:DirectorioRaiz apuntando fuera del proyecto, con permisos de escritura para la API."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RegistrarResenia",
+          "item": [
+            {
+              "name": "Registrar reseña",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"comentario\": \"Comentario de prueba del responsable.\",\n  \"calificacion\": 5,\n  \"idPostulacion\": 1,\n  \"idResponsable\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RegistrarResenia",
+                "description": "IDs en 1 por defecto. Elegir una postulación confirmada de ese responsable, con institución activa y sin reseña previa. En el seed, los IDs 1/1 ya tienen reseña y devolverán 400. Un caso elegible del seed original es idPostulacion 8 e idResponsable 6, mientras no se haya reseñado esa institución."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ResponderResenia",
+          "item": [
+            {
+              "name": "Responder reseña",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idResenia\": 1,\n  \"respuestaInstitucion\": \"Gracias por compartir su experiencia.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ResponderResenia",
+                "description": "Ejemplo sobre el seed original. La reseña debe pertenecer a la institución activa y todavía no tener respuesta. Solo se permite responder una vez."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vistas",
+      "item": [
+        {
+          "name": "Instituciones",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idTipoInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?idTipoInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por estado",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por nombre",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?nombre=Escuela",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones/1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. La búsqueda por ID devuelve 404 si el registro no existe."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesAdminInstitucion",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idAdministradorInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion?idAdministradorInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion?idInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idEstado",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion?idEstado=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por codigoSeguimiento",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion?codigoSeguimiento=PAI-20250908-0001",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAdminInstitucion/1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. La búsqueda por ID devuelve 404 si el registro no existe."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesAlumnos",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idAlumno",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?idAlumno=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idResponsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?idResponsable=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?idInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idCurso",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?idCurso=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idEstado",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?idEstado=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por cicloLectivo",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?cicloLectivo=2026",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por codigoSeguimiento",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos?codigoSeguimiento=PST-20251112-0001",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesAlumnos/1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. La búsqueda por ID devuelve 404 si el registro no existe."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesPorResponsable",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idResponsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?idResponsable=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idAlumno",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?idAlumno=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?idInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idCurso",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?idCurso=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idEstado",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?idEstado=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por cicloLectivo",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PostulacionesPorResponsable?cicloLectivo=2026",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ResponsablesConAlumnos",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ResponsablesConAlumnos",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idResponsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ResponsablesConAlumnos?idResponsable=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idAlumno",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ResponsablesConAlumnos?idAlumno=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ValoracionesPorInstitucion",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ValoracionesPorInstitucion",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idInstitucion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ValoracionesPorInstitucion?idInstitucion=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por idResponsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ValoracionesPorInstitucion?idResponsable=1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. Puede devolver varias filas por entidad."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/ValoracionesPorInstitucion/1",
+                "description": "Lectura de la vista. Sin resultados, el listado devuelve [] con HTTP 200. La búsqueda por ID devuelve 404 si el registro no existe."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "archivos",
+      "item": [
+        {
+          "name": "PostulacionesAdminInstitucion",
+          "item": [
+            {
+              "name": "Descargar constancia-fiscal",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/archivos/PostulacionesAdminInstitucion/constancia-fiscal/1",
+                "description": "Devuelve el archivo como descarga. Requiere X-Api-Key. No recibe rutas de disco. Guardar la respuesta desde Postman si se desea conservar el archivo."
+              },
+              "response": []
+            },
+            {
+              "name": "Descargar habilitacion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/archivos/PostulacionesAdminInstitucion/habilitacion/1",
+                "description": "Devuelve el archivo como descarga. Requiere X-Api-Key. No recibe rutas de disco. Guardar la respuesta desde Postman si se desea conservar el archivo."
+              },
+              "response": []
+            },
+            {
+              "name": "Descargar constancia-laboral",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/archivos/PostulacionesAdminInstitucion/constancia-laboral/1",
+                "description": "Devuelve el archivo como descarga. Requiere X-Api-Key. No recibe rutas de disco. Guardar la respuesta desde Postman si se desea conservar el archivo."
               },
               "response": []
             }
