@@ -3,9 +3,9 @@ USE InstiRed_DEV;
 DELIMITER $$
 -- ------------------------------------------------------------------------------
 -- sp_Validar_Usuario_Login
--- Ingresan parametros email y clave.
--- Devuelve una fila con los datos para iniciar sesion: ids del usuario, de la persona
--- y del rol (responsable / administrador de institucion / alumno autogestor). Los que no aplican vienen en NULL.
+-- Ingresan parámetros email y clave.
+-- Devuelve una fila con los datos para iniciar sesión: ids del usuario, de la persona
+-- y del rol (responsable / administrador de institución / alumno autogestor). Los que no aplican vienen en NULL.
 
 DROP PROCEDURE IF EXISTS sp_Validar_Usuario_Login;
 
@@ -69,7 +69,6 @@ BEGIN
 END$$
 DELIMITER ;
 
-DELIMITER $$
 -- -----------------------------------------------------------------------------
 -- sp_Registrar_Resenia
 -- solo postulaciones de alumnos en estado aprobado dejan resenia
@@ -77,6 +76,8 @@ DELIMITER $$
    -- en la creación de tabla solo se puede dejar una resenia por institucion. Permite solo una
    -- Combinacion entre institucion y responsable. Ej:  2 hijos solo 1 resenia en misma institucion.
 -- ------------------------------------------------------------------------------
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_Registrar_Resenia$$
 
 CREATE PROCEDURE sp_Registrar_Resenia(
@@ -87,81 +88,86 @@ IN p_idResponsable  INT
 )
 BEGIN
 
-DECLARE v_idAlumno INT;
-DECLARE v_idInstitucion INT;
+	DECLARE v_idAlumno INT;
+	DECLARE v_idInstitucion INT;
 
-DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN 
 		ROLLBACK;
 		RESIGNAL;
 	END;
 
--- validaciones
+	-- validaciones
 
-IF p_calificacion IS NULL OR p_calificacion < 1 OR p_calificacion > 5 THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La calificacion debe ser entre 1 y 5.'; 
-END IF;
+	IF p_calificacion IS NULL OR p_calificacion < 1 OR p_calificacion > 5 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La calificacion debe ser entre 1 y 5.'; 
+	END IF;
 
-IF p_comentario IS NULL OR TRIM(p_comentario) = '' THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio.'; -- campo obligatorio porque en la tabla se creo como not null
-END IF;
+	IF p_comentario IS NULL OR TRIM(p_comentario) = '' THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio.'; -- campo obligatorio porque en la tabla se creo como not null
+	END IF;
 
--- compruebo que exista la postulacion
-IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no fue confirmada.';
-END IF; 
 
--- recupero valor de variables con consulta
-SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
+	-- compruebo que exista la postulacion
+	IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no fue confirmada.';
+	END IF; 
 
--- Valido que el reponsable exista 
-IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
-END IF;
+	-- recupero valor de variables con consulta
+	SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
 
--- Valido que el usuario responsable este activo 
-IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
-                                            WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
-END IF;
+	-- Valido que el reponsable exista 
+	IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+	END IF;
 
--- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulacion
-IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
-                                            LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
-                                            WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
-END IF;
+	-- Valido que el usuario responsable este activo 
+	IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
+												WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
+	END IF;
 
--- Valido que la institucion se encuentre activa
-IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
-END IF; 
+	-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulación
+	IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
+												LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
+												WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
+	END IF;
 
--- valido que no haya una reseña previa para la institucion por ese responsable 
-IF EXISTS (SELECT 1 FROM Resenias r WHERE r.idResponsable = p_idResponsable AND r.idInstitucion = v_idInstitucion) 
-THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
-END IF;
+	-- Valido que la institución se encuentre activa
+	IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
+	END IF; 
 
--- valido que el estado sea confirmado
-IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
-                                              WHERE e.descripcion = 'Confirmado' AND po.id = p_idPostulacion) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta aprobada.';
-END IF;
+	-- valido que no haya una reseña previa para la institución por ese responsable 
+	IF EXISTS (SELECT 1 FROM Resenias r WHERE r.idResponsable = p_idResponsable AND r.idInstitucion = v_idInstitucion) 
+	THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
+	END IF;
 
--- comenzamos con la transaccion a la BD
-START TRANSACTION;
+	-- valido que el estado sea confirmado
+	IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
+												  WHERE e.descripcion = 'Confirmado' AND po.id = p_idPostulacion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta aprobada.';
+	END IF;
 
-INSERT INTO Resenias (calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES (p_calificacion, p_comentario, CURDATE(), v_idInstitucion, p_idResponsable);
+	-- comenzamos con la transacción a la BD
+	START TRANSACTION;
 
-COMMIT;
+	INSERT INTO Resenias (calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES (p_calificacion, p_comentario, CURDATE(), v_idInstitucion, p_idResponsable);
+
+	COMMIT;
 
 END $$
 DELIMITER ;
 
-DELIMITER $$
+-- ---------------------------------
 -- sp_Responder_Resenia
+-- el admin de institución solo puede responder una resenia cuando la respuesta sea NULL
 -- Recibo el id de la resenia, p_respuestaInstitucion, p_idIsntitucion 
+-- --------------------------------
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_Responder_Resenia $$
 
 CREATE PROCEDURE sp_Responder_Resenia(
@@ -172,133 +178,180 @@ IN p_respuestaInstitucion          TEXT -- (Lo declaro como text para que alcanc
 
 BEGIN 
 
-DECLARE EXIT HANDLER FOR SQLEXCEPTION
-BEGIN 
-	ROLLBACK;
-    RESIGNAL;
-END;
--- Validaciones
--- valido que la respuesta no sea null, ni vacía 
-IF p_respuestaInstitucion IS NULL OR TRIM(p_respuestaInstitucion) = '' THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una respuesta en la reseña.';
-END IF;
--- valido que la longitud no sea mayor a 255 caracteres
-IF CHAR_LENGTH(p_respuestaInstitucion) > 255 THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres peritidos';
-END IF;
--- valido que la resenia exista 
-IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada.';
-END IF;
--- valido que la isntitucion este activa
-IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = p_idInstitucion AND estado = TRUE) THEN 
-	SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
-END IF;
--- valido que la resenia sea de la institucion correspondiente 
-IF NOT EXISTS(SELECT 1 FROM Resenias WHERE idInstitucion = p_idInstitucion AND id = p_idResenia) THEN
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no pertenece a su institución.';
-END IF;
--- valido que la respuesta sea null
-IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
-END IF;
--- comienzo la transacción
-START TRANSACTION;
--- actualizo el campo respuesta institucion 
-	UPDATE Resenias SET respuestaInstitucion = p_respuestaInstitucion WHERE id = p_idResenia AND idInstitucion = p_idInstitucion AND respuestaInstitucion IS NULL;
-COMMIT;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN 
+		ROLLBACK;
+		RESIGNAL;
+	END;
+	-- Validaciones
+	-- valido que la respuesta no sea null, ni vacía 
+	IF p_respuestaInstitucion IS NULL OR TRIM(p_respuestaInstitucion) = '' THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una respuesta en la reseña.';
+	END IF;
+	-- valido que la longitud no sea mayor a 255 caracteres
+	IF CHAR_LENGTH(p_respuestaInstitucion) > 255 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres peritidos';
+	END IF;
+	-- valido que la resenia exista 
+	IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada.';
+	END IF;
+	-- valido que la isntitución este activa
+	IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = p_idInstitucion AND estado = TRUE) THEN 
+		SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
+	END IF;
+	-- valido que la resenia sea de la institución correspondiente 
+	IF NOT EXISTS(SELECT 1 FROM Resenias WHERE idInstitucion = p_idInstitucion AND id = p_idResenia) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no pertenece a su institución.';
+	END IF;
+	-- valido que la respuesta sea null
+	IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
+	END IF;
+    
+	-- comienzo la transacción
+	START TRANSACTION;
+    
+	-- actualizo el campo respuesta institucion 
+		UPDATE Resenias SET respuestaInstitucion = p_respuestaInstitucion WHERE id = p_idResenia AND idInstitucion = p_idInstitucion AND respuestaInstitucion IS NULL;
+	
+    COMMIT;
 END$$
 DELIMITER ;
 
-DELIMITER $$ 
+DELIMITER ;
+
 -- ----------------------------
 -- sp_Registrar_Postulacion_Alumno
--- Parametros: p_idResponsable, p_idAlumno, p_idCurso
+-- Un responsable registra una postulación de alumnno (puede ser autogestor - mismo idPersona)
+-- El registro de postulación incluye la documentación asociada al idPostulacion 
+-- Parametros que debo recibir: p_idResponsable, p_idAlumno, p_idCurso, p_listaDocumentos (JSON)
 -- ----------------------------
+DELIMITER $$ 
+
 DROP PROCEDURE IF EXISTS sp_Registrar_Postulacion_Alumno $$
 
 CREATE PROCEDURE sp_Registrar_Postulacion_Alumno(
 IN p_idResponsable      INT,
 IN p_idAlumno           INT,
-IN p_idCurso            INT
+IN p_idCurso            INT,
+IN p_listaDocumentos    JSON
 )
 BEGIN 
-DECLARE v_idPostulacion     INT;
-DECLARE v_codigoSeguimiento VARCHAR(30);
-DECLARE v_capacidad         INT;
-DECLARE v_inscriptos        INT;
-DECLARE EXIT HANDLER FOR SQLEXCEPTION
-BEGIN
-	ROLLBACK;
-    RESIGNAL;
-END;
+	DECLARE v_idPostulacion     INT;
+	DECLARE v_codigoSeguimiento VARCHAR(30);
+	DECLARE v_capacidad         INT DEFAULT NULL;
+	DECLARE v_inscriptos        INT DEFAULT NULL;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+		RESIGNAL;
+	END;
 
--- inicio la transaccion 
-START TRANSACTION; 
+	-- Validaciones que no consultan la BD
+	-- Validamos que la lista de documentos no este vacía, siempre necesitaremos al menos un documento para registrar la postulación
+	IF p_listaDocumentos IS NULL THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe cargar documentación para registrar la postulación.';
+	END IF;
 
-SELECT capacidad, inscriptos INTO v_capacidad, v_inscriptos FROM Cursos WHERE id = p_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de postular, paralelamente otro usuario este confirmando el ultimo cupo y cuando esta postulacion se acepte lo haga sin vacante disponible. 
+	-- Validamos que el parámetro sea un Array Json
+	IF JSON_TYPE(p_listaDocumentos) <> 'ARRAY' THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La lista de documentos no tiene un formato válido.';
+	END IF;
 
--- Validaciones                                                                                          -- el bloqueo se mantiene hasta terminar transaccion (commit o rollback)
--- Curso existente 
-IF v_capacidad IS NULL THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Curso inexistente';
-END IF;
+	-- Validamos que tenga al menos un documento
+	IF JSON_LENGTH(p_listaDocumentos) = 0 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe adjuntar la documentación solicitada por la institución.';
+	END IF;
 
--- Verificar cupo
-IF (v_capacidad - v_inscriptos) <= 0 THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso no tiene cupos disponibles';
-END IF;
+	 -- Validamos que la logitud ingresada de ruta y descripcion sea correcta 
+	 IF EXISTS (SELECT 1 FROM JSON_TABLE (p_listaDocumentos, '$[*]' COLUMNS (numero FOR ORDINALITY)) AS d WHERE CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(p_listaDocumentos, CONCAT('$[',d.numero - 1 ,'].descripcion')))) > 100 
+																											        OR CHAR_LENGTH( JSON_UNQUOTE(JSON_EXTRACT(p_listaDocumentos, CONCAT('$[', d.numero -1,'].ruta')))) > 255) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La descripción o la ruta superan la longitud permitida.';
+	END IF;
 
--- Usuario activo o existente
-IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario
-                                            WHERE r.id = p_idResponsable AND u.Activo = TRUE) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable inexistente o usuario inactivo.';
-END IF;
--- Alumno existente 
-IF NOT EXISTS (SELECT 1 FROM Alumnos WHERE id = p_idAlumno) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Alumno inexistente.';
-END IF;
--- Alumno a cargo o autogesto
-IF NOT EXISTS(SELECT 1 FROM Responsables r INNER JOIN Alumnos a ON a.idPersona = r.idPersona WHERE r.id = p_idResponsable AND r.idPersona = a.idPersona AND a.id = p_idAlumno)
-										 AND NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN ResponsablesPorAlumno ra ON r.id = ra.idResponsable WHERE ra.idAlumno = p_idAlumno AND r.id = p_idResponsable) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra asociado a la cuenta responsable.';
-END IF;
+	-- validamos que no vengan campos vacíos o null dentro del Json o extension no permitida
+	IF EXISTS (SELECT 1 FROM JSON_TABLE (p_listaDocumentos, '$[*]' COLUMNS (descripcion VARCHAR(100) PATH '$.descripcion', ruta VARCHAR(255) PATH '$.ruta'))AS d WHERE d.descripcion IS NULL 
+																																								OR TRIM(d.descripcion) = ''
+																																								OR d.ruta IS NULL
+																																								OR TRIM(d.ruta)='' 
+																																								OR LOCATE('.', d.ruta) = 0
+																																								OR LOWER(SUBSTRING_INDEX(d.ruta, '.', -1)) NOT IN ('jpg','jpeg','png','pdf')) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los documentos tienen datos incompletos o extensiones no permitidas.';
+	 END IF;  
 
--- Institucion activa
-IF NOT EXISTS (SELECT 1 FROM Cursos c INNER JOIN Instituciones i ON c.idInstitucion = i.id 
-									  WHERE i.estado = TRUE AND c.id = p_idCurso) THEN 
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institucion se encuentra inactiva';
-END IF;
--- Postulacion duplicada 
-IF EXISTS(SELECT 1 FROM Alumnos a INNER JOIN PostulacionesAlumnos p ON a.id = p.idAlumno WHERE a.id = p_idAlumno AND p.idCurso = p_idCurso AND p.idEstado IN(1,2,3)) THEN -- no permite duplicados cuando fue confirmado el estado de postulacion pero si fue rechazado si se puede volver a postular
-	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya generó una postulación al curso.';
-END IF;
+	-- inicio la transacción 
+	START TRANSACTION; 
 
-INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado ) VALUES (CURDATE(),'temporal', p_idCurso, p_idAlumno, 1); -- insertamos un valor temporal en el codigo de seguimiento porque no acepta null
-SET v_idPostulacion = LAST_INSERT_ID();
-SET v_codigoSeguimiento = CONCAT('PST-', LPAD(v_idPostulacion, 6, '0')); -- concatenando pst-idPosutlacion No deberia repetirse nunca 
-UPDATE PostulacionesAlumnos SET codigoSeguimiento = v_codigoSeguimiento WHERE id = v_idPostulacion; 
-COMMIT;
+	SELECT capacidad, inscriptos INTO v_capacidad, v_inscriptos FROM Cursos WHERE id = p_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de postular, paralelamente otro usuario este confirmando el último cupo y cuando esta postulación se acepte lo haga sin vacante disponible. 
 
--- retornamos los valores de los campos del sp.
-SELECT 
-p.id AS IdPostulacion,
-p.fecha AS FechaPostulacion, 
-p.codigoSeguimiento AS CodigoSeguimiento,
-p.idCurso AS IdCurso,
-p.idAlumno AS IdAlumno, 
-p.idEstado AS IdEstado,
-i.id AS IdInstitucion,
-pe.nombre AS Nombre,
-pe.apellido AS Apellido,
-pe.documento AS Documento,
-e.descripcion AS Descripcion
-FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
-							INNER JOIN Personas pe ON pe.id = a.idPersona
-							INNER JOIN Cursos c ON c.id = p.idCurso
-                            INNER JOIN Instituciones i ON c.idInstitucion = i.id 
-                            INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
-WHERE p.id = v_idPostulacion ;
+	-- Validaciones                                                                                          -- el bloqueo se mantiene hasta terminar transaccion (commit o rollback)
+	-- Curso existente 
+	IF v_capacidad IS NULL THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Curso inexistente';
+	END IF;
+
+	-- Verificar cupo
+	IF (v_capacidad - v_inscriptos) <= 0 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso no tiene cupos disponibles';
+	END IF;
+
+	-- Usuario activo o existente
+	IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario
+												WHERE r.id = p_idResponsable AND u.Activo = TRUE) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable inexistente o usuario inactivo.';
+	END IF;
+	-- Alumno existente 
+	IF NOT EXISTS (SELECT 1 FROM Alumnos WHERE id = p_idAlumno) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Alumno inexistente.';
+	END IF;
+	-- Alumno a cargo o autogestor
+	IF NOT EXISTS(SELECT 1 FROM Responsables r INNER JOIN Alumnos a ON a.idPersona = r.idPersona WHERE r.id = p_idResponsable AND r.idPersona = a.idPersona AND a.id = p_idAlumno)
+											 AND NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN ResponsablesPorAlumno ra ON r.id = ra.idResponsable WHERE ra.idAlumno = p_idAlumno AND r.id = p_idResponsable) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra asociado a la cuenta responsable.';
+	END IF;
+
+	-- Institucion activa
+	IF NOT EXISTS (SELECT 1 FROM Cursos c INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+										  WHERE i.estado = TRUE AND c.id = p_idCurso) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institucion se encuentra inactiva';
+	END IF;
+	-- Postulacion duplicada 
+	IF EXISTS(SELECT 1 FROM Alumnos a INNER JOIN PostulacionesAlumnos p ON a.id = p.idAlumno WHERE a.id = p_idAlumno AND p.idCurso = p_idCurso AND p.idEstado IN(1,2,3)) THEN -- no permite duplicados cuando fue confirmado el estado de postulacion pero si fue rechazado si se puede volver a postular
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya generó una postulación al curso.';
+	END IF;
+		   
+	-- Insertamos datos en tabla de postulacionesAlumnos
+	INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado ) VALUES (CURDATE(),'temporal', p_idCurso, p_idAlumno, 1); -- insertamos un valor temporal en el codigo de seguimiento porque no acepta null
+	SET v_idPostulacion = LAST_INSERT_ID();
+	SET v_codigoSeguimiento = CONCAT('PST-', LPAD(v_idPostulacion, 6, '0')); -- concatenando pst-idPosutlacion No deberia repetirse nunca 
+	UPDATE PostulacionesAlumnos SET codigoSeguimiento = v_codigoSeguimiento WHERE id = v_idPostulacion; 
+
+	-- Insertamos datos en tabla DocumentosPostulacion
+	INSERT INTO DocumentosPostulacion (idPostulacionAlumnos, descripcion, ruta) SELECT v_idPostulacion, d.descripcion, d.ruta FROM JSON_TABLE(p_listaDocumentos,'$[*]' COLUMNS (descripcion VARCHAR (100) PATH '$.descripcion', ruta VARCHAR (255) PATH '$.ruta')) AS d;
+	COMMIT;
+
+	-- retornamos los valores de los campos del sp.
+	SELECT 
+	p.id AS IdPostulacion,
+	p.fecha AS FechaPostulacion, 
+	p.codigoSeguimiento AS CodigoSeguimiento,
+	p.idCurso AS IdCurso,
+	p.idAlumno AS IdAlumno, 
+	p.idEstado AS IdEstado,
+	i.id AS IdInstitucion,
+	pe.nombre AS Nombre,
+	pe.apellido AS Apellido,
+	pe.documento AS Documento,
+	e.descripcion AS Descripcion
+	FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+								INNER JOIN Personas pe ON pe.id = a.idPersona
+								INNER JOIN Cursos c ON c.id = p.idCurso
+								INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+								INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
+	WHERE p.id = v_idPostulacion ;
 
 END$$
 DELIMITER ;
+
+
