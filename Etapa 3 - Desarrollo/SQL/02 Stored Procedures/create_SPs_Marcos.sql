@@ -327,3 +327,291 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_Crear
+-- El administrador (ya aprobado por Dev&Co) da de alta su institucion.
+--   * nombre y CUIT NO se reciben se toman de su postulacion aprobada,
+--   * crea la institucion (nace activa), su fila de Discapacidades y
+--     vincula al administrador con la institucion nueva
+--   * telefonos, idiomas e imagenes se cargan despues con los SP _Agregar
+-- Devuelve el id de la institucion nueva en p_idInstitucion.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_Crear;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_Crear(
+  IN  p_idAdministrador   INT,            -- administrador logueado
+  IN  p_direccion         VARCHAR(100),
+  IN  p_email             VARCHAR(100),   -- email de contacto de la institucion
+  IN  p_latitud           DOUBLE,
+  IN  p_longitud          DOUBLE,
+  IN  p_descripcion       VARCHAR(3000),
+  IN  p_idTipoInstitucion TINYINT,
+  -- Discapacidades 
+  IN  p_movilidad         BOOL,
+  IN  p_visual            BOOL,
+  IN  p_auditiva          BOOL,
+  IN  p_verbal            BOOL,
+  IN  p_intelectual       BOOL,
+  IN  p_sindromeDown      BOOL,
+  IN  p_autismo           BOOL,
+  -- Salida
+  OUT p_idInstitucion     INT
+)
+BEGIN
+  DECLARE v_idEstadoConfirmado INT;
+  DECLARE v_idUsuario          INT;
+  DECLARE v_idInstitucionActual INT;
+  DECLARE v_nombre             VARCHAR(100);
+  DECLARE v_cuit               VARCHAR(11);
+  DECLARE v_idInstitucion      INT;
+
+  -- Caso entre la validacion y el INSERT de otro CUIT igual al mismo tiempo
+  DECLARE EXIT HANDLER FOR 1062
+  BEGIN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Ya existe una institución registrada con ese CUIT.';
+  END;
+
+  -- Cualquier otro error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  -- Normalizar
+  SET p_direccion   = TRIM(p_direccion);
+  SET p_email       = LOWER(TRIM(p_email));
+  SET p_descripcion = TRIM(p_descripcion);
+
+  -- Validaciones que no necesitan la base
+  IF p_idAdministrador IS NULL OR COALESCE(p_direccion,'') = '' OR COALESCE(p_email,'') = ''
+     OR p_latitud IS NULL OR p_longitud IS NULL OR COALESCE(p_descripcion,'') = ''
+     OR p_idTipoInstitucion IS NULL
+     OR p_movilidad IS NULL OR p_visual IS NULL OR p_auditiva IS NULL OR p_verbal IS NULL
+     OR p_intelectual IS NULL OR p_sindromeDown IS NULL OR p_autismo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF p_email NOT REGEXP '^[^@ ]+@[^@ ]+\\.[^@ ]+$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
+  END IF;
+
+-- Solo coordenadas validas (-90 a 90 del Ecuador  y -180 a 180 del Meridiano)
+  IF p_latitud NOT BETWEEN -90 AND 90 OR p_longitud NOT BETWEEN -180 AND 180 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Las coordenadas no son válidas.';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Catalogo: se busca por descripcion, igual que en el resto de los SP
+  SET v_idEstadoConfirmado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado');
+
+  IF v_idEstadoConfirmado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos: falta estado de postulacion Confirmado.';
+  END IF;
+
+  -- Validaciones contra la DB
+  IF NOT EXISTS (SELECT 1 FROM TipoInstitucion WHERE id = p_idTipoInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El tipo de institución no existe.';
+  END IF;
+
+  SET v_idUsuario = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+
+  IF v_idUsuario IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE id = v_idUsuario AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta del administrador no está habilitada.';
+  END IF;
+
+  SET v_idInstitucionActual = (SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+
+  IF v_idInstitucionActual IS NOT NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Este administrador ya tiene una institución registrada.';
+  END IF;
+
+  -- Nombre y CUIT salen de su postulacion aprobada (la mas reciente, por si tuvo rechazos antes)
+  SET v_nombre = (SELECT nombreInstitucion FROM PostulacionesAdminInstitucion
+                  WHERE idAdministradorInstitucion = p_idAdministrador AND idEstado = v_idEstadoConfirmado
+                  ORDER BY id DESC LIMIT 1);
+  SET v_cuit   = (SELECT cuitInstitucion FROM PostulacionesAdminInstitucion
+                  WHERE idAdministradorInstitucion = p_idAdministrador AND idEstado = v_idEstadoConfirmado
+                  ORDER BY id DESC LIMIT 1);
+
+  IF v_cuit IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No hay una postulación aprobada para registrar una institución.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Instituciones WHERE cuit = v_cuit) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una institución registrada con ese CUIT.';
+  END IF;
+
+  --  Escrituras
+  INSERT INTO Instituciones
+    (nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion, estado)
+  VALUES
+    (v_nombre, v_cuit, p_direccion, p_email, p_latitud, p_longitud, p_descripcion, p_idTipoInstitucion, TRUE);
+  SET v_idInstitucion = LAST_INSERT_ID(); -- Será el parámetro que devolveremos como OUT para luego insertar los parametros
+										  -- opcionales que van en otras tablas (y otros SP)
+
+  INSERT INTO Discapacidades
+    (idInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo)
+  VALUES
+    (v_idInstitucion, p_movilidad, p_visual, p_auditiva, p_verbal, p_intelectual, p_sindromeDown, p_autismo);
+
+  UPDATE AdministradoresInstitucion
+  SET idInstitucion = v_idInstitucion
+  WHERE id = p_idAdministrador;
+
+  COMMIT;
+
+  SET p_idInstitucion = v_idInstitucion; -- Asignamos el id de la institucion creada en el SP al parametro OUT
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Telefono_Institucion_Agregar
+-- Agrega un telefono a la institucion del administrador.
+-- Un solo INSERT: no necesita transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Telefono_Institucion_Agregar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Telefono_Institucion_Agregar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_telefono        VARCHAR(30)
+)
+BEGIN
+  SET p_telefono = TRIM(p_telefono);
+
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR COALESCE(p_telefono,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  -- El administrador tiene que estar activo y ser de esa institucion
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Telefonos WHERE idInstitucion = p_idInstitucion AND telefono = p_telefono) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya tiene ese teléfono.';
+  END IF;
+
+  INSERT INTO Telefonos (idInstitucion, telefono)
+  VALUES (p_idInstitucion, p_telefono);
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Idioma_Institucion_Agregar
+-- Agrega un idioma a la institucion del administrador.
+-- La clave primaria (idInstitucion, idIdioma) impide repetirlo: el handler
+-- convierte ese error en un mensaje claro.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Idioma_Institucion_Agregar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Idioma_Institucion_Agregar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_idIdioma        TINYINT
+)
+BEGIN
+  DECLARE EXIT HANDLER FOR 1062
+  BEGIN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya tiene ese idioma.';
+  END;
+
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR p_idIdioma IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Idiomas WHERE id = p_idIdioma) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El idioma no existe.';
+  END IF;
+
+  INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma)
+  VALUES (p_idInstitucion, p_idIdioma);
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Imagen_Institucion_Agregar
+-- Agrega una imagen a la institucion del administrador. Solo guarda la
+-- ruta; el archivo lo guarda el programa (C#). La descripcion es obligatoria.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Imagen_Institucion_Agregar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Imagen_Institucion_Agregar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_urlImagen       VARCHAR(255),
+  IN p_descripcion     VARCHAR(255)
+)
+BEGIN
+  SET p_urlImagen   = TRIM(p_urlImagen);
+  SET p_descripcion = TRIM(p_descripcion);
+
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL
+     OR COALESCE(p_urlImagen,'') = '' OR COALESCE(p_descripcion,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  INSERT INTO Imagenes (idInstitucion, urlImagen, descripcion)
+  VALUES (p_idInstitucion, p_urlImagen, p_descripcion);
+END$$
+
+DELIMITER ;
