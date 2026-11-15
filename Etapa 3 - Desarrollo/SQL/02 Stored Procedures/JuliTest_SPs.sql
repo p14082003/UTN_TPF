@@ -12,6 +12,7 @@ CALL sp_Registrar_Resenia('', 4, 2, 2); -- falla por comentario vacío
 CALL sp_Registrar_Resenia('muy buenos maestros y compañeros. Excelente clima', 7, 2, 2); -- falla por valoracion mas alta que 5
 CALL sp_Registrar_Resenia('muy buenos maestros y compañeros. Excelente clima', -3, 2, 2); -- falla por valoracion mas baja que 1
 CALL sp_Registrar_Resenia('muy buenos maestros y compañeros. Excelente clima', NULL, 2, 2); -- falla por valoracion NULL
+CALL sp_Registrar_Resenia( REPEAT('A', 256), 2, 2, 2); -- falla por longitud
 CALL sp_Registrar_Resenia('        ', 3, 2, 2); -- falla por comentario con espacios
 CALL sp_Registrar_Resenia('muy buenos maestros y compañeros. Excelente clima', 5, 2, 1000); -- falla por responsable inexistente
 CALL sp_Registrar_Resenia('muy buenos maestros y compañeros. Excelente clima', 5, 10, 8); -- deberia fallar por responsable inactivo
@@ -173,3 +174,26 @@ CALL sp_Rechazar_Postulacion_Alumno(13,9,'No adjunta foto de documento de identi
 -- SELECT id, idEstado, motivoRechazo FROM PostulacionesAlumnos WHERE id = 13; -- chequeo
 -- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id =13; 
 
+-- sp_Confirmar_Postulacion_Alumno
+CALL sp_Confirmar_Postulacion_Alumno(1002,6);-- postulacion no existe 
+CALL sp_Confirmar_Postulacion_Alumno(15,1002);-- responsable inexistente
+CALL sp_Confirmar_Postulacion_Alumno(15,8);-- responsable inactivo
+CALL sp_Confirmar_Postulacion_Alumno(15,1);-- responsable que no corresponde al alumno
+CALL sp_Confirmar_Postulacion_Alumno(12,9);-- postulacion pendiente - no esta aceptada
+
+-- UPDATE Instituciones SET estado = FALSE WHERE id = 9;
+CALL sp_Confirmar_Postulacion_Alumno(15,6);-- institución no activa
+-- UPDATE Instituciones SET estado = TRUE WHERE id = 9;
+
+-- UPDATE PostulacionesAlumnos SET idEstado = 2 WHERE id = 18; -- cambiamos estado a 2 (Aceptado) 
+CALL sp_Confirmar_Postulacion_Alumno(18,6);-- curso sin cupo 
+-- UPDATE PostulacionesAlumnos SET idEstado = 4 WHERE id = 18; -- volvemos a rechazado
+ 
+CALL sp_Confirmar_Postulacion_Alumno(15,6);-- caso exitoso 
+-- SELECT id, idAlumno, idCurso, idEstado FROM PostulacionesAlumnos WHERE id = 15;
+-- SELECT id, capacidad, inscriptos FROM Cursos WHERE id = 13;
+-- UPDATE PostulacionAlumnos SET idEstado = 2 WHERE id = 13;
+CALL sp_Confirmar_Postulacion_Alumno(13,10);-- caso exitoso
+-- SELECT * FROM PostulacionesAlumnos ;
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id =13;
+-- UPDATE Cursos SET inscriptos = 1 WHERE id = 13; 
