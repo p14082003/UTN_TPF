@@ -28,7 +28,7 @@ WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com'); 
   'Test', 'Admin', '12121212', 'Calle 123', '1990-05-10',
   'clave123', 'otro@mail.com', '121212',
   'Instituto fest', '30999999993', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
-  'PAI-TEST-0002', @idPost); */ -- ERROR DOCUMENTO EN USO (ya es administrador)
+  'PAI-TEST-0002', @idPost); */ -- ERROR DOCUMENTO EN USO (ya es administrador) -> responde 'Ya tenés una postulación pendiente'
 
 /* CALL sp_AdministradorInstitucion_Registrar(
   'Test', 'Admin', '12121213', 'Calle 123', '1990-05-10',
@@ -71,6 +71,43 @@ SELECT activo FROM Usuarios WHERE email = 'testadmin@mail.com';                 
 /* CALL sp_PostulacionAdmin_Rechazar(999999, 23, 'Motivo'); */                            -- ERROR NO EXISTE
 /* CALL sp_PostulacionAdmin_Rechazar(@idPost, 11, 'Motivo'); */                           -- ERROR SIN PERMISO (usuario 11 es administrador de institucion)
 
+-- REINTENTO tras un rechazo: mismo documento y mismo email, datos nuevos, codigo nuevo.
+-- La clave que llega se ignora (la API ya la verifico) y se conserva la guardada.
+CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'AdminNuevo', '12121212', 'Calle Nueva 999', '1990-05-11',
+  'otraClave', 'testadmin@mail.com', '555555',
+  'Instituto fest', '30999999992', 'fest_b.pdf', 'habilitacion_fest_b.pdf', 'laboral_fest_b.pdf',
+  'PAI-TEST-0004', @idPost3);
+
+SELECT @idPost3;
+SELECT id, codigoSeguimiento, idEstado, motivoRechazo FROM PostulacionesAdminInstitucion
+WHERE idAdministradorInstitucion = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com'));   -- 2 filas: la rechazada y la nueva Pendiente
+SELECT apellido, domicilio, fechaNacimiento FROM Personas WHERE documento = '12121212';      -- AdminNuevo, Calle Nueva 999, 1990-05-11
+SELECT telefono FROM Telefonos WHERE idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com'));   -- 1 fila: 555555
+SELECT id, email, clave, activo FROM Usuarios WHERE email = 'testadmin@mail.com';  -- 1 usuario, clave123, activo 0
+-- Deberia fallar: ahora tiene una postulacion Pendiente
+/* CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'Admin', '12121212', 'Calle 123', '1990-05-10',
+  'clave123', 'testadmin@mail.com', '121212',
+  'Instituto fest', '30999999992', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
+  'PAI-TEST-0005', @idPost); */ -- ERROR YA TIENE UNA POSTULACION PENDIENTE
+
+-- Se vuelve a rechazar para dejarlo en estado "rechazado" (los tests de Crear lo usan inactivo)
+CALL sp_PostulacionAdmin_Rechazar(@idPost3, 23, 'Documentacion incompleta.');
+
+-- OBTENER CLAVE PARA REINTENTO
+CALL sp_AdministradorInstitucion_ObtenerClaveReintento('TESTadmin@mail.com');   -- 1 fila: la clave guardada (rechazado, inactivo, sin institucion)
+/* CASOS DONDE NO DEVUELVE EL HASH DE LA CLAVE (0 FILAS) */
+CALL sp_AdministradorInstitucion_ObtenerClaveReintento('devco.admin@devco.test'); -- 0 filas (no es administrador de institucion)
+CALL sp_AdministradorInstitucion_ObtenerClaveReintento('noexiste@mail.com');      -- 0 filas
+/* CALL sp_AdministradorInstitucion_ObtenerClaveReintento('  '); */                -- ERROR FALTAN DATOS
+
+/* CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'Admin', '12121212', 'Calle 123', '1990-05-10',
+  'clave123', 'otro@mail.com', '121212',
+  'Instituto fest', '30999999992', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
+  'PAI-TEST-0005', @idPost); */ -- ERROR 'Usá el email con el que te postulaste anteriormente' (reintento con otro email)
+
 -- APROBAR: se registra otro administrador de prueba para tener una postulacion Pendiente.
 CALL sp_AdministradorInstitucion_Registrar(
   'Test', 'Admin2', '12121214', 'Calle 456', '1990-05-10',
@@ -83,11 +120,20 @@ CALL sp_PostulacionAdmin_Aprobar(@idPost2, 23);
 SELECT id, idEstado, motivoRechazo FROM PostulacionesAdminInstitucion WHERE id = @idPost2;  -- estado Confirmado, motivo NULL
 SELECT activo FROM Usuarios WHERE email = 'testadmin2@mail.com';                          -- 1 despues de aprobar
 
+CALL sp_AdministradorInstitucion_ObtenerClaveReintento('testadmin2@mail.com');     -- 0 filas (cuenta activa y con postulacion Confirmada)
+
 -- Deberian fallar (se corre de a uno):
 /* CALL sp_PostulacionAdmin_Aprobar(@idPost2, 23); */                                     -- ERROR YA FUE RESUELTA
 /* CALL sp_PostulacionAdmin_Aprobar(999999, 23); */                                       -- ERROR NO EXISTE
 /* CALL sp_PostulacionAdmin_Aprobar(@idPost2, 11); */                                     -- ERROR SIN PERMISO
 /* CALL sp_PostulacionAdmin_Aprobar(NULL, 23); */                                         -- ERROR FALTAN DATOS
+
+-- Reintento de una cuenta ya aprobada (ultima postulacion Confirmado):
+/* CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'Admin2', '12121214', 'Calle 456', '1990-05-10',
+  'clave123', 'testadmin2@mail.com', '121214',
+  'Instituto fest 2', '30999999994', 'fest2.pdf', 'habilitacion_fest2.pdf', 'laboral_fest2.pdf',
+  'PAI-TEST-0006', @idPost); */ -- ERROR YA EXISTE UNA CUENTA DE ADMINISTRADOR CON ESE DOCUMENTO
 
 -- =====================================================================
 -- TEST sp_Institucion_Crear y los SP _Agregar
