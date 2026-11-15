@@ -132,3 +132,44 @@ CALL sp_Aceptar_Postulacion_Alumno(9, 18); -- Curso sin cupos disponibles
 CALL sp_Aceptar_Postulacion_Alumno(9, 13); -- caso exitoso
 -- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id = 13 -- Para dejar el caso exitoso otra vez pendiente como estaba originalmente
 
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id =8; -- admin 10, postulacion 8, alumno 8 , usuario autogestor 6. MODIFICAMOS postulacion PENDIENTE porque esta CONFIRMADA 
+-- UPDATE Usuarios SET activo = FALSE WHERE id = 6; -- inactivamos a marcos autogestor
+CALL sp_Aceptar_Postulacion_Alumno(10,8); -- autogestor inactivo
+-- UPDATE PostulacionesAlumnos SET idEstado = 3 WHERE id =8; -- vuelvo a estado CONFIRMADO originalmente
+-- UPDATE Usuarios SET activo = TRUE WHERE id = 6; -- activamos a marcos autogestor
+
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id = 15; -- pasamos la postulacion aceptada a pendiente temporalmente
+-- UPDATE Usuarios SET activo = FALSE WHERE id = 6;
+CALL sp_Aceptar_Postulacion_Alumno(9,15); -- administrador 9 ,postulación 15, alumno 9, Responsable 6 Usuario 6
+-- UPDATE PostulacionesAlumnos SET idEstado = 2 WHERE id = 15;
+-- UPDATE Usuarios SET activo = TRUE WHERE id =6; -- dejo activo usuario 6 como estaba originalmente
+
+-- sp Rechazar postulacion alumno
+CALL sp_Rechazar_Postulacion_Alumno(13,9,NULL); -- valido motivo que no sea null 
+CALL sp_Rechazar_Postulacion_Alumno(13,9,''); -- valido motivo que no esté vacío
+CALL sp_Rechazar_Postulacion_Alumno(13,9,'      '); -- valido motivo con espacios
+CALL sp_Rechazar_Postulacion_Alumno(13,9, REPEAT('A', 256)); -- valido que el motivo no supere los 255 caracteres disponibles.
+CALL sp_Rechazar_Postulacion_Alumno(1002,9,'No adjunta foto de documento de identidad de ambas caras.'); -- valido que la postulacion exista
+CALL sp_Rechazar_Postulacion_Alumno(13,1002,'No adjunta foto de documento de identidad de ambas caras.'); -- valido que administrador exista
+CALL sp_Rechazar_Postulacion_Alumno(12,8,'No adjunta foto de documento de identidad de ambas caras.');-- valido que usuario este activo
+-- UPDATE Instituciones SET estado = FALSE WHERE id = 9;
+CALL sp_Rechazar_Postulacion_Alumno(13,9,'No adjunta foto de documento de identidad de ambas caras.'); -- Institución inactiva
+-- UPDATE Instituciones SET estado = TRUE WHERE id = 9;
+CALL sp_Rechazar_Postulacion_Alumno(13,1,'No adjunta foto de documento de identidad de ambas caras.'); -- Postulación no corresponde a la institución
+
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id =8; -- admin 10, postulacion 8, alumno 8 , usuario autogestor 6. MODIFICAMOS postulacion PENDIENTE porque esta CONFIRMADA 
+-- UPDATE Usuarios SET activo = FALSE WHERE id = 6; -- inactivamos a marcos autogestor
+CALL sp_Rechazar_Postulacion_Alumno(8,10,'No adjunta foto de documento de identidad de ambas caras.'); -- autogestor inactivo
+-- UPDATE PostulacionesAlumnos SET idEstado = 3 WHERE id =8; -- vuelvo a estado CONFIRMADO originalmente
+-- UPDATE Usuarios SET activo = TRUE WHERE id = 6; -- activamos a marcos autogestor
+
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id = 11; -- postulacion 11, alumno 11 (Martina), Responsable 8 (rosa), Usuario responsable 8 Ya esta inactivo, Admin institucion 7 PASAMOS POSTULACION a Pendiente  temporalmente 
+CALL sp_Rechazar_Postulacion_Alumno(11,7,'No adjunta foto de documento de identidad de ambas caras.'); -- responsable no activo
+-- UPDATE PostulacionesAlumnos SET idEstado = 3 WHERE id = 11; -- lo dejamos como estaba
+
+CALL sp_Rechazar_Postulacion_Alumno(15,9,'No adjunta foto de documento de identidad de ambas caras.'); -- postulacion no pendiente
+CALL sp_Rechazar_Postulacion_Alumno(13,9,'No adjunta foto de documento de identidad de ambas caras.'); -- caso exitoso 
+-- UPDATE PostulacionesAlumnos SET idEstado = 1, motivoRechazo = NULL WHERE id =13; -- vuelvo a pendiente sin motivo rechazo 
+-- SELECT id, idEstado, motivoRechazo FROM PostulacionesAlumnos WHERE id = 13; -- chequeo
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id =13; 
+
