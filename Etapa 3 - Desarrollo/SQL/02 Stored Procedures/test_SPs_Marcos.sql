@@ -233,12 +233,47 @@ SET @idImg = (SELECT id FROM Imagenes WHERE idInstitucion = @idInst LIMIT 1);
 CALL sp_Imagen_Institucion_Eliminar(@idAdmin2, @idInst, @idImg);
 SELECT * FROM Imagenes WHERE idInstitucion = @idInst;               -- 0 filas
 
+-- BAJA / REACTIVAR INSTITUCION. Orden: institucion, usuario Dev&Co (23)
+-- Como todavia no hay SP de cursos, se arma un curso con tres postulaciones por INSERT directo:
+-- una Pendiente, una Confirmada y una Aceptada.
+INSERT INTO Cursos (idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos)
+VALUES (@idInst, 1, 2026, 1, NULL, 'Sala test', 'T', 10, 0);
+SET @idCursoTest = LAST_INSERT_ID();
+INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo)
+VALUES (CURDATE(), 'PST-TEST-0001', @idCursoTest, 1, (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente'), NULL);
+INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo)
+VALUES (CURDATE(), 'PST-TEST-0002', @idCursoTest, 2, (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado'), NULL);
+INSERT INTO PostulacionesAlumnos (fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo)
+VALUES (CURDATE(), 'PST-TEST-0003', @idCursoTest, 3, (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Aceptado'), NULL);
+
+-- Deberian fallar (se corre de a uno):
+/* CALL sp_Institucion_DarDeBaja(@idInst, 11); */          -- ERROR SIN PERMISO (usuario 11 es administrador de institucion)
+/* CALL sp_Institucion_DarDeBaja(999999, 23); */           -- ERROR NO EXISTE
+/* CALL sp_Institucion_DarDeBaja(NULL, 23); */             -- ERROR FALTAN DATOS
+
+CALL sp_Institucion_DarDeBaja(@idInst, 23);
+SELECT id, estado FROM Instituciones WHERE id = @idInst;                      -- estado = 0
+SELECT codigoSeguimiento, idEstado, motivoRechazo FROM PostulacionesAlumnos
+WHERE codigoSeguimiento LIKE 'PST-TEST-%';                                    -- 0001 y 0003 Rechazado + motivo 'Institución dada de baja.'; 0002 sigue Confirmado, sin motivo
+/* CALL sp_Institucion_DarDeBaja(@idInst, 23); */          -- ERROR YA ESTA DADA DE BAJA
+
+/* CALL sp_Institucion_Reactivar(@idInst, 11); */          -- ERROR SIN PERMISO
+CALL sp_Institucion_Reactivar(@idInst, 23);
+SELECT id, estado FROM Instituciones WHERE id = @idInst;                      -- estado = 1
+SELECT codigoSeguimiento, idEstado FROM PostulacionesAlumnos
+WHERE codigoSeguimiento LIKE 'PST-TEST-%';                                    -- 0001 y 0003 siguen Rechazado (no se restauran)
+/* CALL sp_Institucion_Reactivar(@idInst, 23); */          -- ERROR YA ESTA ACTIVA
+/* CALL sp_Institucion_Reactivar(999999, 23); */           -- ERROR NO EXISTE
+
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;
 DELETE FROM Imagenes WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM IdiomaInstitucion WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Telefonos WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
+DELETE FROM PostulacionesAlumnos WHERE codigoSeguimiento LIKE 'PST-TEST-%';
+DELETE FROM Cursos WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Discapacidades WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 UPDATE AdministradoresInstitucion SET idInstitucion = NULL WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Instituciones WHERE cuit = '30999999994';

@@ -1048,3 +1048,139 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_DarDeBaja
+-- Dev&Co da de baja una institucion. Es una baja logica: estado = FALSE (no se borra nada).
+--   * las postulaciones de alumnos Pendientes y Aceptadas a los cursos de la institucion
+--     se rechazan solas con el motivo 'Institución dada de baja.'
+--   * las Confirmadas quedan como historial
+--   * los administradores y sus cuentas no se tocan
+-- Se revierte con sp_Institucion_Reactivar (las postulaciones rechazadas NO se restauran).
+-- Va en una transaccion: se da de baja y se rechazan las pendientes, o no se hace nada.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_DarDeBaja;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_DarDeBaja(
+  IN p_idInstitucion  INT,
+  IN p_idUsuarioDevCo INT     -- usuario Dev&Co que resuelve (lo toma C# de la sesion)
+)
+BEGIN
+  DECLARE v_idTipoDevCo       TINYINT;
+  DECLARE v_idEstadoPendiente INT;
+  DECLARE v_idEstadoAceptado  INT;
+  DECLARE v_idEstadoRechazado INT;
+
+  -- Cualquier error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF p_idInstitucion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Catalogos: se buscan por descripcion, igual que en el resto de los SP
+  SET v_idTipoDevCo       = (SELECT id FROM TipoUsuario        WHERE descripcion = 'DevCo');
+  SET v_idEstadoPendiente = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
+  SET v_idEstadoAceptado  = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Aceptado');
+  SET v_idEstadoRechazado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
+
+  IF v_idTipoDevCo IS NULL OR v_idEstadoPendiente IS NULL
+     OR v_idEstadoAceptado IS NULL OR v_idEstadoRechazado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Solo un usuario Dev&Co activo puede dar de baja una institucion
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de baja instituciones.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  -- Baja logica en un solo UPDATE. Si ya estaba dada de baja no se modifica ninguna fila.
+  UPDATE Instituciones
+  SET estado = FALSE
+  WHERE id = p_idInstitucion
+    AND estado = TRUE;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya está dada de baja.';
+  END IF;
+
+  -- Las postulaciones Pendientes y Aceptadas (todavia sin confirmar) a cursos de esta institucion se rechazan solas
+  UPDATE PostulacionesAlumnos
+  SET idEstado      = v_idEstadoRechazado,
+      motivoRechazo = 'Institución dada de baja.'
+  WHERE idCurso IN (SELECT id FROM Cursos WHERE idInstitucion = p_idInstitucion)
+    AND idEstado IN (v_idEstadoPendiente, v_idEstadoAceptado);
+
+  COMMIT;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_Reactivar
+-- Dev&Co vuelve a activar una institucion dada de baja (estado = TRUE).
+-- Las postulaciones que se rechazaron con la baja NO se restauran:
+-- las familias tienen que postularse de nuevo.
+-- Un solo UPDATE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_Reactivar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_Reactivar(
+  IN p_idInstitucion  INT,
+  IN p_idUsuarioDevCo INT
+)
+BEGIN
+  DECLARE v_idTipoDevCo TINYINT;
+
+  IF p_idInstitucion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  SET v_idTipoDevCo = (SELECT id FROM TipoUsuario WHERE descripcion = 'DevCo');
+
+  IF v_idTipoDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Solo un usuario Dev&Co activo puede reactivar una institucion
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para reactivar instituciones.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  UPDATE Instituciones
+  SET estado = TRUE
+  WHERE id = p_idInstitucion
+    AND estado = FALSE;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya está activa.';
+  END IF;
+END$$
+
+DELIMITER ;
