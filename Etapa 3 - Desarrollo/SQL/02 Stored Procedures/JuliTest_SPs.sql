@@ -114,7 +114,21 @@ SET @documentos_validos = JSON_ARRAY(
 );
 
 CALL sp_Registrar_Postulacion_Alumno(6, 8, 8, @documentos_validos);
-
-
 select * from PostulacionesAlumnos;
 select * from DocumentosPostulacion;
+
+-- sp Aceptar postulación 
+CALL sp_Aceptar_Postulacion_Alumno(9, 1002); -- Postulación inexistente
+CALL sp_Aceptar_Postulacion_Alumno(1002, 13); -- Administrador inexistente
+CALL sp_Aceptar_Postulacion_Alumno(8, 12); -- Administrador con usuario inactivo
+-- UPDATE Instituciones SET estado = FALSE WHERE id = 9;
+CALL sp_Aceptar_Postulacion_Alumno(9, 13); -- Institución inactiva
+-- UPDATE Instituciones SET estado = TRUE WHERE id = 9;
+CALL sp_Aceptar_Postulacion_Alumno(1, 13); -- La postulación pertenece a otra institución
+CALL sp_Aceptar_Postulacion_Alumno(9, 15); -- La postulación no se encuentra pendiente
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id = 18;  -- la ponemos pendiente para que podamos aceptar y falle por falta de cupos
+CALL sp_Aceptar_Postulacion_Alumno(9, 18); -- Curso sin cupos disponibles
+-- UPDATE PostulacionesAlumnos SET idEstado = 4 WHERE id = 18; -- la dejamos rechazada como estaba originalmente
+CALL sp_Aceptar_Postulacion_Alumno(9, 13); -- caso exitoso
+-- UPDATE PostulacionesAlumnos SET idEstado = 1 WHERE id = 13 -- Para dejar el caso exitoso otra vez pendiente como estaba originalmente
+

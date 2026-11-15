@@ -354,4 +354,103 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- sp_Aceptar_Postulacion
+-- Esto lo hace la institución!! Se recibe una postulación de alumnos.
+-- Si se acepta, solo cambia el estado a aceptado. NO modifica cupos.
+-- Se hace update a estado de la postulacion
+-- Necesito parametros p_idAdministradorInstitucion y p_idPostulacion, al resto lo puedo obtener de la postulacion 
+-- ---------------------------------------
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_Aceptar_Postulacion_Alumno$$
+
+CREATE PROCEDURE sp_Aceptar_Postulacion_Alumno(
+IN p_idAdministradorInstitucion     INT,
+IN p_idPostulacion                  INT
+)
+
+BEGIN
+
+	DECLARE v_inscriptos    INT DEFAULT NULL;
+	DECLARE v_capacidad     INT DEFAULT NULL;
+	DECLARE v_idPostulacion INT DEFAULT NULL;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+	BEGIN
+		ROLLBACK;
+		RESIGNAL;
+	END;
+	-- iniciamos transacción 
+	START TRANSACTION;
+	SELECT c.capacidad, c.inscriptos,p.id INTO v_capacidad, v_inscriptos,v_idPostulacion FROM Cursos c INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id WHERE p.id = p_idPostulacion FOR UPDATE;
+
+	-- validamos que la postulacion exista 
+	IF v_idPostulacion IS NULL THEN
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Postulación inexistente';
+	END IF;
+
+	-- Validar existencia de usuario/administrador
+    IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON a.idUsuario = u.id 
+															  WHERE u.Id = a.idUsuario  AND a.id = p_idAdministradorInstitucion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario o administrador inexistente.';
+	END IF;
+	-- validar que el admin se encuentre activo 
+	IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON a.idUsuario = u.id
+															  WHERE u.activo = TRUE AND a.id = p_idAdministradorInstitucion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no se encuentra activo.';
+	END IF;
+
+	-- validar que la institución se encuentre activa 
+	IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Instituciones i ON a.idInstitucion = i.id
+															 WHERE i.estado = TRUE and a.id = p_idAdministradorInstitucion ) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa.';
+	END IF;
+	 
+	 -- validar que la postulación pertenezca a la institucion y a un curso de la institucion
+	IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Cursos c ON a.idInstitucion = c.idInstitucion
+															  INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id
+															  WHERE a.id = p_idAdministradorInstitucion AND p.id = p_idPostulacion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no pertenece a la institución.';
+	END IF;
+
+	-- validar que el alumno exista 
+	IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON p.idAlumno = a.id
+													   WHERE  p.id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Alumno no existente. ';                                           
+	END IF;
+
+	-- validar que el estado actual sea pendiente 
+	IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion AND idEstado = 1) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no se encuentra pendiente.';
+	END IF;
+
+	-- validamos que haya cupo 
+	IF (v_capacidad-v_inscriptos)<=0 THEN
+		SIGNAL SQLSTATE '45000'  SET MESSAGE_TEXT = 'No hay cupos disponibles para aceptar la postulación.';
+	END IF;
+
+	-- hacemos el update de estado de postulacion 
+	UPDATE PostulacionesAlumnos SET idEstado = 2 WHERE id = p_idPostulacion AND idEstado = 1;
+
+	COMMIT;
+	-- Retornamos valores que puedan sernos utiles
+	SELECT 
+	p.id AS IdPostulacion,
+	p.fecha AS FechaPostulacion, 
+	p.codigoSeguimiento AS CodigoSeguimiento,
+	p.idCurso AS IdCurso,
+	p.idAlumno AS IdAlumno, 
+	p.idEstado AS IdEstado,
+	i.id AS IdInstitucion,
+	pe.nombre AS Nombre,
+	pe.apellido AS Apellido,
+	pe.documento AS Documento,
+	e.descripcion AS Descripcion
+	FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+								INNER JOIN Personas pe ON pe.id = a.idPersona
+								INNER JOIN Cursos c ON c.id = p.idCurso
+								INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+								INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
+	WHERE p.id = v_idPostulacion ;
+
+END$$
+DELIMITER ;
