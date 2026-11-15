@@ -986,3 +986,65 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Postulacion_ConsultarPorCodigo
+-- Consulta el estado de una postulacion con su codigo de seguimiento + el email
+-- de quien la hizo. Sirve para postulaciones de administradores y de alumnos:
+--   * Administrador: el email es el del propio administrador.
+--   * Alumno: el email es el del responsable (o el del propio alumno si es autogestor).
+-- Si el codigo no existe o el email no coincide se da el MISMO mensaje, para no
+-- revelar si el codigo existe.
+-- Devuelve una fila: Tipo, Fecha, Estado, NombreInstitucion, Cuit, MotivoRechazo.
+-- Usa las vistas vw_Postulaciones_Admin_Institucion y vw_Postulaciones_Alumnos.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Postulacion_ConsultarPorCodigo;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Postulacion_ConsultarPorCodigo(
+  IN p_codigo VARCHAR(30),
+  IN p_email  VARCHAR(100)
+)
+BEGIN
+  SET p_codigo = TRIM(p_codigo);
+  SET p_email  = LOWER(TRIM(p_email));
+
+  IF COALESCE(p_codigo,'') = '' OR COALESCE(p_email,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  -- Primero se busca entre las postulaciones de administradores...
+  IF EXISTS (SELECT 1 FROM vw_Postulaciones_Admin_Institucion
+             WHERE codigoSeguimiento = p_codigo AND emailAdministrador = p_email) THEN
+
+    SELECT 'Administrador'    AS Tipo,
+           fecha              AS Fecha,
+           estado             AS Estado,
+           nombreInstitucion  AS NombreInstitucion,
+           cuitInstitucion    AS Cuit,
+           motivoRechazo      AS MotivoRechazo
+    FROM vw_Postulaciones_Admin_Institucion
+    WHERE codigoSeguimiento = p_codigo AND emailAdministrador = p_email;
+
+  -- ...y si no esta ahi, entre las de alumnos (el CUIT sale de la institucion del curso)
+  ELSEIF EXISTS (SELECT 1 FROM vw_Postulaciones_Alumnos
+                 WHERE codigoSeguimiento = p_codigo AND emailResponsable = p_email) THEN
+
+    SELECT 'Alumno'           AS Tipo,
+           v.fecha            AS Fecha,
+           v.estado           AS Estado,
+           v.institucion      AS NombreInstitucion,
+           i.cuit             AS Cuit,
+           v.motivoRechazo    AS MotivoRechazo
+    FROM vw_Postulaciones_Alumnos v
+    JOIN Instituciones i ON i.id = v.idInstitucion
+    WHERE v.codigoSeguimiento = p_codigo AND v.emailResponsable = p_email;
+
+  ELSE
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró una postulación con esos datos.';
+  END IF;
+END$$
+
+DELIMITER ;

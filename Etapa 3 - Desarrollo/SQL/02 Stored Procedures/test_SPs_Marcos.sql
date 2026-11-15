@@ -92,6 +92,12 @@ SELECT id, email, clave, activo FROM Usuarios WHERE email = 'testadmin@mail.com'
   'Instituto fest', '30999999992', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
   'PAI-TEST-0005', @idPost); */ -- ERROR YA TIENE UNA POSTULACION PENDIENTE
 
+/* CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'Admin', '12121212', 'Calle 123', '1990-05-10',
+  'clave123', 'otro@mail.com', '121212',
+  'Instituto fest', '30999999992', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
+  'PAI-TEST-0005', @idPost); */ -- ERROR 'Usá el email con el que te postulaste anteriormente' (reintento con otro email)
+
 -- Se vuelve a rechazar para dejarlo en estado "rechazado" (los tests de Crear lo usan inactivo)
 CALL sp_PostulacionAdmin_Rechazar(@idPost3, 23, 'Documentacion incompleta.');
 
@@ -102,11 +108,19 @@ CALL sp_AdministradorInstitucion_ObtenerClaveReintento('devco.admin@devco.test')
 CALL sp_AdministradorInstitucion_ObtenerClaveReintento('noexiste@mail.com');      -- 0 filas
 /* CALL sp_AdministradorInstitucion_ObtenerClaveReintento('  '); */                -- ERROR FALTAN DATOS
 
-/* CALL sp_AdministradorInstitucion_Registrar(
-  'Test', 'Admin', '12121212', 'Calle 123', '1990-05-10',
-  'clave123', 'otro@mail.com', '121212',
-  'Instituto fest', '30999999992', 'fest.pdf', 'habilitacion_fest.pdf', 'laboral_fest.pdf',
-  'PAI-TEST-0005', @idPost); */ -- ERROR 'Usá el email con el que te postulaste anteriormente' (reintento con otro email)
+-- CONSULTAR POSTULACION POR CODIGO. Orden: codigo, email
+-- Administrador (usa las postulaciones de prueba rechazadas):
+CALL sp_Postulacion_ConsultarPorCodigo('PAI-TEST-0004', 'TESTadmin@mail.com');   -- 1 fila: Administrador, Rechazado, motivo 'Documentacion incompleta.'
+CALL sp_Postulacion_ConsultarPorCodigo('PAI-TEST-0001', 'testadmin@mail.com');   -- 1 fila: la primera postulacion, Rechazado, motivo 'La constancia laboral no es legible.'
+/* CALL sp_Postulacion_ConsultarPorCodigo('PAI-TEST-0004', 'otro@mail.com'); */          -- ERROR NO SE ENCONTRO (email que no corresponde)
+/* CALL sp_Postulacion_ConsultarPorCodigo('PAI-NOEXISTE', 'testadmin@mail.com'); */      -- ERROR NO SE ENCONTRO (codigo inexistente, MISMO mensaje)
+/* CALL sp_Postulacion_ConsultarPorCodigo('PAI-TEST-0004', '  '); */                     -- ERROR FALTAN DATOS
+
+-- Alumno (usa una postulacion del archivo de INSERTs; el email es el del responsable):
+SET @emailResp = (SELECT emailResponsable FROM vw_Postulaciones_Alumnos WHERE codigoSeguimiento = 'PST-20251112-0001');
+CALL sp_Postulacion_ConsultarPorCodigo('PST-20251112-0001', @emailResp);          -- 1 fila: Alumno, Confirmado, institucion y CUIT
+/* CALL sp_Postulacion_ConsultarPorCodigo('PST-20251112-0001', 'testadmin@mail.com'); */ -- ERROR NO SE ENCONTRO (email de otra persona)
+
 
 -- APROBAR: se registra otro administrador de prueba para tener una postulacion Pendiente.
 CALL sp_AdministradorInstitucion_Registrar(
