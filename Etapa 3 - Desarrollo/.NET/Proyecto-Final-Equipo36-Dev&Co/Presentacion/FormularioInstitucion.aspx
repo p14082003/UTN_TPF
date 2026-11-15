@@ -1,256 +1,355 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="FormularioInstitucion.aspx.cs" Inherits="Presentacion.FormularioInstitucion" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        #mapa {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            border-radius: 15px;
+        }
+        .btn-lilaOscuro-invertido {
+            background-color: #FFFFFF !important;
+            color: #373A72 !important;
+            border: 1px solid #373A72;
+            border-radius: 15px;
+            padding: 14px;
+            font-weight: 600;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-lilaOscuro-invertido:hover {
+            background-color: #373A72 !important;
+            color: #FFFFFF !important;
+        }
+
+        * {
+            scrollbar-color: #373A72 transparent;
+        }
+
+    </style>
+
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="container-fluid bg-fondo">
 
-        <!-- TITULO -->
-        <div class="row m-5">
-            <div class="text-center mx-auto encabezado-formulario">
-                <h1 class="display-6 fw-bold text-dark">
-                    Registrá tu institución educativa
-                </h1>
+    <asp:ScriptManager ID="scriptManager" runat="server"></asp:ScriptManager>
+    
+    <div class="container-fluid">
 
-                <p class="text-secondary">
-                    Creá el perfil oficial de tu colegio o instituto para que miles
-                    de familias encuentren tu propuesta pedagógica y gestionen
-                    admisiones de forma ágil y segura.
-                </p>
-            </div>
+        <!-- ENCABEZADO -->
+        <div class="m-4">
+            <h1 class="text-indigo fw-bold text-center">
+                Registra tu institución educativa
+            </h1>
+            <h5 class="text-center">
+                Creá el perfil oficial de tu colegio o instituto para que miles
+                de familias encuentren tu propuesta pedagógica y gestionen
+                admisiones de forma ágil y segura.
+            </h5>
         </div>
 
-        <!-- PANEL SUPERIOR -->
-        <h2 class="text-indigo text-center mb-4">
-            ¿Qué podés hacer con esta cuenta?
-        </h2>
+        <!-- BENEFICIOS -->
+        <div class="row m-4">
 
-        <div class="row m-1">
+            <h3 class="text-indigo text-center my-4">
+                ¿Qué podés hacer con esta cuenta?
+            </h3>
 
-            <!-- BENEFICIOS -->
             <div class="col-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="text-indigo">
+                <div class="card h-100">
+                    <div class="card-header text-center">
+                        <h4 class="text-indigo">
+                            <i class="bi bi-geo-alt mx-2"></i>
                             Mayor visibilidad
-                        </h3>
-                        <p>
-                            Aparecé en el mapa cuando las familias buscan vacantes por zona y nivel educativo.
-                        </p>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        Aparecé en el mapa cuando las familias buscan vacantes por zona y nivel educativo.
                     </div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="text-indigo">
+                <div class="card h-100">
+                    <div class="card-header text-center">
+                        <h4 class="text-indigo">
+                            <i class="bi bi-clock-history mx-2"></i>
                             Seguimiento en tiempo real
-                        </h3>
-                        <p>
-                            Visualizá postulaciones y gestioná las admisiones directamente desde la aplicación.
-                        </p>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        Visualizá postulaciones y gestioná las admisiones directamente desde la aplicación.
                     </div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="text-indigo">
+                <div class="card h-100">
+                    <div class="card-header text-center">
+                        <h4 class="text-indigo">
+                            <i class="bi bi-folder2-open mx-2"></i>
                             Gestión centralizada
-                        </h3>
-                        <p>
-                            Organizá la información de tu institución y facilitá el contacto con las familias.
-                        </p>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        Organizá la información de tu institución y facilitá el contacto con las familias.
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- FORMULARIO PRINCIPAL -->
-        <div class="card m-5">
+        <!-- DATOS LEGALES E IDENTIFICACIÓN -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="card p-5">
 
-            <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <!-- NOMBRE -->
+                            <div class="mb-4">
+                                <asp:Label ID="lblNombre" runat="server" Text="Nombre de la institución" CssClass="form-label fw-semibold"></asp:Label>
+                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
+                            </div>
+                        </div>
 
-                <h3 class="text-indigo">
-                    Bloque A: Datos legales e identificación
-                </h3>
-
-                <!-- NOMBRE Y CUIT -->
-                <div class="row">
-
-                    <div class="col-8">
-                        <!-- NOMBRE -->
-                        <div class="mb-3">
-                            <asp:Label ID="lblNombre" runat="server" Text="Nombre de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                            <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control border-neutro mt-3" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
+                        <div class="col-4">
+                            <!-- CUIT -->
+                            <div class="mb-4">
+                                <asp:Label ID="lblCuit" runat="server" Text="CUIT de la institución" CssClass="form-label fw-semibold"> </asp:Label>
+                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" placeholder="XX-XXXXXXXX-X"></asp:TextBox>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-4">
-                        <!-- CUIT -->
-                        <div class="mb-3">
-                            <asp:Label ID="lblCuit" runat="server" Text="CUIT de la institución" CssClass="form-label fw-semibold"> </asp:Label>
-                            <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control border-neutro mt-3" placeholder="XX-XXXXXXXX-X"></asp:TextBox>
+                    <!-- EMAIL -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblEmail" runat="server" Text="Correo electrónico" CssClass="form-label fw-semibold"></asp:Label>
+                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
+                    </div>
+
+                    <!-- TELEFONOS -->
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <asp:Label ID="lblTelefono" runat="server" Text="Teléfono principal" CssClass="form-label fw-semibold"></asp:Label>
+                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 11 0000-0000"></asp:TextBox>
                         </div>
+
+                        <div class="col-6 mb-4">
+                            <asp:Label ID="lblTelefonoAlternativo" runat="server" Text="Télefono alternativo" CssClass="form-label fw-semibold"></asp:Label>
+                            <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 9 11 0000-0000"></asp:TextBox>
+                        </div>
+
+                    </div>
+
+                    <!-- DESCRIPCION -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblDescripcion" runat="server" Text="Descripción de la institución" CssClass="form-label fw-semibold"></asp:Label>
+                        <asp:TextBox ID="txtDescripcion" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" style="resize: none;" placeholder="Contá brevemente qué ofrece tu institución"></asp:TextBox>
                     </div>
 
                 </div>
-
-                <!-- EMAIL -->
-                <div class="mb-3">
-                    <asp:Label ID="lblEmail" runat="server" Text="Correo electrónico" CssClass="form-label fw-semibold"></asp:Label>
-                    <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control border-neutro mt-3" TextMode="Email" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
-                </div>
-
-                <!-- TELEFONOS -->
-                <div class="row">
-                    <div class="col-6">
-                        <asp:Label ID="lblTelefono" runat="server" Text="Teléfono principal" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control border-neutro mt-3" TextMode="Phone" placeholder="+54 11 0000-0000"></asp:TextBox>
-                    </div>
-
-                    <div class="col-6">
-                        <asp:Label ID="lblTelefonoAlternativo" runat="server" Text="Télefono alternativo" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control border-neutro mt-3" TextMode="Phone" placeholder="+54 9 11 0000-0000"></asp:TextBox>
-                    </div>
-
-                </div>
-
-                <!-- UBICACION -->
-                <div class="mb-3">
-                    <asp:Label ID="lblUbicacion" runat="server" Text="Dirección de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                    <asp:TextBox ID="txtUbicacion" runat="server" CssClass="form-control border-neutro mt-3" placeholder="Calle, número y localidad"></asp:TextBox>
-                </div>
-
             </div>
-
         </div>
 
-        <!-- BLOQUE B -->
-        <div class="card m-5">
+        <!-- UBICACION -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="card p-5">
+                    <!-- UBICACION -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblDireccion" runat="server" Text="Dirección de la institución" CssClass="form-label fw-semibold"></asp:Label>
+                        <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" placeholder="Calle, número y localidad"></asp:TextBox>
+                    </div>
 
-            <div class="card-body">
+                    <div style="height: 25dvh; min-height: 250px;">
+                        <div id="mapa"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <h3 class="text-indigo">
-                    Bloque B: Información complementaria
-                </h3>
+        <!-- IDIOMAS + ACCESIBILIDADES -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="card p-5">
+
+                    <!-- IDIOMAS -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblIdiomas" runat="server" Text="Idiomas" CssClass="form-label fw-semibold"></asp:Label>
+
+                        <asp:UpdatePanel ID="updIdiomas" runat="server" UpdateMode="Conditional">
+
+                            <ContentTemplate>
+                                <div class="d-flex flex-wrap gap-4">
+                                    <asp:Repeater ID="rptIdiomas" runat="server" OnItemCommand="rptIdiomas_ItemCommand">
+                                        <ItemTemplate>
+                                            <div class="btn btn-lilaClaro">
+                                                <%# Eval("NombreIdioma") %>
+                                                <asp:LinkButton runat="server" CommandName="EliminarIdioma" CommandArgument='<%# Eval("Id") %>' CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
+                                    <button type="button" class="btn-lilaOscuro" onclick="document.getElementById('dlgIdiomas').showModal()"> + Agregar idioma</button>
+                                </div>
+
+                                <!-- Dialog -->
+                                <dialog class="dialog" id="dlgIdiomas">
+                                    <div class="dialog-header">
+                                        <h5 class="dialog-title text-indigo">Agregar idiomas</h5>
+                                    </div>
+                                    <div class="dialog-body">
+                                        <asp:DropDownList ID="ddlIdiomas" runat="server" CssClass="form-control"></asp:DropDownList>
+                                    </div>
+                                    <div class="dialog-footer">
+                                        <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dlgIdiomas').close()">Cancelar</button>
+                                        <asp:Button ID="btnAgregarIdioma" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" OnClick="btn_AgregarIdioma_Click" />
+
+                                    </div>
+                                </dialog>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
+                    </div>
+
+                    <!-- ACCESIBILIDADES -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblAccesibilidades" runat="server" Text="Accesibilidades" CssClass="form-label fw-semibold"></asp:Label>
+
+                        <asp:UpdatePanel ID="udpAccesibilidades" runat="server" UpdateMode="Conditional">
+
+                            <ContentTemplate>
+                                <div class="d-flex flex-wrap gap-4">
+                                    <asp:Repeater ID="rptAccesibilidades" runat="server" OnItemCommand="rptAccesibilidades_ItemCommand">
+                                        <ItemTemplate>
+                                            <div class="btn btn-lilaClaro">
+                                                <%# Container.DataItem %>
+                                                <asp:LinkButton runat="server" CommandName="EliminarAccesibilidad" CommandArgument='<%# Container.DataItem %>' CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
+                                    <button type="button" class="btn-lilaOscuro" onclick="document.getElementById('dlgAccesibilidades').showModal()"> + Agregar accesibilidad</button>
+                                </div>
+
+                                <!-- Dialog -->
+                                <dialog class="dialog" id="dlgAccesibilidades">
+                                    <div class="dialog-header">
+                                        <h5 class="dialog-title text-indigo">Agregar accesibilidad</h5>
+                                    </div>
+                                    <div class="dialog-body">
+                                        <asp:DropDownList ID="ddlAccesibilidades" runat="server" CssClass="form-control"></asp:DropDownList>
+                                    </div>
+                                    <div class="dialog-footer">
+                                        <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dlgAccesibilidades').close()">Cancelar</button>
+                                        <asp:Button ID="btnAgregarAccesibilidad" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" OnClick="btn_AgregarAccesibilidad_Click" />
+                                    </div>
+                                </dialog>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- IMAGENES -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="card p-5">
                 
-                <!-- IDIOMAS -->
-                <div class="mb-3">
-
-                    <asp:Label ID="lblIdiomas" runat="server" Text="Idiomas" CssClass="form-label fw-semibold"></asp:Label>
-
-                    <!-- IDIOMAS DE EJEMPLO (REPEATER DE ASP) -->
-                    <div class="d-flex gap-4 mt-3">
-                        <div class="btn btn-lilaClaro">
-                            Español
-                            <button type="button" class="text-indigo border-0 bg-transparent"> ×</button>
-                        </div>
-
-                        <div class="btn btn-lilaClaro">
-                            Ingles
-                            <button type="button" class="text-indigo border-0 bg-transparent">×</button>
-                        </div>
-
-                        <asp:Button ID="btnAgregarIdioma" runat="server" Text="+ Agregar idioma" CssClass="btn-lilaOscuro"/>
-                    </div>
-
-                </div>
-
-                <!-- DISCAPACIDADES -->
-                <div class="mb-3">
-
-                    <asp:Label ID="lblDiscapacidades" runat="server" Text="Inclusión y accesibilidad" CssClass="form-label fw-semibold"></asp:Label>
-
-                    <!-- DISCAPACIDADES DE EJEMPLO (REPEATER DE ASP) -->
-                    <div class="d-flex gap-4 mt-3">
-                        <div class="btn btn-lilaClaro">
-                            Visual
-                            <button type="button" class="text-indigo border-0 bg-transparent">×</button>
-                        </div>
-
-                        <div class="btn btn-lilaClaro">
-                            Movilidad reducida
-                            <button type="button" class="text-indigo border-0 bg-transparent">×</button>
-                        </div>
-
-                        <asp:Button ID="btnAgregarAccesibilidad" runat="server" Text="+ Agregar accesibilidad" CssClass="btn-lilaOscuro" />
-                    </div>
-
-                </div>
-
-                <!-- IMAGENES -->
-                <div class="mb-3">
-
+                    <!-- CARGA DE IMAGENES -->
                     <asp:Label ID="lblImagenes" runat="server" Text="Imagenes de las instalaciones" CssClass="form-label fw-semibold mb-5"></asp:Label>
-
                     <asp:FileUpload ID="FileUpload1" runat="server" CssClass="form-control mb-5 mt-3"/>
 
                     <!-- CARROUSEL DE IMAGENES (REPEATER DE ASP) -->
                     <div class="row">
-                        <div id="carouselMultiple" class="carousel slide" data-bs-ends="stop" style="--bs-carousel-items: 3; --bs-carousel-items-gap: 1rem;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="prev" style="--bs-carousel-control-icon-width: 1rem;">
-                                        <span class="carousel-icon-prev" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="next" style="--bs-carousel-control-icon-width: 1rem;">
-                                        <span class="carousel-icon-next" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
-                                </div>
+                        <div id="carouselMultiple" class="carousel slide" data-bs-ends="wrap" style="--bs-carousel-items: 3; --bs-carousel-items-gap: 1rem;">
+
+                            <!-- CONTROLES -->
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="prev" style="--bs-carousel-control-icon-width: 1rem;">
+                                    <span class="carousel-icon-prev" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="next" style="--bs-carousel-control-icon-width: 1rem;">
+                                    <span class="carousel-icon-next" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
                             </div>
+
+                            <!-- IMAGENES -->
                             <div class="carousel-inner">
-                                <div class="carousel-item active">
-                                    <div class="card">
-                                        <asp:Image ID="Image1" runat="server" ImageUrl="https://placehold.co/400x250" CssClass="card-img-top" />
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between">
-                                                <p>Ejemplo 1</p>
-                                                <asp:Button ID="Button1" runat="server" Text="x" CssClass="btn-solid theme-danger" />
+                                <asp:Repeater ID="rptImagenes" runat="server" OnItemCommand="rptImagenes_ItemCommand">
+                                    <ItemTemplate>
+                                        <div class='carousel-item <%# Container.ItemIndex == 0 ? "active" : "" %>'>
+                                            <div class="card">
+                                                <asp:Image runat="server" ImageUrl='<%# Eval("Url") %>' AlternateText="Imagen de las instalaciones" CssClass="d-block w-100 h-100 rounded-5" />
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between">
+                                                        <p>Imagen <%# Eval("Descripcion") %></p>
+                                                        <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="carousel-item">
-                                    <div class="card">
-                                        <asp:Image ID="Image2" runat="server" ImageUrl="https://placehold.co/400x250" CssClass="card-img-top" />
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between">
-                                                <p>Ejemplo 2</p>
-                                                <asp:Button ID="Button2" runat="server" Text="x" CssClass="btn-solid theme-danger" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="carousel-item">
-                                    <div class="card">
-                                        <asp:Image ID="Image3" runat="server" ImageUrl="https://placehold.co/400x250" CssClass="card-img-top" />
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between">
-                                                <p>Ejemplo 3</p>
-                                                <asp:Button ID="Button3" runat="server" Text="x" CssClass="btn-solid theme-danger" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
 
-        <div class="d-grid m-5">
-            <asp:Button ID="btnRegistrarInstitucion" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro mt-4" />
+        <!-- BOTON PARA GUARDAR DATOS -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="p-5">
+                    <asp:Button ID="Button4" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 mb-4"/>
+                    <p class="text-center text-secondary small">
+                        ¿Ya registraste tu colegio?
+                        <a href="#" class="link-lilaClaro">Iniciá sesión como institución</a>
+                    </p>
+                </div>
+            </div>
         </div>
-
-        <p class="text-center text-secondary small m-5">
-            ¿Ya registraste tu colegio?
-            <a href="#" class="link-lilaClaro">Iniciá sesión como institución</a>
-        </p>
     </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Traer datos de la institucion
+        var institucion = <%= institucionJson %>;
+
+        // Generar mapa
+        var mapa = L.map('mapa').setView([institucion.Latitud, institucion.Longitud], 12);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapa);
+
+        // Generar marcadores
+        var marcador = L.marker([institucion.Latitud, institucion.Longitud])
+            .addTo(mapa)
+            .bindPopup('<b>' + institucion.Nombre + '</b><br>' + institucion.Direccion);
+
+        // Reset: al intentar avanzar más allá del final, vuelve al inicio
+        (function () {
+            var carrusel = document.getElementById('carouselMultiple');
+            var inner = carrusel.querySelector('.carousel-inner');
+            var visibles = 3; // el mismo valor que --bs-carousel-items
+            var ultimo = carrusel.querySelectorAll('.carousel-item').length - visibles;
+
+            carrusel.addEventListener('slide.bs.carousel', function (e) {
+                if (e.to > ultimo) {
+                    e.preventDefault();
+                    inner.scrollTo({ left: 0, behavior: 'smooth' });
+                }
+            });
+        })();
+
+    </script>
 
 </asp:Content>
