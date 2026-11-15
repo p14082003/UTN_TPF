@@ -417,6 +417,17 @@ BEGIN
 													   WHERE  p.id = p_idPostulacion) THEN 
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Alumno no existente. ';                                           
 	END IF;
+    
+     -- validar que el usuario responsable este activo -- es autogestor a.idPersona = r.idPersona -- es responsablePorAlumno res res.idAlumno = a.id
+    IF NOT (EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+													    INNER JOIN ResponsablesPorAlumno r ON r.idAlumno = a.id 
+                                                        INNER JOIN Responsables re ON re.id = r.idResponsable
+                                                        INNER JOIN Usuarios u ON re.idUsuario = u.id WHERE p.id = p_idPostulacion AND u.activo = TRUE) OR 
+			EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON p.idAlumno = a.id
+													    INNER JOIN Responsables re ON re.idPersona = a.idPersona
+                                                        INNER JOIN Usuarios u ON u.id = re.idUsuario WHERE p.id = p_idPostulacion AND u.activo = TRUE)) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno pertenece a una cuenta inactiva ';  
+	END IF;
 
 	-- validar que el estado actual sea pendiente 
 	IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion AND idEstado = 1) THEN 
@@ -454,3 +465,89 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+-- sp_Rechazar_Postulacion_Alumno
+-- solo se rechazan las postulaciones pendietes, no necesitamos validar si queda o no cupo
+-- necesitamos recibir parámetros p_idPostulacion y p_idAdministradorInstitucion
+-- la trasacción es un update al estado de la postulación + motivo 
+-- ---------------------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_Rechazar_Postulacion_Alumno$$
+
+CREATE PROCEDURE sp_Rechazar_Postulacion_Alumno(
+IN p_idPostulacion                INT,
+IN p_idAdministradorInstitucion   INT,
+IN p_motivoRechazo                TEXT
+)
+BEGIN
+
+	DECLARE v_motivoRechazo VARCHAR(255);
+    
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN 
+		ROLLBACK;
+        RESIGNAL;
+	END;
+    
+    -- validamos que no sea null o vacío el motivo (hay que avisar porque fue el rechazo para orientar por si hay una nueva postulación a futuro)
+    IF(p_motivoRechazo IS NULL OR TRIM(p_motivoRechazo) = '') THEN 
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Ingrese un motivo de rechazo válido.';
+    END IF;
+    
+    -- validamos que el motivo de rechazo no tenga longitud mas larga de la posible
+    IF (char_length(p_motivoRechazo) > 255) THEN
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El motivo de rechazo supera los 255 caracteres disponibles.';
+    END IF;
+    -- si no se pasa de cantidad de caracteres lo guardo para llevarlo limpio a la bd
+    SET v_motivoRechazo = TRIM(p_motivoRechazo); 
+	
+    -- validamos que postulación exista 
+    IF NOT EXISTS(SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Postulación inexistente';
+	END IF;
+    -- validamos usuario o administrador existente
+    IF NOT EXISTS(SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE a.id = p_idAdministradorInstitucion) THEN 
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Usuario o administrador inexistente.';
+    END IF;
+    -- validamos usuario activo
+    IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE u.activo = TRUE AND a.id = p_idAdministradorInstitucion) THEN 
+		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El usuario no se encuentra activo.';
+    END IF;
+    -- validamos institucion activa
+    IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Instituciones i ON a.idInstitucion = i.id
+															 WHERE i.estado = TRUE and a.id = p_idAdministradorInstitucion ) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa.';
+	END IF;
+    
+       -- validar que el usuario responsable este activo -- es autogestor a.idPersona = r.idPersona -- es responsablePorAlumno res res.idAlumno = a.id
+    IF NOT (EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+													    INNER JOIN ResponsablesPorAlumno r ON r.idAlumno = a.id 
+                                                        INNER JOIN Responsables re ON re.id = r.idResponsable
+                                                        INNER JOIN Usuarios u ON re.idUsuario = u.id WHERE p.id = p_idPostulacion AND u.activo = TRUE) OR 
+			EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON p.idAlumno = a.id
+													    INNER JOIN Responsables re ON re.idPersona = a.idPersona
+                                                        INNER JOIN Usuarios u ON u.id = re.idUsuario WHERE p.id = p_idPostulacion AND u.activo = TRUE)) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno pertenece a una cuenta inactiva ';  
+	END IF;
+               
+	-- validar que la postulación pertenezca a la institucion y a un curso de la institucion
+	IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Cursos c ON a.idInstitucion = c.idInstitucion
+															  INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id
+															  WHERE a.id = p_idAdministradorInstitucion AND p.id = p_idPostulacion) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no pertenece a la institución.';
+	END IF;
+    
+    -- validar que el estado actual sea pendiente y motivo NULL
+	IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion AND idEstado = 1 AND motivoRechazo IS NULL) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no se encuentra pendiente o ya tiene un motivo de rechazo.';
+	END IF;
+    
+    -- iniciamos transacción
+    START TRANSACTION;
+		UPDATE PostulacionesAlumnos SET idEstado = 4, motivoRechazo = v_motivoRechazo WHERE id = p_idPostulacion AND idEstado = 1 AND motivoRechazo IS NULL;
+    COMMIT;
+    
+END$$
+DELIMITER ;
+
