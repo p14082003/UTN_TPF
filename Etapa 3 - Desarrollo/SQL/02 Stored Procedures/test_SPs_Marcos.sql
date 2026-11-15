@@ -137,6 +137,42 @@ SELECT * FROM Imagenes WHERE idInstitucion = @idInst;               -- 1 fila
 /* CALL sp_Imagen_Institucion_Agregar(@idAdmin2, @idInst, 'img/fest/patio.jpg', ''); */   -- ERROR FALTAN DATOS (descripcion obligatoria)
 /* CALL sp_Imagen_Institucion_Agregar(@idAdmin1, @idInst, 'img/x.jpg', 'x'); */           -- ERROR SIN PERMISO
 
+-- MODIFICAR. Orden: admin, institucion, direccion, email, lat, lon, descripcion, tipo,
+-- movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo
+CALL sp_Institucion_Modificar(@idAdmin2, @idInst, 'Av. Nueva 456, Tigre', 'Nuevo@Fest.com', -34.43, -58.58,
+  'Descripcion modificada.', 2, 0, 1, 1, 0, 0, 0, 0);
+SELECT * FROM Instituciones WHERE id = @idInst;                     -- direccion, email (minuscula), coordenadas, descripcion y tipo 2 nuevos; nombre y CUIT iguales
+SELECT * FROM Discapacidades WHERE idInstitucion = @idInst;         -- ahora visual = 1 y auditiva = 1, movilidad = 0
+
+-- Deberian fallar (se corre de a uno):
+/* CALL sp_Institucion_Modificar(@idAdmin2, @idInst, '', 'a@b.com', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */          -- ERROR FALTAN DATOS
+/* CALL sp_Institucion_Modificar(@idAdmin2, @idInst, 'Otra 1', 'sin-arroba', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */ -- ERROR EMAIL
+/* CALL sp_Institucion_Modificar(@idAdmin2, @idInst, 'Otra 1', 'a@b.com', 100, -58.5, 'x', 1, 0,0,0,0,0,0,0); */     -- ERROR COORDENADAS
+/* CALL sp_Institucion_Modificar(@idAdmin2, @idInst, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 99, 0,0,0,0,0,0,0); */  -- ERROR TIPO NO EXISTE
+/* CALL sp_Institucion_Modificar(@idAdmin1, @idInst, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */   -- ERROR SIN PERMISO
+/* CALL sp_Institucion_Modificar(@idAdmin2, 999999, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */    -- ERROR INSTITUCION NO EXISTE
+
+-- ELIMINAR TELEFONO. Orden: admin, institucion, id del telefono
+SET @idTel = (SELECT id FROM Telefonos WHERE idInstitucion = @idInst LIMIT 1);
+/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin1, @idInst, @idTel); */   -- ERROR SIN PERMISO
+/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, 999999); */   -- ERROR NO TIENE ESE TELEFONO
+CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel);
+SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 0 filas
+/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel); */   -- ERROR NO TIENE ESE TELEFONO (ya se quito)
+
+-- ELIMINAR IDIOMA. Orden: admin, institucion, idioma
+/* CALL sp_Idioma_Institucion_Eliminar(@idAdmin1, @idInst, 2); */          -- ERROR SIN PERMISO
+/* CALL sp_Idioma_Institucion_Eliminar(@idAdmin2, @idInst, 3); */          -- ERROR NO TIENE ESE IDIOMA
+CALL sp_Idioma_Institucion_Eliminar(@idAdmin2, @idInst, 2);
+SELECT * FROM IdiomaInstitucion WHERE idInstitucion = @idInst;      -- 0 filas
+
+-- ELIMINAR IMAGEN. Orden: admin, institucion, id de la imagen
+SET @idImg = (SELECT id FROM Imagenes WHERE idInstitucion = @idInst LIMIT 1);
+/* CALL sp_Imagen_Institucion_Eliminar(@idAdmin1, @idInst, @idImg); */     -- ERROR SIN PERMISO
+/* CALL sp_Imagen_Institucion_Eliminar(@idAdmin2, @idInst, 999999); */     -- ERROR NO TIENE ESA IMAGEN
+CALL sp_Imagen_Institucion_Eliminar(@idAdmin2, @idInst, @idImg);
+SELECT * FROM Imagenes WHERE idInstitucion = @idInst;               -- 0 filas
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;

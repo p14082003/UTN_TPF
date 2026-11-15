@@ -615,3 +615,243 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_Modificar
+-- Modifica los datos de la ficha de la institucion del administrador.
+--   * NO se pueden cambiar nombre ni CUIT (vienen de la postulacion aprobada)
+--   * las 7 discapacidades se mandan siempre tal como quedaron en el formulario
+-- Dos UPDATE (Instituciones y Discapacidades): van en una transaccion para
+-- que se guarden los dos o ninguno ya que son tablas separadas.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_Modificar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_Modificar(
+  IN p_idAdministrador   INT,
+  IN p_idInstitucion     INT,
+  IN p_direccion         VARCHAR(100),
+  IN p_email             VARCHAR(100),
+  IN p_latitud           DOUBLE,
+  IN p_longitud          DOUBLE,
+  IN p_descripcion       VARCHAR(3000),
+  IN p_idTipoInstitucion TINYINT,
+  -- Discapacidades
+  IN p_movilidad         BOOL,
+  IN p_visual            BOOL,
+  IN p_auditiva          BOOL,
+  IN p_verbal            BOOL,
+  IN p_intelectual       BOOL,
+  IN p_sindromeDown      BOOL,
+  IN p_autismo           BOOL
+)
+BEGIN
+  -- Cualquier error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  -- Normalizar
+  SET p_direccion   = TRIM(p_direccion);
+  SET p_email       = LOWER(TRIM(p_email));
+  SET p_descripcion = TRIM(p_descripcion);
+
+  -- Validaciones que no necesitan la base
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL
+     OR COALESCE(p_direccion,'') = '' OR COALESCE(p_email,'') = ''
+     OR p_latitud IS NULL OR p_longitud IS NULL OR COALESCE(p_descripcion,'') = ''
+     OR p_idTipoInstitucion IS NULL
+     OR p_movilidad IS NULL OR p_visual IS NULL OR p_auditiva IS NULL OR p_verbal IS NULL
+     OR p_intelectual IS NULL OR p_sindromeDown IS NULL OR p_autismo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF p_email NOT REGEXP '^[^@ ]+@[^@ ]+\\.[^@ ]+$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
+  END IF;
+
+  -- Solo coordenadas validas (-90 a 90 del Ecuador  y -180 a 180 del Meridiano)
+  IF p_latitud NOT BETWEEN -90 AND 90 OR p_longitud NOT BETWEEN -180 AND 180 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Las coordenadas no son válidas.';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Validaciones contra la DB
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  -- El administrador tiene que estar activo y ser de esa institucion
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM TipoInstitucion WHERE id = p_idTipoInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El tipo de institución no existe.';
+  END IF;
+
+  --  Escrituras
+  UPDATE Instituciones
+  SET direccion         = p_direccion,
+      email             = p_email,
+      latitud           = p_latitud,
+      longitud          = p_longitud,
+      descripcion       = p_descripcion,
+      idTipoInstitucion = p_idTipoInstitucion
+  WHERE id = p_idInstitucion;
+
+  UPDATE Discapacidades
+  SET movilidad    = p_movilidad,
+      visual       = p_visual,
+      auditiva     = p_auditiva,
+      verbal       = p_verbal,
+      intelectual  = p_intelectual,
+      sindromeDown = p_sindromeDown,
+      autismo      = p_autismo
+  WHERE idInstitucion = p_idInstitucion;
+
+  COMMIT;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Telefono_Institucion_Eliminar
+-- Quita un telefono de la institucion del administrador (se identifica por
+-- el id de la fila de Telefonos). Un solo DELETE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Telefono_Institucion_Eliminar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Telefono_Institucion_Eliminar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_idTelefono      INT
+)
+BEGIN
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR p_idTelefono IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  -- El telefono tiene que ser de esa institucion (evita borrar uno ajeno mandando otro id)
+  IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no tiene ese teléfono.';
+  END IF;
+
+  DELETE FROM Telefonos
+  WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Idioma_Institucion_Eliminar
+-- Quita un idioma de la institucion del administrador. Un solo DELETE.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Idioma_Institucion_Eliminar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Idioma_Institucion_Eliminar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_idIdioma        TINYINT
+)
+BEGIN
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR p_idIdioma IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM IdiomaInstitucion WHERE idInstitucion = p_idInstitucion AND idIdioma = p_idIdioma) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no tiene ese idioma.';
+  END IF;
+
+  DELETE FROM IdiomaInstitucion
+  WHERE idInstitucion = p_idInstitucion AND idIdioma = p_idIdioma;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Imagen_Institucion_Eliminar
+-- Quita una imagen de la institucion del administrador (se identifica por
+-- el id de la fila de Imagenes). Solo borra el registro; el archivo lo
+-- borra el programa (C#). Un solo DELETE.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Imagen_Institucion_Eliminar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Imagen_Institucion_Eliminar(
+  IN p_idAdministrador INT,
+  IN p_idInstitucion   INT,
+  IN p_idImagen        INT
+)
+BEGIN
+  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR p_idImagen IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1
+                 FROM AdministradoresInstitucion a
+                 JOIN Usuarios u ON u.id = a.idUsuario
+                 WHERE a.id = p_idAdministrador
+                   AND a.idInstitucion = p_idInstitucion
+                   AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Imagenes WHERE id = p_idImagen AND idInstitucion = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no tiene esa imagen.';
+  END IF;
+
+  DELETE FROM Imagenes
+  WHERE id = p_idImagen AND idInstitucion = p_idInstitucion;
+END$$
+
+DELIMITER ;
