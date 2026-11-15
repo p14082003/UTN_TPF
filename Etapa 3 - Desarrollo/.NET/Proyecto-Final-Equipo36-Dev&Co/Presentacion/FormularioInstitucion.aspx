@@ -320,22 +320,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Traer datos de la institucion
-        var institucion = <%= institucionJson %>;
 
-        // Generar mapa
-        var mapa = L.map('mapa').setView([institucion.Latitud, institucion.Longitud], 12);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(mapa);
-
-        // Generar marcadores
-        var marcador = L.marker([institucion.Latitud, institucion.Longitud])
-            .addTo(mapa)
-            .bindPopup('<b>' + institucion.Nombre + '</b><br>' + institucion.Direccion);
-
-        // Reset: al intentar avanzar más allá del final, vuelve al inicio
+        // CAROUSEL: Al intentar avanzar en la ultima imagen, vuelve al inicio
         (function () {
             var carrusel = document.getElementById('carouselMultiple');
             var inner = carrusel.querySelector('.carousel-inner');
@@ -343,13 +329,52 @@
             var ultimo = carrusel.querySelectorAll('.carousel-item').length - visibles;
 
             carrusel.addEventListener('slide.bs.carousel', function (e) {
-                if (e.to > ultimo) {
+                // Solo al avanzar un paso más allá del final (no al retroceder desde la primera)
+                if (e.to > ultimo && e.to === e.from + 1) {
                     e.preventDefault();
                     inner.scrollTo({ left: 0, behavior: 'smooth' });
                 }
             });
         })();
 
+        // MAPA
+        var institucion = <%= institucionJson %>;
+
+        // Centro por defecto (Buenos Aires) si no hay coordenadas ni ubicación del usuario
+        var ubicacionPorDefecto = [-34.6037, -58.3816];
+
+        var tieneCoordenadas = institucion.Latitud !== 0 || institucion.Longitud !== 0;
+        var marcador;
+
+        var mapa = L.map('mapa').setView(
+            tieneCoordenadas ? [institucion.Latitud, institucion.Longitud] : ubicacionPorDefecto,
+            tieneCoordenadas ? 16 : 12
+        );
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapa);
+
+        if (tieneCoordenadas) {
+            // Edición: marcador en la ubicación guardada
+            marcador = L.marker([institucion.Latitud, institucion.Longitud], { draggable: true })
+                .addTo(mapa)
+                .bindPopup('<b>' + institucion.Nombre + '</b><br>' + institucion.Direccion);
+        } else if (navigator.geolocation) {
+            // Registro nuevo: marcador arrastrable en la ubicación del usuario
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    var posicion = [pos.coords.latitude, pos.coords.longitude];
+                    mapa.setView(posicion, 16);
+                    marcador = L.marker(posicion, { draggable: true }).addTo(mapa);
+                },
+                function () {
+                    // Sin permiso o sin señal: queda el centro por defecto, sin marcador
+                },
+                { timeout: 8000, maximumAge: 600000 }
+            );
+        }
     </script>
 
 </asp:Content>
