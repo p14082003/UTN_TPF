@@ -101,6 +101,8 @@ namespace Presentacion
             txtTelefono.Text = institucion.Telefonos.Count > 0 ? institucion.Telefonos[0].NumeroTelefono : ""; // En caso de que este vacio, ya que los telefonos son null
             txtTelefonoAlternativo.Text = institucion.Telefonos.Count > 1 ? institucion.Telefonos[1].NumeroTelefono : "";
             txtDireccion.Text = institucion.Direccion;
+            hfLatitud.Value = institucion.Latitud != 0 ? institucion.Latitud.ToString(CultureInfo.InvariantCulture) : "";
+            hfLongitud.Value = institucion.Longitud != 0 ? institucion.Longitud.ToString(CultureInfo.InvariantCulture) : "";
         }
 
         private void CargarIdiomas()
