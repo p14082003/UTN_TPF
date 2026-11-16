@@ -150,9 +150,14 @@ BEGIN
   ELSE -- Si idAdmin NO ES NULL (reintento) Seteamos las variables que necesitamos:
     -- YA ES ADMINISTRADOR: solo se permite reintentar si su ultima postulacion fue rechazada.
     -- (La contraseña la verifica la API antes de llamar a este SP)
-    SET v_idUltimoEstado = (SELECT idEstado FROM PostulacionesAdminInstitucion
-                            WHERE idAdministradorInstitucion = v_idAdministrador
-                            ORDER BY id DESC LIMIT 1);
+    -- Se bloquea la fila del administrador hasta el COMMIT: si llega otro reintento al mismo tiempo (doble click), espera acá.
+    SELECT id INTO v_idAdministrador FROM AdministradoresInstitucion
+    WHERE id = v_idAdministrador FOR UPDATE;
+
+    -- La última postulación se lee con FOR UPDATE para ver lo que el otro reintento ya confirmó.
+    SELECT idEstado INTO v_idUltimoEstado FROM PostulacionesAdminInstitucion
+    WHERE idAdministradorInstitucion = v_idAdministrador
+    ORDER BY id DESC LIMIT 1 FOR UPDATE;
     SET v_idUsuario = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = v_idAdministrador);
     SET v_idInstitucionAdmin = (SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = v_idAdministrador);
     SET v_emailActual = (SELECT email FROM Usuarios WHERE id = v_idUsuario);
@@ -225,9 +230,17 @@ BEGIN
     WHERE id = v_idPersona;
 
 	-- Toma el primer teléfono del administrador para actualizarlo (si no tiene ninguno, se crea).
-    SET v_idTelefono = (SELECT id FROM Telefonos WHERE idAdministrador = v_idAdministrador ORDER BY id LIMIT 1);
+    -- Solo cuenta un teléfono exclusivo del administrador: si los que tiene son compartidos con una institución
+    -- o un responsable, no se les cambia el número (sería cambiárselo a los otros dueños): se le saca el
+    -- administrador a esa fila (queda para los otros dueños) y se crea un teléfono nuevo, exclusivo del administrador.
+    SET v_idTelefono = (SELECT id FROM Telefonos
+                        WHERE idAdministrador = v_idAdministrador AND idInstitucion IS NULL AND idResponsable IS NULL
+                        ORDER BY id LIMIT 1);
 
     IF v_idTelefono IS NULL THEN
+      -- Si no tenía ningún teléfono, este UPDATE no modifica nada. Si solo tenía compartidos, se le sacan.
+      UPDATE Telefonos SET idAdministrador = NULL WHERE idAdministrador = v_idAdministrador;
+
       INSERT INTO Telefonos (idAdministrador, telefono)
       VALUES (v_idAdministrador, p_telefono);
     ELSE
@@ -815,7 +828,9 @@ DELIMITER ;
 -- ---------------------------------------------------------------------
 -- sp_Telefono_Institucion_Eliminar
 -- Quita un telefono de la institucion del administrador (se identifica por
--- el id de la fila de Telefonos). Un solo DELETE: sin transaccion ni handler.
+-- el id de la fila de Telefonos). Sin transaccion ni handler.
+-- Si el telefono tambien es de otro titular (administrador o responsable) no se borra:
+-- solo se le saca la institucion. Si era solo de la institucion, se borra.
 -- ---------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_Telefono_Institucion_Eliminar;
 
@@ -849,8 +864,14 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no tiene ese teléfono.';
   END IF;
 
-  DELETE FROM Telefonos
-  WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
+  IF EXISTS (SELECT 1 FROM Telefonos
+             WHERE id = p_idTelefono AND (idAdministrador IS NOT NULL OR idResponsable IS NOT NULL)) THEN
+    UPDATE Telefonos SET idInstitucion = NULL
+    WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
+  ELSE
+    DELETE FROM Telefonos
+    WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
+  END IF;
 END$$
 
 DELIMITER ;

@@ -101,6 +101,20 @@ SELECT id, email, clave, activo FROM Usuarios WHERE email = 'testadmin@mail.com'
 -- Se vuelve a rechazar para dejarlo en estado "rechazado" (los tests de Crear lo usan inactivo)
 CALL sp_PostulacionAdmin_Rechazar(@idPost3, 23, 'Documentacion incompleta.');
 
+-- REINTENTO con telefono compartido: el unico telefono del administrador pasa a ser tambien del responsable 1.
+-- El reintento no debe cambiarle el numero al responsable: le saca el administrador a esa fila y crea un
+-- telefono nuevo, exclusivo del administrador.
+SET @idTelAdm = (SELECT id FROM Telefonos WHERE idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com')) LIMIT 1);
+UPDATE Telefonos SET idResponsable = 1 WHERE id = @idTelAdm;
+CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'AdminNuevo', '12121212', 'Calle Nueva 999', '1990-05-11',
+  'otraClave', 'testadmin@mail.com', '777777',
+  'Instituto fest', '30999999992', 'fest_c.pdf', 'habilitacion_fest_c.pdf', 'laboral_fest_c.pdf',
+  'PAI-TEST-0007', @idPost4);
+SELECT id, telefono, idResponsable, idAdministrador FROM Telefonos WHERE idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com'));   -- 1 fila: '777777', sin responsable
+SELECT id, telefono, idAdministrador, idResponsable FROM Telefonos WHERE id = @idTelAdm;   -- la fila compartida sigue existiendo, sin cambios en el numero: '555555', idAdministrador NULL, idResponsable 1
+CALL sp_PostulacionAdmin_Rechazar(@idPost4, 23, 'Documentacion incompleta.');   -- queda rechazado de nuevo para los tests que siguen
+
 -- OBTENER CLAVE PARA REINTENTO
 CALL sp_AdministradorInstitucion_ObtenerClaveReintento('TESTadmin@mail.com');   -- 1 fila: la clave guardada (rechazado, inactivo, sin institucion)
 /* CASOS DONDE NO DEVUELVE EL HASH DE LA CLAVE (0 FILAS) */
@@ -219,6 +233,14 @@ SET @idTel = (SELECT id FROM Telefonos WHERE idInstitucion = @idInst LIMIT 1);
 CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel);
 SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 0 filas
 /* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel); */   -- ERROR NO TIENE ESE TELEFONO (ya se quito)
+
+-- ELIMINAR TELEFONO COMPARTIDO: un telefono de la institucion que tambien es del administrador no se borra,
+-- solo se le saca la institucion (el administrador lo conserva).
+INSERT INTO Telefonos (idInstitucion, idAdministrador, telefono) VALUES (@idInst, @idAdmin2, '+54 11 4111-1111');
+SET @idTelComp = LAST_INSERT_ID();
+CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTelComp);
+SELECT id, idInstitucion, idAdministrador FROM Telefonos WHERE id = @idTelComp;   -- 1 fila: idInstitucion NULL, idAdministrador = @idAdmin2 (sigue existiendo)
+/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTelComp); */      -- ERROR NO TIENE ESE TELEFONO (ya no es de la institucion)
 
 -- ELIMINAR IDIOMA. Orden: admin, institucion, idioma
 /* CALL sp_Idioma_Institucion_Eliminar(@idAdmin1, @idInst, 2); */          -- ERROR SIN PERMISO
@@ -364,6 +386,7 @@ DELETE FROM Discapacidades WHERE idInstitucion IN (SELECT id FROM Instituciones 
 UPDATE AdministradoresInstitucion SET idInstitucion = NULL WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Instituciones WHERE cuit = '30999999994';
 DELETE FROM PostulacionesAdminInstitucion WHERE codigoSeguimiento LIKE 'PAI-TEST-%';
+DELETE FROM Telefonos WHERE telefono = '555555' AND idAdministrador IS NULL AND idResponsable = 1;
 DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com')));
 DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com'));
 DELETE FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com');
