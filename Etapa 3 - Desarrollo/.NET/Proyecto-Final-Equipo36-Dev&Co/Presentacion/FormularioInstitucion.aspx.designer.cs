@@ -150,6 +150,24 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.TextBox txtDireccion;
 
         /// <summary>
+        /// Control hfLatitud.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfLatitud;
+
+        /// <summary>
+        /// Control hfLongitud.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfLongitud;
+
+        /// <summary>
         /// Control lblIdiomas.
         /// </summary>
         /// <remarks>
@@ -267,12 +285,12 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Repeater rptImagenes;
 
         /// <summary>
-        /// Control Button4.
+        /// Control btnGuardar.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button4;
+        protected global::System.Web.UI.WebControls.Button btnGuardar;
     }
 }

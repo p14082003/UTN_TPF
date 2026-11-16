@@ -135,7 +135,7 @@
                             <asp:Label ID="lblTelefono" runat="server" Text="Teléfono principal" CssClass="form-label fw-semibold"></asp:Label>
                             <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 11 0000-0000"></asp:TextBox>
                         </div>
-
+                            
                         <div class="col-6 mb-4">
                             <asp:Label ID="lblTelefonoAlternativo" runat="server" Text="Télefono alternativo" CssClass="form-label fw-semibold"></asp:Label>
                             <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 9 11 0000-0000"></asp:TextBox>
@@ -160,12 +160,24 @@
                     <!-- UBICACION -->
                     <div class="mb-4">
                         <asp:Label ID="lblDireccion" runat="server" Text="Dirección de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" placeholder="Calle, número y localidad"></asp:TextBox>
+                        <div class="d-flex gap-4">
+                            <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" placeholder="Calle, número y localidad"></asp:TextBox>
+                            <button type="button" id="btnVerificarDireccion" class="btn-lilaOscuro">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- MENSAJE DE ESTADO-->
+                    <div id="mensajeDireccion" class="form-text">Tocá la lupa o presioná Enter para ubicar la dirección en el mapa.</div>
 
                     <div style="height: 25dvh; min-height: 250px;">
                         <div id="mapa"></div>
                     </div>
+
+                    <!-- GUARDAR COORDENADAS -->
+                    <asp:HiddenField ID="hfLatitud" runat="server" />
+                    <asp:HiddenField ID="hfLongitud" runat="server" />
                 </div>
             </div>
         </div>
@@ -308,7 +320,7 @@
         <div class="row m-4">
             <div class="col">
                 <div class="p-5">
-                    <asp:Button ID="Button4" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 mb-4"/>
+                    <asp:Button ID="btnGuardar" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 mb-4"/>
                     <p class="text-center text-secondary small">
                         ¿Ya registraste tu colegio?
                         <a href="#" class="link-lilaClaro">Iniciá sesión como institución</a>
@@ -340,41 +352,138 @@
         // MAPA
         var institucion = <%= institucionJson %>;
 
-        // Centro por defecto (Buenos Aires) si no hay coordenadas ni ubicación del usuario
-        var ubicacionPorDefecto = [-34.6037, -58.3816];
+        // Variables necesrias
+        var txtDireccion = document.getElementById('<%= txtDireccion.ClientID %>');
+        var hfLat = document.getElementById('<%= hfLatitud.ClientID %>');
+        var hfLng = document.getElementById('<%= hfLongitud.ClientID %>');
+        var btnVerificar = document.getElementById('btnVerificarDireccion');
+        var mensaje = document.getElementById('mensajeDireccion');
 
-        var tieneCoordenadas = institucion.Latitud !== 0 || institucion.Longitud !== 0;
+        // Valor por defecto (Buenos Aires)
+        var posicionPorDefecto = [-34.6037, -58.3816];
         var marcador;
 
-        var mapa = L.map('mapa').setView(
-            tieneCoordenadas ? [institucion.Latitud, institucion.Longitud] : ubicacionPorDefecto,
-            tieneCoordenadas ? 16 : 12
-        );
+        // Cargar ubicacion en caso de entrar al formulario para modificar una institución
+        function coordenadasIniciales() {
+
+            var latitud = parseFloat(hfLat.value);
+            var longitud = parseFloat(hfLng.value);
+
+            if (!isNaN(latitud) && !isNaN(longitud)) {
+                return [latitud, longitud];
+            }
+
+            if (institucion.Latitud !== 0 || institucion.Longitud !== 0) {
+                return [institucion.Latitud, institucion.Longitud];
+            }
+
+            return null;
+        }
+
+        function guardarCoordenadas(lat, lng) {
+
+            hfLat.value = lat.toFixed(6); // toFixed siempre usa punto decimal
+            hfLng.value = lng.toFixed(6);
+        }
+
+        // Crear el marcador arrastrable
+        // Cuando el usuario lo suelta (dragend) o cuando se verifica la dirección
+        function crearMarcador(posicion) {
+
+            marcador = L.marker(posicion, { draggable: true }).addTo(mapa);
+
+            // Cuando el usuario suelta el marcador (dragend), se verifica y guarda la dirección
+            marcador.on('dragend', function () {
+                var p = marcador.getLatLng();
+                guardarCoordenadas(p.lat, p.lng);
+            });
+        }
+
+        // Mensaje de estado
+        function mostrarMensaje(texto, esError) {
+            mensaje.textContent = texto;
+            mensaje.className = 'form-text ' + (esError ? 'text-danger' : '');
+        }
+
+        var inicial = coordenadasIniciales();
+
+        // Mostrar mapa
+        var mapa = L.map('mapa').setView(inicial || posicionPorDefecto, inicial ? 16 : 12);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(mapa);
 
-        if (tieneCoordenadas) {
-            // Edición: marcador en la ubicación guardada
-            marcador = L.marker([institucion.Latitud, institucion.Longitud], { draggable: true })
-                .addTo(mapa)
-                .bindPopup('<b>' + institucion.Nombre + '</b><br>' + institucion.Direccion);
+        if (inicial) {
+            crearMarcador(inicial);
         } else if (navigator.geolocation) {
-            // Registro nuevo: marcador arrastrable en la ubicación del usuario
+            // Registro nuevo: ubicación del usuario como punto de partida (no se guarda)
             navigator.geolocation.getCurrentPosition(
                 function (pos) {
                     var posicion = [pos.coords.latitude, pos.coords.longitude];
                     mapa.setView(posicion, 16);
-                    marcador = L.marker(posicion, { draggable: true }).addTo(mapa);
+                    crearMarcador(posicion);
                 },
                 function () {
-                    // Sin permiso o sin señal: queda el centro por defecto, sin marcador
+                    // Si el usuario no habilta la ubicación, queda el centro por defecto, sin marcador
                 },
                 { timeout: 8000, maximumAge: 600000 }
             );
         }
+
+        // NOMINATIM: Buscar la dirección y ubicarla en el mapa
+        async function verificarDireccion() {
+            var direccion = txtDireccion.value.trim();
+
+            if (!direccion) {
+                mostrarMensaje('Ingresá una dirección para ubicarla en el mapa.', true);
+                return;
+            }
+
+            btnVerificar.disabled = true;
+            mostrarMensaje('Buscando...', false);
+
+            try {
+                // API Endpoint + Parametros
+                var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ar&accept-language=es&q=' + encodeURIComponent(direccion);
+                var respuesta = await fetch(url);
+                
+                if (!respuesta.ok) {
+                    throw new Error('HTTP ' + respuesta.status);
+                }
+
+                var resultados = await respuesta.json();
+
+                if (resultados.length === 0) {
+                    mostrarMensaje('No encontramos esa dirección. Probá agregando la localidad, o ubicá el marcador a mano.', true);
+                    return;
+                }
+
+                // Parsear latitud y longitud del JSON a FLOAT
+                var latitud = parseFloat(resultados[0].lat);
+                var longitud = parseFloat(resultados[0].lon);
+
+                if (marcador) {
+                    marcador.setLatLng([latitud, longitud]);
+                } else {
+                    crearMarcador([latitud, longitud]);
+                }
+
+                mapa.setView([latitud, longitud], 17);
+                guardarCoordenadas(latitud, longitud);
+
+                mostrarMensaje('Dirección ubicada. Si el marcador no está en el lugar correcto, arrastralo.', false);
+            }
+            catch (error) {
+                mostrarMensaje('No se pudo consultar el mapa. Intentá de nuevo en unos segundos.', true);
+            }
+            finally {
+                btnVerificar.disabled = false;
+            }
+        }
+
+        btnVerificar.addEventListener('click', verificarDireccion);
     </script>
 
 </asp:Content>
