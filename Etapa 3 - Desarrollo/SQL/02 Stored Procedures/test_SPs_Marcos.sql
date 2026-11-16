@@ -266,6 +266,34 @@ WHERE codigoSeguimiento LIKE 'PST-TEST-%';                                    --
 /* CALL sp_Institucion_Reactivar(999999, 23); */           -- ERROR NO EXISTE
 
 
+-- BAJAS Y REACTIVACIONES 
+SET @idUsuario1 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin1);   -- testadmin (rechazado, inactivo, sin institucion)
+SET @idUsuario2 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin2);   -- testadmin2 (activo, de @idInst)
+SET @idUsuarioOtraInst = (SELECT idUsuario FROM AdministradoresInstitucion
+                          WHERE idInstitucion IS NOT NULL AND idInstitucion <> @idInst LIMIT 1);   -- administrador de otra institucion (del archivo de INSERTs)
+
+-- ALTA DE ADMINISTRADOR ADICIONAL. Orden: actor (idUsuario), nombre, apellido, documento, domicilio, fechaNac, clave, email, telefono, OUT idAdministrador
+-- Deberian fallar (se corre de a uno):
+/* CALL sp_AdministradorInstitucion_CrearAdicional(23, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3); */   -- ERROR SIN PERMISO (Dev&Co no es administrador de una institucion)
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario1, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3); */   -- ERROR SIN PERMISO (actor inactivo y sin institucion)
+/* CALL sp_AdministradorInstitucion_CrearAdicional(NULL, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3); */   -- ERROR FALTAN DATOS
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '1234', 'Calle 789', '1990-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3); */   -- ERROR DOCUMENTO
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'sin-arroba', '1155550003', @idAdmin3); */   -- ERROR EMAIL FORMATO
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '12121215', 'Calle 789', '2015-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3); */   -- ERROR MENOR DE 18
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'testadmin2@mail.com', '1155550003', @idAdmin3); */   -- ERROR EMAIL YA REGISTRADO (el de testadmin2)
+
+-- Alta correcta, hecha por testadmin2 (administrador activo de @idInst)
+CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'testadmin3@mail.com', '1155550003', @idAdmin3);
+SELECT @idAdmin3;
+SELECT a.id, a.idInstitucion, u.email, u.activo, t.telefono       -- activo = 1, idInstitucion = @idInst, con su telefono
+FROM AdministradoresInstitucion a
+JOIN Usuarios u ON u.id = a.idUsuario
+JOIN Telefonos t ON t.idAdministrador = a.id
+WHERE a.id = @idAdmin3;
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Test', 'Admin3', '12121215', 'Calle 789', '1990-05-10', 'clave123', 'otro@mail.com', '1155550003', @idAdmin4); */   -- ERROR YA EXISTE ADMINISTRADOR CON ESE DOCUMENTO
+
+SET @idUsuario3 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin3);
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;
@@ -274,6 +302,10 @@ DELETE FROM IdiomaInstitucion WHERE idInstitucion IN (SELECT id FROM Institucion
 DELETE FROM Telefonos WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM PostulacionesAlumnos WHERE codigoSeguimiento LIKE 'PST-TEST-%';
 DELETE FROM Cursos WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
+DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'testadmin3@mail.com'));
+DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'testadmin3@mail.com');
+DELETE FROM Usuarios WHERE email = 'testadmin3@mail.com';
+DELETE FROM Personas WHERE documento = '12121215';
 DELETE FROM Discapacidades WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 UPDATE AdministradoresInstitucion SET idInstitucion = NULL WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Instituciones WHERE cuit = '30999999994';

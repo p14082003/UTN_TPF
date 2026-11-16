@@ -1184,3 +1184,140 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_CrearAdicional
+-- Un administrador activo de una institucion da de alta a otro administrador de la misma institucion.
+-- La cuenta se crea activa y ya vinculada a la institucion del que la crea (no pasa por Dev&Co).
+--   * La clave llega ya hasheada desde la API (el SP la guarda tal cual).
+--   * Si la persona ya existe por otro rol (responsable, alumno autogestor) se reutiliza y se
+--     conservan sus datos personales; necesita igual su propio email, distinto al del otro rol.
+--   * Si la persona ya tiene cuenta de administrador, no se puede volver a dar de alta.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_CrearAdicional;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_AdministradorInstitucion_CrearAdicional(
+  IN  p_idUsuarioActor  INT,            -- administrador que da el alta (lo toma C# de la sesion)
+  -- Datos personales
+  IN  p_nombre          VARCHAR(50),
+  IN  p_apellido        VARCHAR(50),
+  IN  p_documento       VARCHAR(8),
+  IN  p_domicilio       VARCHAR(100),
+  IN  p_fechaNacimiento DATE,
+  -- Cuenta
+  IN  p_clave           VARCHAR(255),   -- ya llega hasheada desde la API
+  IN  p_email           VARCHAR(100),
+  IN  p_telefono        VARCHAR(30),
+  -- Salida
+  OUT p_idAdministrador INT
+)
+BEGIN
+  DECLARE v_idTipoAdministrador TINYINT;
+  DECLARE v_idInstitucion       INT;
+  DECLARE v_idPersona           INT;
+  DECLARE v_idUsuario           INT;
+  DECLARE v_fechaNac            DATE;
+
+  -- Casos que puedan pasar entre la validacion y el INSERT
+  DECLARE EXIT HANDLER FOR 1062
+  BEGIN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Ya existe un registro con esos datos (documento o email).';
+  END;
+
+  -- Cualquier otro error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  -- Normalizar (la clave no se toca, puede contener espacios)
+  SET p_nombre    = TRIM(p_nombre);
+  SET p_apellido  = TRIM(p_apellido);
+  SET p_documento = TRIM(p_documento);
+  SET p_domicilio = TRIM(p_domicilio);
+  SET p_email     = LOWER(TRIM(p_email));
+  SET p_telefono  = TRIM(p_telefono);
+
+  -- Validaciones que no necesitan la base
+  IF p_idUsuarioActor IS NULL
+     OR COALESCE(p_nombre,'') = '' OR COALESCE(p_apellido,'') = '' OR COALESCE(p_documento,'') = ''
+     OR COALESCE(p_domicilio,'') = '' OR p_fechaNacimiento IS NULL
+     OR COALESCE(p_clave,'') = '' OR COALESCE(p_email,'') = ''
+     OR COALESCE(p_telefono,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF p_documento NOT REGEXP '^[0-9]{7,8}$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El documento debe tener 7 u 8 dígitos.';
+  END IF;
+
+  IF p_email NOT REGEXP '^[^@ ]+@[^@ ]+\\.[^@ ]+$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
+  END IF;
+
+  START TRANSACTION;
+
+  SET v_idTipoAdministrador = (SELECT id FROM TipoUsuario WHERE descripcion = 'Administrador');
+
+  IF v_idTipoAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Quien da el alta tiene que ser un administrador ACTIVO con institucion (si no, queda en NULL)
+  SET v_idInstitucion = (SELECT a.idInstitucion
+                         FROM AdministradoresInstitucion a
+                         JOIN Usuarios u ON u.id = a.idUsuario
+                         WHERE a.idUsuario = p_idUsuarioActor AND u.activo = TRUE);
+
+  IF v_idInstitucion IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de alta administradores.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese email ya está registrado.';
+  END IF;
+
+  -- La persona puede existir por otro rol: se reutiliza y se conservan sus datos guardados.
+  SET v_idPersona = (SELECT id FROM Personas WHERE documento = p_documento);
+
+  IF v_idPersona IS NOT NULL THEN
+    IF EXISTS (SELECT 1 FROM AdministradoresInstitucion WHERE idPersona = v_idPersona) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento.';
+    END IF;
+    SET v_fechaNac = (SELECT fechaNacimiento FROM Personas WHERE id = v_idPersona);
+  ELSE
+    SET v_fechaNac = p_fechaNacimiento;
+  END IF;
+
+  IF v_fechaNac > CURDATE() OR TIMESTAMPDIFF(YEAR, v_fechaNac, CURDATE()) < 18 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador debe ser mayor de 18 años.';
+  END IF;
+
+  -- Escrituras
+  IF v_idPersona IS NULL THEN
+    INSERT INTO Personas (nombre, apellido, documento, domicilio, fechaNacimiento)
+    VALUES (p_nombre, p_apellido, p_documento, p_domicilio, p_fechaNacimiento);
+    SET v_idPersona = LAST_INSERT_ID();
+  END IF;
+
+  INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
+  VALUES (p_clave, p_email, TRUE, v_idTipoAdministrador);   -- activa desde el alta
+  SET v_idUsuario = LAST_INSERT_ID();
+
+  INSERT INTO AdministradoresInstitucion (idPersona, idUsuario, idInstitucion)
+  VALUES (v_idPersona, v_idUsuario, v_idInstitucion);       -- ya vinculada a la institucion de quien la crea
+  SET p_idAdministrador = LAST_INSERT_ID();
+
+  INSERT INTO Telefonos (idAdministrador, telefono)
+  VALUES (p_idAdministrador, p_telefono);
+
+  COMMIT;
+END$$
+
+DELIMITER ;
