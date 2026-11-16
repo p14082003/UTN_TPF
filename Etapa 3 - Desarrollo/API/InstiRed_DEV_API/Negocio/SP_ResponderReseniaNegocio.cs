@@ -13,9 +13,9 @@ namespace Negocio
             try
             {
                 datos.setearProcedimiento("sp_Responder_Resenia");
-                datos.setearParametro("@p_idInstitucion", registro.IdInstitucion);
+                datos.setearParametro("@p_idAdministradorInstitucion", registro.IdAdministradorInstitucion);
                 datos.setearParametro("@p_idResenia", registro.IdResenia);
-                datos.setearParametro("@p_respuestaInstitucion", registro.RespuestaInstitucion);
+                datos.setearParametro("@p_respuestaInstitucion", registro.RespuestaInstitucion.Trim());
                 datos.ejecutarAccion();
             }
             catch (MySqlException ex)
@@ -46,9 +46,9 @@ namespace Negocio
             {
                 throw new ArgumentException("Debe indicar los datos de la operación.");
             }
-            if (registro.IdInstitucion <= 0)
+            if (registro.IdAdministradorInstitucion <= 0)
             {
-                throw new ArgumentException("El campo IdInstitucion debe ser mayor que cero.");
+                throw new ArgumentException("El campo IdAdministradorInstitucion debe ser mayor que cero.");
             }
             if (registro.IdResenia <= 0)
             {
@@ -58,7 +58,7 @@ namespace Negocio
             {
                 throw new ArgumentException("Debe ingresar una respuesta en la reseña.");
             }
-            if (registro.RespuestaInstitucion.Length > 255)
+            if (registro.RespuestaInstitucion.Trim().Length > 255)
             {
                 throw new ArgumentException("La respuesta no puede superar los 255 caracteres.");
             }

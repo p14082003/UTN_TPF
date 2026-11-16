@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,6 +7,12 @@ namespace Negocio.Helpers
     public class ArchivoHelper
     {
         public const int MaximoBytesPorArchivo = 5 * 1024 * 1024;
+        private const string CarpetaAdministrador = "postulaciones-admin";
+        private const string CarpetaAlumno = "postulaciones-alumnos";
+        private const string CarpetaImagen = "imagenes-instituciones";
+        private const string PatronAdministrador = @"\Apostulaciones-admin/[a-f0-9]{32}/(constancia-fiscal|habilitacion|constancia-laboral)\.(pdf|jpg|jpeg|png)\z";
+        private const string PatronAlumno = @"\Apostulaciones-alumnos/[a-f0-9]{32}/documento-[0-9]+\.(pdf|jpg|jpeg|png)\z";
+        private const string PatronImagen = @"\Aimagenes-instituciones/[a-f0-9]{32}/imagen\.(jpg|jpeg|png)\z";
         private readonly string raiz;
 
         public ArchivoHelper(string? directorioRaiz, string directorioAplicacion)
@@ -22,11 +29,12 @@ namespace Negocio.Helpers
             }
         }
 
-        public static byte[] leerYValidar(Stream? archivo, string? nombre, long longitud)
+        public static byte[] leerYValidar(Stream? archivo, string? nombre, long longitud,
+            string mensajeArchivoVacio = "Debe adjuntar los tres documentos y ninguno puede estar vacío.")
         {
             if (archivo == null || longitud <= 0)
             {
-                throw new ArgumentException("Debe adjuntar los tres documentos y ninguno puede estar vacío.");
+                throw new ArgumentException(mensajeArchivoVacio);
             }
             if (longitud > MaximoBytesPorArchivo)
             {
@@ -93,13 +101,36 @@ namespace Negocio.Helpers
         public string guardar(string carga, string tipo, string nombreOriginal, byte[] contenido)
         {
             validarTipo(tipo);
+            return guardarArchivo(carga, CarpetaAdministrador, tipo, nombreOriginal, contenido, PatronAdministrador);
+        }
+
+        public string guardarDocumentoAlumno(string carga, int numero, string nombreOriginal, byte[] contenido)
+        {
+            string nombre = "documento-" + numero.ToString(CultureInfo.InvariantCulture);
+            return guardarArchivo(carga, CarpetaAlumno, nombre, nombreOriginal, contenido, PatronAlumno);
+        }
+
+        public string guardarImagenInstitucion(string carga, string nombreOriginal, byte[] contenido)
+        {
+            string extension = Path.GetExtension(nombreOriginal).ToLowerInvariant();
+            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+            {
+                throw new ArgumentException("La imagen debe ser JPG, JPEG o PNG.");
+            }
+            return guardarArchivo(carga, CarpetaImagen, "imagen", nombreOriginal, contenido, PatronImagen);
+        }
+
+        private string guardarArchivo(string carga, string categoria, string nombre, string nombreOriginal,
+            byte[] contenido, string patron)
+        {
             validar(nombreOriginal, contenido);
-            string carpeta = directorioCarga(carga);
+            string carpeta = directorioCarga(carga, categoria);
+            string extension = Path.GetExtension(nombreOriginal).ToLowerInvariant();
+            string relativa = categoria + "/" + carga + "/" + nombre + extension;
+            string absoluta = resolverRuta(relativa, patron);
             comprobarEnlaces(carpeta);
             Directory.CreateDirectory(carpeta);
-            string extension = Path.GetExtension(nombreOriginal).ToLowerInvariant();
-            string relativa = "postulaciones-admin/" + carga + "/" + tipo + extension;
-            string absoluta = resolverRuta(relativa);
+            comprobarEnlaces(absoluta);
             using (FileStream archivo = new FileStream(absoluta, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 archivo.Write(contenido, 0, contenido.Length);
@@ -109,14 +140,69 @@ namespace Negocio.Helpers
 
         public FileStream abrir(string rutaRelativa)
         {
-            string absoluta = resolverRuta(rutaRelativa);
+            return abrirArchivo(rutaRelativa, PatronAdministrador);
+        }
+
+        public FileStream abrirDocumentoAlumno(string rutaRelativa)
+        {
+            return abrirArchivo(rutaRelativa, PatronAlumno);
+        }
+
+        public FileStream abrirImagenInstitucion(string rutaRelativa)
+        {
+            return abrirArchivo(rutaRelativa, PatronImagen);
+        }
+
+        private FileStream abrirArchivo(string rutaRelativa, string patron)
+        {
+            string absoluta = resolverRuta(rutaRelativa, patron);
             comprobarEnlaces(absoluta);
             return new FileStream(absoluta, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         public void eliminarCarga(string carga)
         {
-            string carpeta = directorioCarga(carga);
+            eliminarCarpetaCarga(carga, CarpetaAdministrador);
+        }
+
+        public void eliminarCargaAlumno(string carga)
+        {
+            eliminarCarpetaCarga(carga, CarpetaAlumno);
+        }
+
+        public void eliminarCargaImagenInstitucion(string carga)
+        {
+            eliminarCarpetaCarga(carga, CarpetaImagen);
+        }
+
+        public static bool esRutaImagenInstitucion(string rutaRelativa)
+        {
+            return Regex.IsMatch(rutaRelativa, PatronImagen);
+        }
+
+        public void eliminarImagenInstitucion(string rutaRelativa)
+        {
+            string absoluta = resolverRuta(rutaRelativa, PatronImagen);
+            comprobarEnlaces(absoluta);
+            try
+            {
+                File.Delete(absoluta);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Si falta la carpeta, el archivo ya no está en disco.
+            }
+
+            string? carpeta = Path.GetDirectoryName(absoluta);
+            if (carpeta != null && Directory.Exists(carpeta) && !Directory.EnumerateFileSystemEntries(carpeta).Any())
+            {
+                Directory.Delete(carpeta);
+            }
+        }
+
+        private void eliminarCarpetaCarga(string carga, string categoria)
+        {
+            string carpeta = directorioCarga(carga, categoria);
             comprobarEnlaces(carpeta);
             if (Directory.Exists(carpeta))
             {
@@ -143,19 +229,18 @@ namespace Negocio.Helpers
             };
         }
 
-        private string directorioCarga(string carga)
+        private string directorioCarga(string carga, string categoria)
         {
             if (!Regex.IsMatch(carga, "^[a-f0-9]{32}\\z"))
             {
                 throw new ArgumentException("El identificador de la carga no es válido.");
             }
-            return Path.Combine(raiz, "postulaciones-admin", carga);
+            return Path.Combine(raiz, categoria, carga);
         }
 
-        private string resolverRuta(string relativa)
+        private string resolverRuta(string relativa, string patron)
         {
-            if (string.IsNullOrWhiteSpace(relativa) ||
-                !Regex.IsMatch(relativa, "^postulaciones-admin/[a-f0-9]{32}/(constancia-fiscal|habilitacion|constancia-laboral)\\.(pdf|jpg|jpeg|png)\\z"))
+            if (string.IsNullOrWhiteSpace(relativa) || !Regex.IsMatch(relativa, patron))
             {
                 throw new FileNotFoundException("El documento no está disponible.");
             }

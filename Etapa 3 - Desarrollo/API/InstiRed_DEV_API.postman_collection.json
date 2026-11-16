@@ -2277,7 +2277,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idResenia\": 1,\n  \"respuestaInstitucion\": \"Gracias por compartir su experiencia.\"\n}",
+                  "raw": "{\n  \"idAdministradorInstitucion\": 1,\n  \"idResenia\": 1,\n  \"respuestaInstitucion\": \"Gracias por compartir su experiencia.\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2285,7 +2285,542 @@
                   }
                 },
                 "url": "{{baseUrl}}/sp/ResponderResenia",
-                "description": "Ejemplo sobre el seed original. La reseña debe pertenecer a la institución activa y todavía no tener respuesta. Solo se permite responder una vez."
+                "description": "Usá el ID de un administrador activo vinculado a la institución de la reseña. La institución debe estar activa y la reseña debe estar sin responder."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ConsultarPostulacionPorCodigo",
+          "item": [
+            {
+              "name": "Consultar Postulacion Por Codigo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"codigo\": \"PST-20251112-0001\",\n  \"email\": \"responsable@mail.test\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ConsultarPostulacionPorCodigo",
+                "description": "Usá el código de seguimiento y el email del responsable actual. Si el alumno es autogestor y no tiene un responsable asociado, usá el email de su propia cuenta. Para una postulación de administrador, usá el email del administrador."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AprobarPostulacionAdmin",
+          "item": [
+            {
+              "name": "Aprobar Postulacion Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacion\": 1,\n  \"idUsuarioDevCo\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/AprobarPostulacionAdmin",
+                "description": "La postulación debe estar pendiente. Usá el ID de un usuario DevCo activo."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RechazarPostulacionAdmin",
+          "item": [
+            {
+              "name": "Rechazar Postulacion Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacion\": 1,\n  \"idUsuarioDevCo\": 1,\n  \"motivoRechazo\": \"Falta documentación.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RechazarPostulacionAdmin",
+                "description": "La postulación debe estar pendiente. Usá el ID de un usuario DevCo activo."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CrearInstitucion",
+          "item": [
+            {
+              "name": "Crear Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"direccion\": \"Av. Rivadavia 1234\",\n  \"email\": \"institucion@mail.test\",\n  \"latitud\": -34.4264,\n  \"longitud\": -58.5796,\n  \"descripcion\": \"Descripción de prueba.\",\n  \"idTipoInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/CrearInstitucion",
+                "description": "El administrador debe estar activo y tener una postulación aprobada. Nombre y CUIT salen de esa postulación."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ModificarInstitucion",
+          "item": [
+            {
+              "name": "Modificar Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"idInstitucion\": 1,\n  \"direccion\": \"Av. Rivadavia 1234\",\n  \"email\": \"institucion@mail.test\",\n  \"latitud\": -34.4264,\n  \"longitud\": -58.5796,\n  \"descripcion\": \"Descripción de prueba.\",\n  \"idTipoInstitucion\": 1,\n  \"movilidad\": false,\n  \"visual\": false,\n  \"auditiva\": false,\n  \"verbal\": false,\n  \"intelectual\": false,\n  \"sindromeDown\": false,\n  \"autismo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ModificarInstitucion",
+                "description": "Usá un administrador de esa institución. Enviá los siete valores de accesibilidad."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "DarDeBajaInstitucion",
+          "item": [
+            {
+              "name": "Dar De Baja Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idUsuarioDevCo\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/DarDeBajaInstitucion",
+                "description": "Usá un usuario DevCo activo. La baja rechaza las postulaciones de alumnos pendientes y aceptadas."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ReactivarInstitucion",
+          "item": [
+            {
+              "name": "Reactivar Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idInstitucion\": 1,\n  \"idUsuarioDevCo\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ReactivarInstitucion",
+                "description": "Usá un usuario DevCo activo. Las postulaciones que se rechazaron al dar la baja conservan su estado."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AgregarTelefonoInstitucion",
+          "item": [
+            {
+              "name": "Agregar Telefono Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"idInstitucion\": 1,\n  \"telefono\": \"+54 11 4000-0000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/AgregarTelefonoInstitucion",
+                "description": "Usá un administrador activo de esa institución y un número que todavía no tenga registrado."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AgregarIdiomaInstitucion",
+          "item": [
+            {
+              "name": "Agregar Idioma Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/AgregarIdiomaInstitucion",
+                "description": "Usá un idioma existente que todavía no esté asociado a la institución."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "EliminarIdiomaInstitucion",
+          "item": [
+            {
+              "name": "Eliminar Idioma Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"idInstitucion\": 1,\n  \"idIdioma\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/EliminarIdiomaInstitucion",
+                "description": "Usá un idioma asociado a la institución."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AgregarImagenInstitucion",
+          "item": [
+            {
+              "name": "Agregar Imagen Institucion",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "idAdministrador",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "idInstitucion",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "descripcion",
+                      "value": "Frente de la institución",
+                      "type": "text"
+                    },
+                    {
+                      "key": "imagen",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": "{{baseUrl}}/sp/AgregarImagenInstitucion",
+                "description": "Adjuntá un JPG, JPEG o PNG de hasta 5 MB y una descripción."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "EliminarImagenInstitucion",
+          "item": [
+            {
+              "name": "Eliminar Imagen Institucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"idInstitucion\": 1,\n  \"idImagen\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/EliminarImagenInstitucion",
+                "description": "Usá el ID de una imagen de esa institución. Si es un archivo local administrado por la API, se intenta borrar después de quitarlo de la ficha."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CrearAdministradorInstitucionAdicional",
+          "item": [
+            {
+              "name": "Crear Administrador Institucion Adicional",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Pérez\",\n  \"documento\": \"32123456\",\n  \"domicilio\": \"Calle 100\",\n  \"fechaNacimiento\": \"1990-05-10\",\n  \"clave\": \"test1234\",\n  \"email\": \"testadmin.adicional@mail.test\",\n  \"telefono\": \"1155551234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/CrearAdministradorInstitucionAdicional",
+                "description": "El actor es el usuario de un administrador activo vinculado a la institución. Usá un DNI y email disponibles."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RegistrarPostulacionAlumno",
+          "item": [
+            {
+              "name": "Registrar Postulacion Alumno",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "idResponsable",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "idAlumno",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "idCurso",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "Documentos[0].Descripcion",
+                      "value": "Documento del alumno",
+                      "type": "text"
+                    },
+                    {
+                      "key": "Documentos[0].Archivo",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
+                "description": "Adjuntá al menos un PDF, JPG, JPEG o PNG de hasta 5 MB. Usá Documentos[0].Descripcion y Documentos[0].Archivo y repetí el par con índices consecutivos. El formulario completo admite hasta 20 MB."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AceptarPostulacionAlumno",
+          "item": [
+            {
+              "name": "Aceptar Postulacion Alumno",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministradorInstitucion\": 1,\n  \"idPostulacion\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/AceptarPostulacionAlumno",
+                "description": "La postulación debe estar pendiente y ser de un curso de esa institución. El cupo se consume al confirmar."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "RechazarPostulacionAlumno",
+          "item": [
+            {
+              "name": "Rechazar Postulacion Alumno",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacion\": 1,\n  \"idAdministradorInstitucion\": 1,\n  \"motivoRechazo\": \"Falta documentación.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RechazarPostulacionAlumno",
+                "description": "La postulación debe estar pendiente y ser de un curso de esa institución."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ConfirmarPostulacionAlumno",
+          "item": [
+            {
+              "name": "Confirmar Postulacion Alumno",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacion\": 1,\n  \"idResponsable\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ConfirmarPostulacionAlumno",
+                "description": "La postulación debe estar aceptada. Usá el responsable correspondiente. El SP verifica el cupo y actualiza los inscriptos."
               },
               "response": []
             }
@@ -2701,6 +3236,36 @@
                 "header": [],
                 "url": "{{baseUrl}}/archivos/PostulacionesAdminInstitucion/constancia-laboral/1",
                 "description": "Devuelve el archivo como descarga. Requiere X-Api-Key. No recibe rutas de disco. Guardar la respuesta desde Postman si se desea conservar el archivo."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PostulacionesAlumnos",
+          "item": [
+            {
+              "name": "Descargar documento",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/archivos/PostulacionesAlumnos/documento/1",
+                "description": "Reemplazá 1 por el ID del registro de DocumentosPostulacion. La API devuelve archivos cargados en el alta de una postulación."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Instituciones",
+          "item": [
+            {
+              "name": "Descargar imagen",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/archivos/Instituciones/imagen/1",
+                "description": "Reemplazá 1 por el ID del registro de Imagenes. La API devuelve imágenes locales que se cargaron con AgregarImagenInstitucion."
               },
               "response": []
             }

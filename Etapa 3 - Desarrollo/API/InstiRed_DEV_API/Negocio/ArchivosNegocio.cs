@@ -1,3 +1,4 @@
+using Dominio;
 using Negocio.Helpers;
 using MySqlConnector;
 
@@ -5,6 +6,26 @@ namespace Negocio
 {
     public class ArchivosNegocio
     {
+        public string obtenerRutaDocumentoAlumno(int id)
+        {
+            Ent_DocumentoPostulacion? documento = new Ent_DocumentoPostulacionNegocio().obtenerPorId(id);
+            if (documento == null)
+            {
+                throw new KeyNotFoundException("No se encontró el documento solicitado.");
+            }
+            return documento.Ruta;
+        }
+
+        public string obtenerRutaImagenInstitucion(int id)
+        {
+            Ent_Imagen? imagen = new Ent_ImagenNegocio().obtenerPorId(id);
+            if (imagen == null)
+            {
+                throw new KeyNotFoundException("No se encontró la imagen solicitada.");
+            }
+            return imagen.UrlImagen;
+        }
+
         public string obtenerRutaAdministrador(int id, string tipo)
         {
             if (id <= 0)
