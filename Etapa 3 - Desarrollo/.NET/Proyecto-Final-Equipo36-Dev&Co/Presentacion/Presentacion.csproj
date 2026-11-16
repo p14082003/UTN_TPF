@@ -67,10 +67,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DetalleInstitucion.aspx" />
     <Content Include="EstilosInstiRed.css" />
     <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="FormularioInstitucion.aspx" />
     <Content Include="GestionarPostulacionAlumno.aspx" />
+    <Content Include="ListadoInstituciones.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
@@ -78,6 +80,13 @@
     <Content Include="AdminDevCo.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DetalleInstitucion.aspx.cs">
+      <DependentUpon>DetalleInstitucion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DetalleInstitucion.aspx.designer.cs">
+      <DependentUpon>DetalleInstitucion.aspx</DependentUpon>
+    </Compile>
     <Compile Include="FormularioAdministradorInstitucion.aspx.cs">
       <DependentUpon>FormularioAdministradorInstitucion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -98,6 +107,13 @@
     </Compile>
     <Compile Include="GestionarPostulacionAlumno.aspx.designer.cs">
       <DependentUpon>GestionarPostulacionAlumno.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ListadoInstituciones.aspx.cs">
+      <DependentUpon>ListadoInstituciones.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ListadoInstituciones.aspx.designer.cs">
+      <DependentUpon>ListadoInstituciones.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
@@ -147,6 +163,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Dominio\Dominio.csproj">
+      <Project>{e35ab1cc-ee80-47d5-80c1-cb66aae90ba7}</Project>
+      <Name>Dominio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Negocio\Negocio.csproj">
       <Project>{be748b31-bacc-41d6-885d-625819fac725}</Project>
       <Name>Negocio</Name>
