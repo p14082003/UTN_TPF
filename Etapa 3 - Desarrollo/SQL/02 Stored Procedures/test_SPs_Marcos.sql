@@ -294,6 +294,57 @@ WHERE a.id = @idAdmin3;
 
 SET @idUsuario3 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin3);
 
+-- BAJA / REACTIVAR ADMINISTRADOR. Orden: usuario que actua (idUsuario), administrador objetivo (idAdministrador)
+-- Deberian fallar (se corre de a uno):
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdmin2); */          -- ERROR NO PODES DARTE DE BAJA A VOS MISMO
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario1, @idAdmin3); */          -- ERROR SIN PERMISO (el actor esta inactivo)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuarioOtraInst, @idAdmin3); */   -- ERROR SIN PERMISO (administrador de otra institucion)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, 999999); */                      -- ERROR EL ADMINISTRADOR NO EXISTE
+/* CALL sp_AdministradorInstitucion_DarDeBaja(NULL, @idAdmin3); */                 -- ERROR FALTAN DATOS
+
+-- Baja hecha por otro administrador de la misma institucion
+CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 0
+SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = @idAdmin3;         -- sigue siendo @idInst (no se desvincula)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin3); */                   -- ERROR YA ESTA INACTIVO
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin2); */                   -- ERROR ULTIMO ADMINISTRADOR ACTIVO (admin3 ya esta de baja)
+
+-- Reactivacion hecha por Dev&Co
+/* CALL sp_AdministradorInstitucion_Reactivar(@idUsuarioOtraInst, @idAdmin3); */   -- ERROR SIN PERMISO (administrador de otra institucion)
+CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 1
+/* CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin3); */                   -- ERROR YA ESTA ACTIVO
+
+-- Baja hecha por Dev&Co y reactivacion hecha por otro administrador de la misma institucion
+CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 0
+CALL sp_AdministradorInstitucion_Reactivar(@idUsuario2, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 1
+
+-- Una cuenta que nunca fue aprobada no se puede reactivar (testadmin: solo tiene postulaciones rechazadas)
+/* CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin1); */                   -- ERROR LA CUENTA NUNCA FUE APROBADA
+/* CALL sp_AdministradorInstitucion_Reactivar(23, 999999); */                      -- ERROR EL ADMINISTRADOR NO EXISTE
+/* CALL sp_AdministradorInstitucion_Reactivar(NULL, @idAdmin3); */                 -- ERROR FALTAN DATOS
+
+-- CREAR ADICIONAL con una persona que ya existe por otro rol: Laura Benitez (documento 33456872) es responsable
+-- en el archivo de INSERTs. Se reutiliza su persona y se conservan sus datos guardados (los nuevos se ignoran),
+-- pero necesita su propia cuenta de administrador con un email distinto al de responsable.
+CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Otro', 'Nombre', '33456872', 'Otra calle 1', '2000-01-01', 'clave123', 'laura.admin@mail.com', '1155550004', @idAdmin4);
+SELECT @idAdmin4;
+SELECT nombre, apellido, domicilio, fechaNacimiento FROM Personas WHERE documento = '33456872';   -- 1 sola fila, con los datos originales: Laura, Benitez, Calle Italia 450, 1987-02-11
+SELECT a.idPersona, a.idInstitucion, u.email, u.activo
+FROM AdministradoresInstitucion a
+JOIN Usuarios u ON u.id = a.idUsuario
+WHERE a.id = @idAdmin4;                                                                              -- idPersona = 1, idInstitucion = @idInst, email laura.admin@mail.com, activo = 1
+SELECT idUsuario FROM Responsables WHERE idPersona = 1;                                              -- sigue su usuario de responsable (1): ahora la persona tiene dos cuentas
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Laura', 'Benitez', '33456872', 'Calle Italia 450', '1987-02-11', 'clave123', 'lbenitez@mail.test', '1155550004', @idAdmin5); */   -- ERROR EMAIL YA REGISTRADO (usa el email de su cuenta de responsable)
+
+-- Una baja de administrador no afecta a los de otra institucion.
+SET @idAdminOtraInst = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = @idUsuarioOtraInst);
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdminOtraInst); */     -- ERROR SIN PERMISO (testadmin2 no es de esa institucion)
+/* CALL sp_AdministradorInstitucion_Reactivar(@idUsuario2, @idAdminOtraInst); */     -- ERROR SIN PERMISO (idem)
+SELECT activo FROM Usuarios WHERE id = @idUsuarioOtraInst;                           -- 1: el administrador de la otra institucion sigue activo
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;
@@ -306,6 +357,9 @@ DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresIn
 DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'testadmin3@mail.com');
 DELETE FROM Usuarios WHERE email = 'testadmin3@mail.com';
 DELETE FROM Personas WHERE documento = '12121215';
+DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'laura.admin@mail.com'));
+DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'laura.admin@mail.com');
+DELETE FROM Usuarios WHERE email = 'laura.admin@mail.com';
 DELETE FROM Discapacidades WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 UPDATE AdministradoresInstitucion SET idInstitucion = NULL WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Instituciones WHERE cuit = '30999999994';

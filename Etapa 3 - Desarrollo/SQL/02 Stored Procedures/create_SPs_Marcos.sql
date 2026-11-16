@@ -1321,3 +1321,182 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_DarDeBaja
+-- Da de baja a un administrador de institucion (baja logica: su usuario pasa a inactivo,
+-- no se borra nada y sigue vinculado a su institucion para conservar el historial).
+-- Quien puede hacerlo (p_idUsuarioActor, siempre un usuario activo):
+--   * Dev&Co, sobre cualquier administrador
+--   * otro administrador de la misma institucion
+-- Reglas:
+--   * no se puede dar de baja a uno mismo
+--   * no se puede dar de baja al ultimo administrador activo de una institucion
+--   * no se pide motivo
+-- Un solo UPDATE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_DarDeBaja;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_AdministradorInstitucion_DarDeBaja(
+  IN p_idUsuarioActor  INT,   -- usuario que hace la baja (lo toma C# de la sesion)
+  IN p_idAdministrador INT    -- administrador al que se le da de baja
+)
+BEGIN
+  DECLARE v_idTipoDevCo        TINYINT;
+  DECLARE v_idTipoActor        TINYINT;
+  DECLARE v_idUsuarioAdmin     INT;
+  DECLARE v_idInstitucionAdmin INT;
+  DECLARE v_adminActivo        BOOL;
+
+  IF p_idUsuarioActor IS NULL OR p_idAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  -- Catalogo: se busca por descripcion, igual que en el resto de los SP
+  SET v_idTipoDevCo = (SELECT id FROM TipoUsuario WHERE descripcion = 'DevCo');
+
+  IF v_idTipoDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Quien hace la baja tiene que existir y estar activo (si no, v_idTipoActor queda en NULL)
+  SET v_idTipoActor = (SELECT idTipoUsuario FROM Usuarios WHERE id = p_idUsuarioActor AND activo = TRUE);
+
+  IF v_idTipoActor IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de baja administradores.';
+  END IF;
+
+  -- Datos del administrador al que se le da de baja
+  SET v_idUsuarioAdmin     = (SELECT idUsuario     FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+  SET v_idInstitucionAdmin = (SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+
+  IF v_idUsuarioAdmin IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador no existe.';
+  END IF;
+
+  -- Sin auto-baja
+  IF v_idUsuarioAdmin = p_idUsuarioActor THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No podés darte de baja a vos mismo.';
+  END IF;
+
+  -- Permiso: Dev&Co puede con cualquiera. Un administrador solo con otro de SU institucion
+  -- (si el otro todavia no tiene institucion, solo puede Dev&Co).
+  IF v_idTipoActor <> v_idTipoDevCo THEN
+    IF v_idInstitucionAdmin IS NULL
+       OR NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion
+                      WHERE idUsuario = p_idUsuarioActor
+                        AND idInstitucion = v_idInstitucionAdmin) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de baja administradores.';
+    END IF;
+  END IF;
+
+  SET v_adminActivo = (SELECT activo FROM Usuarios WHERE id = v_idUsuarioAdmin);
+
+  IF v_adminActivo = FALSE THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador ya está inactivo.';
+  END IF;
+
+  -- La institucion no puede quedarse sin ningun administrador activo
+  IF v_idInstitucionAdmin IS NOT NULL
+     AND NOT EXISTS (SELECT 1
+                     FROM AdministradoresInstitucion a
+                     JOIN Usuarios u ON u.id = a.idUsuario
+                     WHERE a.idInstitucion = v_idInstitucionAdmin
+                       AND a.id <> p_idAdministrador
+                       AND u.activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede dar de baja al último administrador activo de la institución.';
+  END IF;
+
+  UPDATE Usuarios
+  SET activo = FALSE
+  WHERE id = v_idUsuarioAdmin;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_Reactivar
+-- Vuelve a activar a un administrador dado de baja. Pueden hacerlo los mismos
+-- actores que la baja: Dev&Co, u otro administrador activo de la misma institucion.
+-- Solo se reactivan cuentas que alguna vez fueron aprobadas (tienen institucion o una
+-- postulacion Confirmada). Una cuenta pendiente o rechazada NO se reactiva por aca:
+-- se resuelve con la aprobacion de Dev&Co (sp_PostulacionAdmin_Aprobar).
+-- Un solo UPDATE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_Reactivar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_AdministradorInstitucion_Reactivar(
+  IN p_idUsuarioActor  INT,   -- usuario que reactiva (lo toma C# de la sesion)
+  IN p_idAdministrador INT    -- administrador que se reactiva
+)
+BEGIN
+  DECLARE v_idTipoDevCo         TINYINT;
+  DECLARE v_idEstadoConfirmado  INT;
+  DECLARE v_idTipoActor         TINYINT;
+  DECLARE v_idUsuarioAdmin      INT;
+  DECLARE v_idInstitucionAdmin  INT;
+  DECLARE v_adminActivo         BOOL;
+
+  IF p_idUsuarioActor IS NULL OR p_idAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  -- Catalogos: se buscan por descripcion, igual que en el resto de los SP
+  SET v_idTipoDevCo        = (SELECT id FROM TipoUsuario        WHERE descripcion = 'DevCo');
+  SET v_idEstadoConfirmado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado');
+
+  IF v_idTipoDevCo IS NULL OR v_idEstadoConfirmado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Quien reactiva tiene que existir y estar activo (si no, v_idTipoActor queda en NULL)
+  SET v_idTipoActor = (SELECT idTipoUsuario FROM Usuarios WHERE id = p_idUsuarioActor AND activo = TRUE);
+
+  IF v_idTipoActor IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para reactivar administradores.';
+  END IF;
+
+  -- Datos del administrador que se reactiva
+  SET v_idUsuarioAdmin     = (SELECT idUsuario     FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+  SET v_idInstitucionAdmin = (SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = p_idAdministrador);
+
+  IF v_idUsuarioAdmin IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador no existe.';
+  END IF;
+
+  -- Permiso: Dev&Co puede con cualquiera. Un administrador solo con otro de SU institucion.
+  IF v_idTipoActor <> v_idTipoDevCo THEN
+    IF v_idInstitucionAdmin IS NULL
+       OR NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion
+                      WHERE idUsuario = p_idUsuarioActor
+                        AND idInstitucion = v_idInstitucionAdmin) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para reactivar administradores.';
+    END IF;
+  END IF;
+
+  SET v_adminActivo = (SELECT activo FROM Usuarios WHERE id = v_idUsuarioAdmin);
+
+  IF v_adminActivo = TRUE THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador ya está activo.';
+  END IF;
+
+  -- Solo cuentas que alguna vez fueron aprobadas: tienen institucion o una postulacion Confirmada
+  IF v_idInstitucionAdmin IS NULL
+     AND NOT EXISTS (SELECT 1 FROM PostulacionesAdminInstitucion
+                     WHERE idAdministradorInstitucion = p_idAdministrador
+                       AND idEstado = v_idEstadoConfirmado) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta nunca fue aprobada, no puede reactivarse.';
+  END IF;
+
+  UPDATE Usuarios
+  SET activo = TRUE
+  WHERE id = v_idUsuarioAdmin;
+END$$
+
+DELIMITER ;
