@@ -1,6 +1,5 @@
 USE InstiRed_DEV;
 
-DELIMITER $$
 -- ------------------------------------------------------------------------------
 -- sp_Validar_Usuario_Login
 -- Ingresan parámetros email y clave.
@@ -71,25 +70,30 @@ DELIMITER ;
 
 -- -----------------------------------------------------------------------------
 -- sp_Registrar_Resenia
--- solo postulaciones de alumnos en estado aprobado dejan resenia
--- por decisión de UNIQUE KEY uq_resenias_institucion_responsable (idInstitucion, idResponsable) 
-   -- en la creación de tabla solo se puede dejar una resenia por institucion. Permite solo una
-   -- Combinacion entre institucion y responsable. Ej:  2 hijos solo 1 resenia en misma institucion.
+-- solo postulaciones de alumnos en estado confirmado dejan resenia
+-- en la creación de tabla solo se puede dejar una resenia por institucion. Permite solo una
+-- Combinacion entre institucion y responsable. Ej:  2 hijos solo 1 resenia en misma institucion.
 -- ------------------------------------------------------------------------------
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS sp_Registrar_Resenia$$
 
 CREATE PROCEDURE sp_Registrar_Resenia(
-IN p_comentario     VARCHAR(255),
+IN p_comentario     TEXT,
 IN p_calificacion   TINYINT,
 IN p_idPostulacion  INT,
 IN p_idResponsable  INT
 )
 BEGIN
 
-	DECLARE v_idAlumno INT;
+	DECLARE v_idAlumno      INT;
 	DECLARE v_idInstitucion INT;
+    
+    DECLARE EXIT HANDLER FOR 1062
+		BEGIN
+		ROLLBACK;
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
+	END;
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN 
@@ -106,55 +110,57 @@ BEGIN
 	IF p_comentario IS NULL OR TRIM(p_comentario) = '' THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario es un campo obligatorio.'; -- campo obligatorio porque en la tabla se creo como not null
 	END IF;
-
-
-	-- compruebo que exista la postulacion
-	IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no fue confirmada.';
-	END IF; 
-
-	-- recupero valor de variables con consulta
-	SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion;
-
-	-- Valido que el reponsable exista 
-	IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
-	END IF;
-
-	-- Valido que el usuario responsable este activo 
-	IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
-												WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
-	END IF;
-
-	-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulación
-	IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
-												LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
-												WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
-	END IF;
-
-	-- Valido que la institución se encuentre activa
-	IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
-	END IF; 
-
-	-- valido que no haya una reseña previa para la institución por ese responsable 
-	IF EXISTS (SELECT 1 FROM Resenias r WHERE r.idResponsable = p_idResponsable AND r.idInstitucion = v_idInstitucion) 
-	THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
-	END IF;
-
-	-- valido que el estado sea confirmado
-	IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
-												  WHERE e.descripcion = 'Confirmado' AND po.id = p_idPostulacion) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta aprobada.';
-	END IF;
-
-	-- comenzamos con la transacción a la BD
+    IF CHAR_LENGTH(TRIM(p_comentario)) > 255 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El comentario no puede superar los 255 caracteres.'; 
+    END IF;
+    
+    -- comenzamos con la transacción a la BD
 	START TRANSACTION;
 
-	INSERT INTO Resenias (calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES (p_calificacion, p_comentario, CURDATE(), v_idInstitucion, p_idResponsable);
+		-- compruebo que exista la postulacion
+		IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
+		END IF; 
+
+		-- recupero valor de variables con consulta
+		SELECT pos.idAlumno, cu.idInstitucion INTO v_idAlumno, v_idInstitucion FROM PostulacionesAlumnos pos INNER JOIN Cursos cu ON pos.idCurso = cu.id WHERE pos.id = p_idPostulacion FOR UPDATE;
+
+		 -- Valido que el reponsable exista 
+		IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+		END IF;
+
+		-- Valido que el usuario responsable este activo 
+		IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
+													WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
+		END IF;
+
+		-- valido que el estado sea confirmado
+		IF NOT EXISTS( SELECT 1 FROM PostulacionesAlumnos po INNER JOIN EstadosPostulacion e ON po.idEstado = e.id
+													  WHERE LOWER(e.descripcion) = 'confirmado' AND po.id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no esta confirmada.';
+		END IF;
+        
+		-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulación
+		IF NOT EXISTS (SELECT 1 FROM Responsables r LEFT JOIN ResponsablesPorAlumno ra ON ra.idResponsable = r.id
+													LEFT JOIN Alumnos al ON (al.id = ra.idAlumno OR al.idPersona = r.idPersona)
+													WHERE r.id = p_idResponsable AND al.id = v_idAlumno) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
+		END IF;
+
+		-- Valido que la institución se encuentre activa
+		IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE estado = TRUE AND id = v_idInstitucion) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El instituto no se encuentra activo.';
+		END IF; 
+
+		-- valido que no haya una reseña previa para la institución por ese responsable 
+		IF EXISTS (SELECT 1 FROM Resenias r WHERE r.idResponsable = p_idResponsable AND r.idInstitucion = v_idInstitucion) 
+		THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable ya realizó reseña para la institución.';
+		END IF;
+
+		INSERT INTO Resenias (calificacion, comentario, fecha, idInstitucion, idResponsable) VALUES (p_calificacion, TRIM(p_comentario), CURDATE(), v_idInstitucion, p_idResponsable);
 
 	COMMIT;
 
@@ -164,61 +170,73 @@ DELIMITER ;
 -- ---------------------------------
 -- sp_Responder_Resenia
 -- el admin de institución solo puede responder una resenia cuando la respuesta sea NULL
--- Recibo el id de la resenia, p_respuestaInstitucion, p_idIsntitucion 
+-- Recibo el id de la resenia, p_respuestaInstitucion, p_idAdministradorInstitucion 
 -- --------------------------------
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS sp_Responder_Resenia $$
 
 CREATE PROCEDURE sp_Responder_Resenia(
-IN p_idInstitucion                 INT,
+IN p_idAdministradorInstitucion    INT,
 IN p_idResenia                     INT,
 IN p_respuestaInstitucion          TEXT -- (Lo declaro como text para que alcance a mostrar el error personalizado de la validación de longitud, con VARCHAR(255) no lleha a mostrarmelo)
 )
 
 BEGIN 
+	
+    DECLARE v_idInstitucion    INT;
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN 
 		ROLLBACK;
 		RESIGNAL;
 	END;
+    
 	-- Validaciones
+    
 	-- valido que la respuesta no sea null, ni vacía 
 	IF p_respuestaInstitucion IS NULL OR TRIM(p_respuestaInstitucion) = '' THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una respuesta en la reseña.';
 	END IF;
+    
 	-- valido que la longitud no sea mayor a 255 caracteres
-	IF CHAR_LENGTH(p_respuestaInstitucion) > 255 THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres peritidos';
-	END IF;
-	-- valido que la resenia exista 
-	IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada.';
-	END IF;
-	-- valido que la isntitución este activa
-	IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = p_idInstitucion AND estado = TRUE) THEN 
-		SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
-	END IF;
-	-- valido que la resenia sea de la institución correspondiente 
-	IF NOT EXISTS(SELECT 1 FROM Resenias WHERE idInstitucion = p_idInstitucion AND id = p_idResenia) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no pertenece a su institución.';
-	END IF;
-	-- valido que la respuesta sea null
-	IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
+	IF CHAR_LENGTH(TRIM(p_respuestaInstitucion)) > 255 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La respuesta supera los 255 caracteres permitidos';
 	END IF;
     
 	-- comienzo la transacción
 	START TRANSACTION;
     
-	-- actualizo el campo respuesta institucion 
-		UPDATE Resenias SET respuestaInstitucion = p_respuestaInstitucion WHERE id = p_idResenia AND idInstitucion = p_idInstitucion AND respuestaInstitucion IS NULL;
-	
+		SELECT a.idInstitucion INTO v_idInstitucion FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE a.id = p_idAdministradorInstitucion AND u.activo = TRUE;
+		
+        IF v_idInstitucion IS NULL THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Administrador inexistente, tiene cuenta inactiva o no tiene institución asignada.';
+        END IF;
+        
+		-- valido que la resenia exista 
+		IF NOT EXISTS(SELECT 1 FROM Resenias WHERE id = p_idResenia AND idInstitucion = v_idInstitucion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña no fue encontrada o no pertenece a su institución.';
+		END IF;
+        
+		-- valido que la isntitución este activa
+		IF NOT EXISTS(SELECT 1 FROM Instituciones WHERE id = v_idInstitucion AND estado = TRUE) THEN 
+			SIGNAL SQLSTATE  '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa';
+		END IF;
+        
+		-- valido que la respuesta sea null
+		IF NOT EXISTS (SELECT 1 FROM Resenias WHERE respuestaInstitucion IS NULL AND id = p_idResenia) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La reseña ya fue contestada.';
+		END IF;
+        
+		-- actualizo el campo respuesta institucion 
+			UPDATE Resenias SET respuestaInstitucion = TRIM(p_respuestaInstitucion) WHERE id = p_idResenia AND idInstitucion = v_idInstitucion AND respuestaInstitucion IS NULL;
+		
+        IF ROW_COUNT() <> 1 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se pudo responder la reseña.';
+		END IF;
+    
     COMMIT;
 END$$
-DELIMITER ;
-
 DELIMITER ;
 
 -- ----------------------------
@@ -441,6 +459,10 @@ BEGIN
 
 	-- hacemos el update de estado de postulacion 
 	UPDATE PostulacionesAlumnos SET idEstado = 2 WHERE id = p_idPostulacion AND idEstado = 1;
+    
+    IF ROW_COUNT() <> 1 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se pudo aceptar la postulación.';
+	END IF;
 
 	COMMIT;
 	-- Retornamos valores que puedan sernos utiles
@@ -490,64 +512,184 @@ BEGIN
         RESIGNAL;
 	END;
     
-    -- validamos que no sea null o vacío el motivo (hay que avisar porque fue el rechazo para orientar por si hay una nueva postulación a futuro)
-    IF(p_motivoRechazo IS NULL OR TRIM(p_motivoRechazo) = '') THEN 
-		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Ingrese un motivo de rechazo válido.';
-    END IF;
-    
-    -- validamos que el motivo de rechazo no tenga longitud mas larga de la posible
-    IF (char_length(p_motivoRechazo) > 255) THEN
-		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El motivo de rechazo supera los 255 caracteres disponibles.';
-    END IF;
-    -- si no se pasa de cantidad de caracteres lo guardo para llevarlo limpio a la bd
-    SET v_motivoRechazo = TRIM(p_motivoRechazo); 
-	
-    -- validamos que postulación exista 
-    IF NOT EXISTS(SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN
-		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Postulación inexistente';
-	END IF;
-    -- validamos usuario o administrador existente
-    IF NOT EXISTS(SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE a.id = p_idAdministradorInstitucion) THEN 
-		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Usuario o administrador inexistente.';
-    END IF;
-    -- validamos usuario activo
-    IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE u.activo = TRUE AND a.id = p_idAdministradorInstitucion) THEN 
-		SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El usuario no se encuentra activo.';
-    END IF;
-    -- validamos institucion activa
-    IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Instituciones i ON a.idInstitucion = i.id
-															 WHERE i.estado = TRUE and a.id = p_idAdministradorInstitucion ) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa.';
-	END IF;
-    
-       -- validar que el usuario responsable este activo -- es autogestor a.idPersona = r.idPersona -- es responsablePorAlumno res res.idAlumno = a.id
-    IF NOT (EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
-													    INNER JOIN ResponsablesPorAlumno r ON r.idAlumno = a.id 
-                                                        INNER JOIN Responsables re ON re.id = r.idResponsable
-                                                        INNER JOIN Usuarios u ON re.idUsuario = u.id WHERE p.id = p_idPostulacion AND u.activo = TRUE) OR 
-			EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON p.idAlumno = a.id
-													    INNER JOIN Responsables re ON re.idPersona = a.idPersona
-                                                        INNER JOIN Usuarios u ON u.id = re.idUsuario WHERE p.id = p_idPostulacion AND u.activo = TRUE)) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno pertenece a una cuenta inactiva ';  
-	END IF;
-               
-	-- validar que la postulación pertenezca a la institucion y a un curso de la institucion
-	IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Cursos c ON a.idInstitucion = c.idInstitucion
-															  INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id
-															  WHERE a.id = p_idAdministradorInstitucion AND p.id = p_idPostulacion) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no pertenece a la institución.';
-	END IF;
-    
-    -- validar que el estado actual sea pendiente y motivo NULL
-	IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion AND idEstado = 1 AND motivoRechazo IS NULL) THEN 
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no se encuentra pendiente o ya tiene un motivo de rechazo.';
-	END IF;
-    
-    -- iniciamos transacción
+      -- iniciamos transacción
     START TRANSACTION;
+    
+		-- validamos que no sea null o vacío el motivo (hay que avisar porque fue el rechazo para orientar por si hay una nueva postulación a futuro)
+		IF(p_motivoRechazo IS NULL OR TRIM(p_motivoRechazo) = '') THEN 
+			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Ingrese un motivo de rechazo válido.';
+		END IF;
+		
+		-- validamos que el motivo de rechazo no tenga longitud mas larga de la posible
+		IF (char_length(p_motivoRechazo) > 255) THEN
+			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El motivo de rechazo supera los 255 caracteres disponibles.';
+		END IF;
+		-- si no se pasa de cantidad de caracteres lo guardo para llevarlo limpio a la bd
+		SET v_motivoRechazo = TRIM(p_motivoRechazo); 
+		
+		-- validamos que postulación exista 
+		IF NOT EXISTS(SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN
+			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Postulación inexistente';
+		END IF;
+		-- validamos usuario o administrador existente
+		IF NOT EXISTS(SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE a.id = p_idAdministradorInstitucion) THEN 
+			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Usuario o administrador inexistente.';
+		END IF;
+		-- validamos usuario activo
+		IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE u.activo = TRUE AND a.id = p_idAdministradorInstitucion) THEN 
+			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El usuario no se encuentra activo.';
+		END IF;
+		-- validamos institucion activa
+		IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Instituciones i ON a.idInstitucion = i.id
+																 WHERE i.estado = TRUE and a.id = p_idAdministradorInstitucion ) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no se encuentra activa.';
+		END IF;
+		
+		   -- validar que el usuario responsable este activo -- es autogestor a.idPersona = r.idPersona -- es responsablePorAlumno res res.idAlumno = a.id
+		IF NOT (EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+															INNER JOIN ResponsablesPorAlumno r ON r.idAlumno = a.id 
+															INNER JOIN Responsables re ON re.id = r.idResponsable
+															INNER JOIN Usuarios u ON re.idUsuario = u.id WHERE p.id = p_idPostulacion AND u.activo = TRUE) OR 
+				EXISTS(SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON p.idAlumno = a.id
+															INNER JOIN Responsables re ON re.idPersona = a.idPersona
+															INNER JOIN Usuarios u ON u.id = re.idUsuario WHERE p.id = p_idPostulacion AND u.activo = TRUE)) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno pertenece a una cuenta inactiva ';  
+		END IF;
+				   
+		-- validar que la postulación pertenezca a la institucion y a un curso de la institucion
+		IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Cursos c ON a.idInstitucion = c.idInstitucion
+																  INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id
+																  WHERE a.id = p_idAdministradorInstitucion AND p.id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no pertenece a la institución.';
+		END IF;
+		
+		-- validar que el estado actual sea pendiente y motivo NULL
+		IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion AND idEstado = 1 AND motivoRechazo IS NULL) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no se encuentra pendiente o ya tiene un motivo de rechazo.';
+		END IF;
+		
 		UPDATE PostulacionesAlumnos SET idEstado = 4, motivoRechazo = v_motivoRechazo WHERE id = p_idPostulacion AND idEstado = 1 AND motivoRechazo IS NULL;
+			
+		IF ROW_COUNT() <> 1 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede rechazar la postulación.';
+		END IF;
+			
     COMMIT;
     
 END$$
 DELIMITER ;
+
+-- sp_Confirmar_Postulacion_Alumno
+-- confirma responsable o autogestor. OJO aca si quitamos cupo en institucion. incrementamos en 1 el valor de inscriptos!
+-- parametros necesarios p_idPostulacion, id_responsable
+-- ---------------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_Confirmar_Postulacion_Alumno$$
+
+CREATE PROCEDURE sp_Confirmar_Postulacion_Alumno(
+IN p_idPostulacion    INT,
+IN p_idResponsable    INT
+)
+BEGIN 
+	DECLARE v_capacidad                   INT;
+    DECLARE v_inscriptos                  INT;
+    DECLARE v_idCurso                     INT;
+    DECLARE v_idNivelCurso                INT;
+    DECLARE v_cicloLectivoCurso           INT;
+    DECLARE v_anioCurso                   TINYINT;
+    DECLARE v_nivelPersonalizadoCurso 	  VARCHAR(30);
+    DECLARE v_idAlumno                    INT;
+    DECLARE v_idAlumnoBloqueado           INT;
+    
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+		RESIGNAL;
+	END;
+   
+   SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    START TRANSACTION;
+    
+		-- validaciones
+		
+		-- que exista la postulacion 
+		IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
+		END IF;
+		
+		SELECT idCurso INTO v_idCurso FROM PostulacionesAlumnos WHERE id = p_idPostulacion; 
+		
+		-- validamos que el curso exista 
+		IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Cursos c ON p.idCurso = c.id 
+															WHERE p.id = p_idPostulacion) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso no existe.';
+		END IF;
+		SELECT capacidad, inscriptos INTO v_capacidad, v_inscriptos FROM Cursos WHERE id = v_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de confirmar, paralelamente otro usuario este confirmando el último cupo y cuando esta postulación se acepte lo haga sin vacante disponible. 
+	   
+		-- que estado de postulación sea aceptado 
+		IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE idEstado = 2 AND id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no se encuentra aceptada por la institución.';
+		END IF;
+		
+		-- Valido que el reponsable exista 
+		IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+		END IF;
+
+		-- Valido que el usuario responsable este activo 
+		IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario    
+												WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene la cuenta activa.';
+		END IF;
+
+		-- Valido que el alumno postulado sea coincidente con un alumno registrado en su cuenta responsable o que el responsable/alumno sea autogestor de su postulacion
+		IF NOT (EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos al ON al.id = p.idAlumno
+															INNER JOIN ResponsablesPorAlumno ra ON ra.idAlumno = al.id
+															WHERE p.id = p_idPostulacion AND ra.idResponsable = p_idResponsable) OR
+			   EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos al ON al.id = p.idAlumno
+															INNER JOIN Responsables r ON r.idPersona = al.idPersona 
+															WHERE p.id = p_idPostulacion AND r.id = p_idResponsable)) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no se encuentra registrado en la cuenta del responsable.';
+		END IF;
+		
+		-- Institucion activa
+		IF NOT EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Cursos c ON p.idCurso = c.id 
+															INNER JOIN Instituciones i ON c.idInstitucion = i.id 
+															WHERE i.estado = TRUE AND p.id = p_idPostulacion) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institucion se encuentra inactiva';
+		END IF;
+        
+        SELECT c.idNivel, c.cicloLectivo, c.anio, c.nivelPersonalizado, p.idAlumno INTO v_idNivelCurso, v_cicloLectivoCurso, v_anioCurso, v_nivelPersonalizadoCurso, v_idAlumno FROM PostulacionesAlumnos p INNER JOIN Cursos c ON p.idCurso = c.id WHERE p.id = p_idPostulacion;
+        SELECT id into v_idAlumnoBloqueado FROM Alumnos WHERE id = v_idAlumno FOR UPDATE;
+       -- valido que el alumno no tenga en estado confirmado otra postulación con un curso idéntico y año lectivo. (Si permite otro año lectivo por si ha repetido)
+        IF EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Cursos c ON p.idCurso = c.id WHERE p.idAlumno = v_idAlumno AND 
+                                                                                                      p.idEstado = 3 AND 
+                                                                                                      p.id <> p_idPostulacion AND 
+                                                                                                      c.cicloLectivo = v_cicloLectivoCurso  AND 
+                                                                                                      ((v_idNivelCurso IS NOT NULL AND v_anioCurso IS NOT NULL AND c.idNivel IS NOT NULL AND c.anio IS NOT NULL AND c.anio = v_anioCurso AND c.idNivel = v_idNivelCurso) OR 
+                                                                                                      (v_anioCurso IS NULL AND v_idNivelCurso IS NULL AND c.idNivel IS NULL AND c.anio IS NULL AND v_nivelPersonalizadoCurso IS NOT NULL AND c.nivelPersonalizado IS NOT NULL AND TRIM(c.nivelPersonalizado) <>''AND TRIM(v_nivelPersonalizadoCurso) <> '' AND LOWER(TRIM(c.nivelPersonalizado)) = LOWER(TRIM(v_nivelPersonalizadoCurso))))) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya tiene confirmada una postulación para un curso de las mismas características.';
+        END IF;
+	  
+		-- que haya cupo
+		IF (v_capacidad - v_inscriptos) <= 0 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lo lamentamos. No quedan cupos disponibles para poder confirmar su postulación.';
+		END IF;
+		
+		UPDATE PostulacionesAlumnos SET idEstado = 3 WHERE id = p_idPostulacion AND idEstado = 2;
+        
+		IF ROW_COUNT() <> 1 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación ya fue confirmada o no se encuentra aceptada por la institución.';
+		END IF;
+        
+		UPDATE Cursos SET inscriptos = inscriptos + 1 WHERE id = v_idCurso;
+
+    COMMIT;
+    
+END$$
+
+DELIMITER ;
+
+-- Falta evaluar el caso en el que nivel o nivel personalizado no esta detallado (hasta ahora quedo MODO NORMALIZADO: idNivel 'primaria' + anio '2do' y nivelPersonalizado NULL O MODO PERSONALIZADO: idNivel NULL + anio NULL y nivelPersonalizado 'Kids Starter' )  o ver de que manera lo hacemos
 
