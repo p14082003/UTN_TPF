@@ -1,3 +1,17 @@
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_Registrar
+-- Un administrador envia una postulacion para registrar su institucion.
+-- Segun el documento, el SP sigue uno de estos caminos:
+--   * ALTA INICIAL: no tiene cuenta de administrador. Crea persona (si no existe),
+--     usuario inactivo, administrador, telefono y una postulacion Pendiente.
+--   * REINTENTO: ya tiene cuenta y su ultima postulacion fue Rechazada. Reutiliza
+--     la cuenta, actualiza sus datos personales y telefono, y crea otra postulacion Pendiente.
+--   * ERROR: ultima postulacion Pendiente, o cuenta ya aprobada / con institucion.
+-- En el reintento el email tiene que ser el mismo y p_clave se ignora (la API ya
+-- verifico la contraseña con sp_AdministradorInstitucion_ObtenerClaveReintento).
+-- Devuelve el id de la postulacion nueva en p_idPostulacion.
+-- ---------------------------------------------------------------------
+
 DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_Registrar;
 
 DELIMITER $$
@@ -10,7 +24,7 @@ CREATE PROCEDURE sp_AdministradorInstitucion_Registrar(
   IN  p_domicilio            VARCHAR(100),
   IN  p_fechaNacimiento      DATE,
   -- Cuenta
-  IN  p_clave                VARCHAR(255),   -- se guarda tal cual llega, ver tema hash
+  IN  p_clave                VARCHAR(255),   -- ya llega hasheada desde la API (el SP la guarda tal cual)
   IN  p_email                VARCHAR(100),
   IN  p_telefono             VARCHAR(30),
   -- Institución que declara (lo que verifica Dev&Co)
@@ -19,7 +33,7 @@ CREATE PROCEDURE sp_AdministradorInstitucion_Registrar(
   IN  p_rutaConstanciaFiscal VARCHAR(255),
   IN  p_rutaHabilitacion     VARCHAR(255),
   IN  p_rutaConstanciaLaboral VARCHAR(255),
-  -- Seguimiento (lo genera C#, el SP solo lo guarda)
+  -- Seguimiento (lo genera la API, el SP solo lo guarda)
   IN  p_codigoSeguimiento    VARCHAR(30),
   -- Salida
   OUT p_idPostulacion        INT
@@ -33,6 +47,12 @@ BEGIN
   DECLARE v_idAdministrador     INT;
   DECLARE v_fechaNac            DATE;
   DECLARE v_fecha               DATE;
+  -- Variables para reintento de postulaciones rechazadas
+  DECLARE v_idUltimoEstado      INT;           
+  DECLARE v_idInstitucionAdmin  INT;
+  DECLARE v_emailActual         VARCHAR(100);
+  DECLARE v_usuarioActivo       BOOL;
+  DECLARE v_idTelefono          INT;
 
   -- Casos que se colen entre la validación y el INSERT
   DECLARE EXIT HANDLER FOR 1062 -- error 1062 se da cuando se viola una clave UNIQUE, cuando ocurra ese error se ejecuta el bloque y termina.
@@ -49,7 +69,7 @@ BEGIN
     RESIGNAL;
   END;
 
-  -- 1. Normalizar (la clave no se toca, puede contener espacios)
+  -- Normalizar (la clave no se toca, puede contener espacios)
   SET p_nombre            = TRIM(p_nombre);
   SET p_apellido          = TRIM(p_apellido);
   SET p_documento         = TRIM(p_documento);
@@ -59,7 +79,7 @@ BEGIN
   SET p_nombreInstitucion = TRIM(p_nombreInstitucion);
   SET p_cuitInstitucion   = TRIM(p_cuitInstitucion);
 
-  -- 2. Validaciones que no necesitan la base
+  -- Validaciones que no necesitan la base
   IF COALESCE(p_nombre,'') = '' OR COALESCE(p_apellido,'') = '' OR COALESCE(p_documento,'') = ''
      OR COALESCE(p_domicilio,'') = '' OR p_fechaNacimiento IS NULL
      OR COALESCE(p_clave,'') = '' OR COALESCE(p_email,'') = ''
@@ -86,37 +106,80 @@ BEGIN
 
   START TRANSACTION;
 
-  -- 3. Catálogos: se buscan por descripción (no por id), igual que en el archivo de INSERTs
+	-- Catálogos: se buscan por descripción (no por id), igual que en el archivo de INSERTs
   SET v_idTipoAdministrador = (SELECT id FROM TipoUsuario        WHERE descripcion = 'Administrador');
   SET v_idEstadoPendiente   = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
   SET v_idEstadoRechazado   = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
 
--- Validacion DB Cargada con tipos de administrador y estados.
+	-- Validacion DB Cargada con tipos de administrador y estados.
   IF v_idTipoAdministrador IS NULL OR v_idEstadoPendiente IS NULL OR v_idEstadoRechazado IS NULL THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Catálogos incompletos: falta Administrador, Pendiente o Rechazado.';
   END IF;
 
-  -- 4. Validaciones contra la DB
-  IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese email ya está registrado.';
-  END IF;
+  -- Validaciones contra la DB
 
   -- La persona puede existir por otro rol (por ejemplo, ya es responsable): se reutiliza.
   -- En ese caso se conservan los datos personales ya guardados (no se actualizan).
-  -- Para tener cuenta de administrador necesita su propio usuario y email.
+  -- Solo se actualizan en el reintento de una postulación rechazada.
+  -- Para tener cuenta de administrador necesita su propia cuenta en Usuarios, con un email distinto al del otro rol.
   SET v_idPersona = (SELECT id FROM Personas WHERE documento = p_documento);
 
   IF v_idPersona IS NOT NULL THEN
-    IF EXISTS (SELECT 1 FROM AdministradoresInstitucion WHERE idPersona = v_idPersona) THEN
-      SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento. Consultá el estado de tu solicitud con el código de seguimiento que te enviamos por mail.';
-    END IF;
-    SET v_fechaNac = (SELECT fechaNacimiento FROM Personas WHERE id = v_idPersona);
-  ELSE
-    SET v_fechaNac = p_fechaNacimiento;
+    SET v_idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idPersona = v_idPersona);
   END IF;
 
+	-- El SP sigue dos caminos según el DNI:
+	-- ALTA INICIAL: esa persona todavía no tiene cuenta de administrador.
+	-- REINTENTO:    ya la tiene, y solo se permite si su última postulación fue rechazada.
+  IF v_idAdministrador IS NULL THEN
+    -- ALTA INICIAL: el email no puede estar en uso
+    IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese email ya está registrado.';
+    END IF;
+
+	-- Si la persona ya existe (es responsable o alumno autogestor y ahora se carga como administrador)
+    -- se ignoran los datos personales nuevos (nombre, apellido, domicilio, fecha) y se usan los ya guardados.
+    -- Solo se asigna v_fechaNac porque hace falta para validar la mayoría de edad:
+    -- si la persona existe se usa la fecha guardada, si no, la recibida por parámetro.    
+    IF v_idPersona IS NOT NULL THEN
+      SET v_fechaNac = (SELECT fechaNacimiento FROM Personas WHERE id = v_idPersona);
+    ELSE
+      SET v_fechaNac = p_fechaNacimiento;
+    END IF;
+  ELSE -- Si idAdmin NO ES NULL (reintento) Seteamos las variables que necesitamos:
+    -- YA ES ADMINISTRADOR: solo se permite reintentar si su ultima postulacion fue rechazada.
+    -- (La contraseña la verifica la API antes de llamar a este SP)
+    SET v_idUltimoEstado = (SELECT idEstado FROM PostulacionesAdminInstitucion
+                            WHERE idAdministradorInstitucion = v_idAdministrador
+                            ORDER BY id DESC LIMIT 1);
+    SET v_idUsuario = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = v_idAdministrador);
+    SET v_idInstitucionAdmin = (SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = v_idAdministrador);
+    SET v_emailActual = (SELECT email FROM Usuarios WHERE id = v_idUsuario);
+    SET v_usuarioActivo = (SELECT activo FROM Usuarios WHERE id = v_idUsuario);
+
+    IF v_idUltimoEstado = v_idEstadoPendiente THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ya tenés una postulación pendiente.';
+    END IF;
+
+    -- Solo se puede reintentar si la última fue Rechazada, la cuenta sigue inactiva y no tiene institución.
+    IF v_idUltimoEstado IS NULL OR v_idUltimoEstado <> v_idEstadoRechazado
+       OR v_idInstitucionAdmin IS NOT NULL OR v_usuarioActivo = TRUE THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento.';
+    END IF;
+
+    IF v_emailActual <> p_email THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Usá el email con el que te postulaste anteriormente.';
+    END IF;
+
+    -- En el reintento los datos personales se actualizan con lo nuevo
+    SET v_fechaNac = p_fechaNacimiento;
+  END IF; 
+  -- FIN DEL IF DE REINTENTO (idAdmin con valor)
+  
   IF v_fechaNac > CURDATE() OR TIMESTAMPDIFF(YEAR, v_fechaNac, CURDATE()) < 18 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador debe ser mayor de 18 años.';
   END IF;
@@ -126,33 +189,53 @@ BEGIN
   END IF;
 
   -- Si hay otra postulacion para esa institucion (cuit) con estado aprobado o pendiente lanzamos un error (solo se permite
-  -- volver a enviar una postulacion en caso de tener una rechazada.
+  -- volver a enviar una postulacion en caso de tener una rechazada).
   IF EXISTS (SELECT 1 FROM PostulacionesAdminInstitucion
              WHERE cuitInstitucion = p_cuitInstitucion
                AND idEstado <> v_idEstadoRechazado) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una solicitud en curso o aprobada con ese CUIT.';
   END IF;
 
-  -- 5. Escrituras
+  -- Escrituras
   SET v_fecha = CURDATE();
 
-  IF v_idPersona IS NULL THEN
-    INSERT INTO Personas (nombre, apellido, documento, domicilio, fechaNacimiento)
-    VALUES (p_nombre, p_apellido, p_documento, p_domicilio, p_fechaNacimiento);
-    SET v_idPersona = LAST_INSERT_ID();
+  IF v_idAdministrador IS NULL THEN
+    -- Alta inicial
+    IF v_idPersona IS NULL THEN
+      INSERT INTO Personas (nombre, apellido, documento, domicilio, fechaNacimiento)
+      VALUES (p_nombre, p_apellido, p_documento, p_domicilio, p_fechaNacimiento);
+      SET v_idPersona = LAST_INSERT_ID();
+    END IF;
+
+    INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
+    VALUES (p_clave, p_email, FALSE, v_idTipoAdministrador); -- se crea con estado dado de inactivo
+    SET v_idUsuario = LAST_INSERT_ID();
+
+    INSERT INTO AdministradoresInstitucion (idPersona, idUsuario, idInstitucion)
+    VALUES (v_idPersona, v_idUsuario, NULL); -- se crea sin institucion ya que todavía no está creada.
+    SET v_idAdministrador = LAST_INSERT_ID();
+
+    INSERT INTO Telefonos (idAdministrador, telefono)
+    VALUES (v_idAdministrador, p_telefono);
+  ELSE
+    -- Reintento: se reutilizan persona, usuario y administrador (la clave no se toca);
+    -- solo se actualizan los datos personales y el telefono, y mas abajo se crea la nueva postulacion.
+    UPDATE Personas
+    SET nombre = p_nombre, apellido = p_apellido, domicilio = p_domicilio, fechaNacimiento = p_fechaNacimiento
+    WHERE id = v_idPersona;
+
+	-- Toma el primer teléfono del administrador para actualizarlo (si no tiene ninguno, se crea).
+    SET v_idTelefono = (SELECT id FROM Telefonos WHERE idAdministrador = v_idAdministrador ORDER BY id LIMIT 1);
+
+    IF v_idTelefono IS NULL THEN
+      INSERT INTO Telefonos (idAdministrador, telefono)
+      VALUES (v_idAdministrador, p_telefono);
+    ELSE
+      UPDATE Telefonos SET telefono = p_telefono WHERE id = v_idTelefono;
+    END IF;
   END IF;
 
-  INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
-  VALUES (p_clave, p_email, FALSE, v_idTipoAdministrador); -- se crea con estado dado de inactivo
-  SET v_idUsuario = LAST_INSERT_ID();
-
-  INSERT INTO AdministradoresInstitucion (idPersona, idUsuario, idInstitucion)
-  VALUES (v_idPersona, v_idUsuario, NULL); -- se crea sin institucion ya que todavía no está creada.
-  SET v_idAdministrador = LAST_INSERT_ID();
-
-  INSERT INTO Telefonos (idAdministrador, telefono)
-  VALUES (v_idAdministrador, p_telefono);
-
+	-- En los dos caminos se crea una postulación nueva Pendiente (el historial de rechazos se conserva).
   INSERT INTO PostulacionesAdminInstitucion
     (fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado,
      nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, rutaConstanciaLaboral, motivoRechazo)
@@ -369,7 +452,7 @@ BEGIN
   DECLARE v_cuit               VARCHAR(11);
   DECLARE v_idInstitucion      INT;
 
-  -- Caso entre la validacion y el INSERT de otro CUIT igual al mismo tiempo
+  -- Si otra persona inserta el mismo CUIT justo entre la validación y nuestro INSERT, MySQL tira error 1062: lo convertimos en un mensaje claro.
   DECLARE EXIT HANDLER FOR 1062
   BEGIN
     ROLLBACK;
@@ -402,7 +485,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
   END IF;
 
--- Solo coordenadas validas (-90 a 90 del Ecuador  y -180 a 180 del Meridiano)
+	-- Solo coordenadas validas (-90 a 90 del Ecuador  y -180 a 180 del Meridiano)
   IF p_latitud NOT BETWEEN -90 AND 90 OR p_longitud NOT BETWEEN -180 AND 180 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Las coordenadas no son válidas.';
   END IF;
@@ -458,9 +541,11 @@ BEGIN
     (nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion, estado)
   VALUES
     (v_nombre, v_cuit, p_direccion, p_email, p_latitud, p_longitud, p_descripcion, p_idTipoInstitucion, TRUE);
-  SET v_idInstitucion = LAST_INSERT_ID(); -- Será el parámetro que devolveremos como OUT para luego insertar los parametros
-										  -- opcionales que van en otras tablas (y otros SP)
-
+    
+  -- Será el parámetro que devolveremos como OUT para luego insertar los parametros opcionales que van en otras tablas (y otros SP)
+  SET v_idInstitucion = LAST_INSERT_ID(); 
+	
+    
   INSERT INTO Discapacidades
     (idInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo)
   VALUES
@@ -852,6 +937,387 @@ BEGIN
 
   DELETE FROM Imagenes
   WHERE id = p_idImagen AND idInstitucion = p_idInstitucion;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_ObtenerClaveReintento
+-- Devuelve la clave (hash) de una cuenta de administrador que puede reintentar su postulacion,
+-- para que la API verifique la contraseña antes de llamar a sp_AdministradorInstitucion_Registrar.
+-- Es reintentable solo si: usuario inactivo, administrador sin institucion y ultima
+-- postulacion Rechazada (mismas condiciones que usa el Registrar para permitir el reintento).
+-- Si no cumple, devuelve 0 filas (no se informa el motivo).
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_ObtenerClaveReintento;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_AdministradorInstitucion_ObtenerClaveReintento(
+  IN p_email VARCHAR(100)
+)
+BEGIN
+  DECLARE v_idEstadoRechazado INT;
+
+  SET p_email = LOWER(TRIM(p_email));
+
+  IF COALESCE(p_email,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  SET v_idEstadoRechazado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
+
+  IF v_idEstadoRechazado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+  
+  -- Devuelve 1 fila con la clave si se cumplen todas las condiciones, sino devuelve 0 filas.
+  SELECT u.clave AS Clave
+  FROM Usuarios u
+  JOIN AdministradoresInstitucion a ON a.idUsuario = u.id
+  WHERE u.email = p_email
+    AND u.activo = FALSE
+    AND a.idInstitucion IS NULL
+    AND (SELECT p.idEstado
+         FROM PostulacionesAdminInstitucion p
+         WHERE p.idAdministradorInstitucion = a.id
+         ORDER BY p.id DESC LIMIT 1) = v_idEstadoRechazado;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Postulacion_ConsultarPorCodigo
+-- Consulta el estado de una postulacion con su codigo de seguimiento + el email
+-- de quien la hizo. Sirve para postulaciones de administradores y de alumnos:
+--   * Administrador: el email es el del propio administrador.
+--   * Alumno: el email es el del responsable (o el del propio alumno si es autogestor).
+-- Si el codigo no existe o el email no coincide se da el MISMO mensaje, para no
+-- revelar si el codigo existe.
+-- Devuelve una fila: Tipo, Fecha, Estado, NombreInstitucion, Cuit, MotivoRechazo.
+-- Usa las vistas vw_Postulaciones_Admin_Institucion y vw_Postulaciones_Alumnos.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Postulacion_ConsultarPorCodigo;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Postulacion_ConsultarPorCodigo(
+  IN p_codigo VARCHAR(30),
+  IN p_email  VARCHAR(100)
+)
+BEGIN
+  SET p_codigo = TRIM(p_codigo);
+  SET p_email  = LOWER(TRIM(p_email));
+
+  IF COALESCE(p_codigo,'') = '' OR COALESCE(p_email,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  -- Primero se busca entre las postulaciones de administradores...
+  IF EXISTS (SELECT 1 FROM vw_Postulaciones_Admin_Institucion
+             WHERE codigoSeguimiento = p_codigo AND emailAdministrador = p_email) THEN
+
+    SELECT 'Administrador'    AS Tipo,
+           fecha              AS Fecha,
+           estado             AS Estado,
+           nombreInstitucion  AS NombreInstitucion,
+           cuitInstitucion    AS Cuit,
+           motivoRechazo      AS MotivoRechazo
+    FROM vw_Postulaciones_Admin_Institucion
+    WHERE codigoSeguimiento = p_codigo AND emailAdministrador = p_email;
+
+  -- ...y si no esta ahi, entre las de alumnos (el CUIT sale de la institucion del curso)
+  ELSEIF EXISTS (SELECT 1 FROM vw_Postulaciones_Alumnos
+                 WHERE codigoSeguimiento = p_codigo AND emailResponsable = p_email) THEN
+
+    SELECT 'Alumno'           AS Tipo,
+           v.fecha            AS Fecha,
+           v.estado           AS Estado,
+           v.institucion      AS NombreInstitucion,
+           i.cuit             AS Cuit,
+           v.motivoRechazo    AS MotivoRechazo
+    FROM vw_Postulaciones_Alumnos v
+    JOIN Instituciones i ON i.id = v.idInstitucion
+    WHERE v.codigoSeguimiento = p_codigo AND v.emailResponsable = p_email;
+
+  ELSE
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró una postulación con esos datos.';
+  END IF;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_DarDeBaja
+-- Dev&Co da de baja una institucion. Es una baja logica: estado = FALSE (no se borra nada).
+--   * las postulaciones de alumnos Pendientes y Aceptadas a los cursos de la institucion
+--     se rechazan solas con el motivo 'Institución dada de baja.'
+--   * las Confirmadas quedan como historial
+--   * los administradores y sus cuentas no se tocan
+-- Se revierte con sp_Institucion_Reactivar (las postulaciones rechazadas NO se restauran).
+-- Va en una transaccion: se da de baja y se rechazan las pendientes, o no se hace nada.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_DarDeBaja;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_DarDeBaja(
+  IN p_idInstitucion  INT,
+  IN p_idUsuarioDevCo INT     -- usuario Dev&Co que resuelve (lo toma C# de la sesion)
+)
+BEGIN
+  DECLARE v_idTipoDevCo       TINYINT;
+  DECLARE v_idEstadoPendiente INT;
+  DECLARE v_idEstadoAceptado  INT;
+  DECLARE v_idEstadoRechazado INT;
+
+  -- Cualquier error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF p_idInstitucion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Catalogos: se buscan por descripcion, igual que en el resto de los SP
+  SET v_idTipoDevCo       = (SELECT id FROM TipoUsuario        WHERE descripcion = 'DevCo');
+  SET v_idEstadoPendiente = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Pendiente');
+  SET v_idEstadoAceptado  = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Aceptado');
+  SET v_idEstadoRechazado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Rechazado');
+
+  IF v_idTipoDevCo IS NULL OR v_idEstadoPendiente IS NULL
+     OR v_idEstadoAceptado IS NULL OR v_idEstadoRechazado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Solo un usuario Dev&Co activo puede dar de baja una institucion
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de baja instituciones.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  -- Baja logica en un solo UPDATE. Si ya estaba dada de baja no se modifica ninguna fila.
+  UPDATE Instituciones
+  SET estado = FALSE
+  WHERE id = p_idInstitucion
+    AND estado = TRUE;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya está dada de baja.';
+  END IF;
+
+  -- Las postulaciones Pendientes y Aceptadas (todavia sin confirmar) a cursos de esta institucion se rechazan solas
+  UPDATE PostulacionesAlumnos
+  SET idEstado      = v_idEstadoRechazado,
+      motivoRechazo = 'Institución dada de baja.'
+  WHERE idCurso IN (SELECT id FROM Cursos WHERE idInstitucion = p_idInstitucion)
+    AND idEstado IN (v_idEstadoPendiente, v_idEstadoAceptado);
+
+  COMMIT;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Institucion_Reactivar
+-- Dev&Co vuelve a activar una institucion dada de baja (estado = TRUE).
+-- Las postulaciones que se rechazaron con la baja NO se restauran:
+-- las familias tienen que postularse de nuevo.
+-- Un solo UPDATE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Institucion_Reactivar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Institucion_Reactivar(
+  IN p_idInstitucion  INT,
+  IN p_idUsuarioDevCo INT
+)
+BEGIN
+  DECLARE v_idTipoDevCo TINYINT;
+
+  IF p_idInstitucion IS NULL OR p_idUsuarioDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  SET v_idTipoDevCo = (SELECT id FROM TipoUsuario WHERE descripcion = 'DevCo');
+
+  IF v_idTipoDevCo IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Solo un usuario Dev&Co activo puede reactivar una institucion
+  IF NOT EXISTS (SELECT 1 FROM Usuarios
+                 WHERE id = p_idUsuarioDevCo
+                   AND idTipoUsuario = v_idTipoDevCo
+                   AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para reactivar instituciones.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  END IF;
+
+  UPDATE Instituciones
+  SET estado = TRUE
+  WHERE id = p_idInstitucion
+    AND estado = FALSE;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya está activa.';
+  END IF;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_AdministradorInstitucion_CrearAdicional
+-- Un administrador activo de una institucion da de alta a otro administrador de la misma institucion.
+-- La cuenta se crea activa y ya vinculada a la institucion del que la crea (no pasa por Dev&Co).
+--   * La clave llega ya hasheada desde la API (el SP la guarda tal cual).
+--   * Si la persona ya existe por otro rol (responsable, alumno autogestor) se reutiliza y se
+--     conservan sus datos personales; necesita igual su propio email, distinto al del otro rol.
+--   * Si la persona ya tiene cuenta de administrador, no se puede volver a dar de alta.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_AdministradorInstitucion_CrearAdicional;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_AdministradorInstitucion_CrearAdicional(
+  IN  p_idUsuarioActor  INT,            -- administrador que da el alta (lo toma C# de la sesion)
+  -- Datos personales
+  IN  p_nombre          VARCHAR(50),
+  IN  p_apellido        VARCHAR(50),
+  IN  p_documento       VARCHAR(8),
+  IN  p_domicilio       VARCHAR(100),
+  IN  p_fechaNacimiento DATE,
+  -- Cuenta
+  IN  p_clave           VARCHAR(255),   -- ya llega hasheada desde la API
+  IN  p_email           VARCHAR(100),
+  IN  p_telefono        VARCHAR(30),
+  -- Salida
+  OUT p_idAdministrador INT
+)
+BEGIN
+  DECLARE v_idTipoAdministrador TINYINT;
+  DECLARE v_idInstitucion       INT;
+  DECLARE v_idPersona           INT;
+  DECLARE v_idUsuario           INT;
+  DECLARE v_fechaNac            DATE;
+
+  -- Casos que puedan pasar entre la validacion y el INSERT
+  DECLARE EXIT HANDLER FOR 1062
+  BEGIN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Ya existe un registro con esos datos (documento o email).';
+  END;
+
+  -- Cualquier otro error (incluidos los SIGNAL de validacion): revierte y relanza
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  -- Normalizar (la clave no se toca, puede contener espacios)
+  SET p_nombre    = TRIM(p_nombre);
+  SET p_apellido  = TRIM(p_apellido);
+  SET p_documento = TRIM(p_documento);
+  SET p_domicilio = TRIM(p_domicilio);
+  SET p_email     = LOWER(TRIM(p_email));
+  SET p_telefono  = TRIM(p_telefono);
+
+  -- Validaciones que no necesitan la base
+  IF p_idUsuarioActor IS NULL
+     OR COALESCE(p_nombre,'') = '' OR COALESCE(p_apellido,'') = '' OR COALESCE(p_documento,'') = ''
+     OR COALESCE(p_domicilio,'') = '' OR p_fechaNacimiento IS NULL
+     OR COALESCE(p_clave,'') = '' OR COALESCE(p_email,'') = ''
+     OR COALESCE(p_telefono,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF p_documento NOT REGEXP '^[0-9]{7,8}$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El documento debe tener 7 u 8 dígitos.';
+  END IF;
+
+  IF p_email NOT REGEXP '^[^@ ]+@[^@ ]+\\.[^@ ]+$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
+  END IF;
+
+  START TRANSACTION;
+
+  SET v_idTipoAdministrador = (SELECT id FROM TipoUsuario WHERE descripcion = 'Administrador');
+
+  IF v_idTipoAdministrador IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Catálogos incompletos.';
+  END IF;
+
+  -- Quien da el alta tiene que ser un administrador ACTIVO con institucion (si no, queda en NULL)
+  SET v_idInstitucion = (SELECT a.idInstitucion
+                         FROM AdministradoresInstitucion a
+                         JOIN Usuarios u ON u.id = a.idUsuario
+                         WHERE a.idUsuario = p_idUsuarioActor AND u.activo = TRUE);
+
+  IF v_idInstitucion IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para dar de alta administradores.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese email ya está registrado.';
+  END IF;
+
+  -- La persona puede existir por otro rol: se reutiliza y se conservan sus datos guardados.
+  SET v_idPersona = (SELECT id FROM Personas WHERE documento = p_documento);
+
+  IF v_idPersona IS NOT NULL THEN
+    IF EXISTS (SELECT 1 FROM AdministradoresInstitucion WHERE idPersona = v_idPersona) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una cuenta de administrador con ese documento.';
+    END IF;
+    SET v_fechaNac = (SELECT fechaNacimiento FROM Personas WHERE id = v_idPersona);
+  ELSE
+    SET v_fechaNac = p_fechaNacimiento;
+  END IF;
+
+  IF v_fechaNac > CURDATE() OR TIMESTAMPDIFF(YEAR, v_fechaNac, CURDATE()) < 18 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador debe ser mayor de 18 años.';
+  END IF;
+
+  -- Escrituras
+  IF v_idPersona IS NULL THEN
+    INSERT INTO Personas (nombre, apellido, documento, domicilio, fechaNacimiento)
+    VALUES (p_nombre, p_apellido, p_documento, p_domicilio, p_fechaNacimiento);
+    SET v_idPersona = LAST_INSERT_ID();
+  END IF;
+
+  INSERT INTO Usuarios (clave, email, activo, idTipoUsuario)
+  VALUES (p_clave, p_email, TRUE, v_idTipoAdministrador);   -- activa desde el alta
+  SET v_idUsuario = LAST_INSERT_ID();
+
+  INSERT INTO AdministradoresInstitucion (idPersona, idUsuario, idInstitucion)
+  VALUES (v_idPersona, v_idUsuario, v_idInstitucion);       -- ya vinculada a la institucion de quien la crea
+  SET p_idAdministrador = LAST_INSERT_ID();
+
+  INSERT INTO Telefonos (idAdministrador, telefono)
+  VALUES (p_idAdministrador, p_telefono);
+
+  COMMIT;
 END$$
 
 DELIMITER ;
