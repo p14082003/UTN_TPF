@@ -692,4 +692,249 @@ END$$
 DELIMITER ;
 
 -- Falta evaluar el caso en el que nivel o nivel personalizado no esta detallado (hasta ahora quedo MODO NORMALIZADO: idNivel 'primaria' + anio '2do' y nivelPersonalizado NULL O MODO PERSONALIZADO: idNivel NULL + anio NULL y nivelPersonalizado 'Kids Starter' )  o ver de que manera lo hacemos
+-- sp_Registrar_Curso-----------------------------
+-- recibe por parametro: 
+-- p_idAministradorInstitucion, p_idTurno, p_cicloLectivo, p_idNivel, p_anio, p_nivelPersonalizado, p_division, p_capacidad, p_inscriptos
+-- -----------------------------------------------
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_Registrar_Curso$$
+
+CREATE PROCEDURE sp_Registrar_Curso(
+IN p_idAdministradorInstitucion    INT,
+IN P_idTurno                       INT,
+IN p_cicloLectivo                  INT,
+IN p_idNivel	                   INT,
+IN p_anio                          TINYINT,
+IN p_nivelPersonalizado            TEXT, 
+IN p_division                      TEXT,
+IN p_capacidad                     SMALLINT,
+IN p_inscriptos                    SMALLINT
+)
+BEGIN
+	DECLARE v_idInstitucion     INT;
+    DECLARE v_idTipoInstitucion TINYINT;
+    DECLARE v_idCurso           INT;
+    DECLARE v_estado            BOOLEAN;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        RESIGNAL;
+	END;
+    
+    -- validaciones
+    
+    -- valido administrador
+    IF p_idAdministradorInstitucion IS NULL OR p_idAdministradorInstitucion <= 0 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Administrador no válido.';
+    END IF;
+    
+    -- valido que el ingreso de turno 
+	IF p_idTurno IS NULL OR p_idTurno <= 0 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar un turno válido.';
+	END IF;
+    
+    -- valido el ingreso del ciclo lectivo, tiene que ser año corriente igual o mayor
+    IF p_cicloLectivo IS NULL OR p_cicloLectivo < YEAR(CURDATE()) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El ciclo lectivo debe ser igual o mayor al año corriente.';
+	END IF;
+    
+    -- Comprobamos que nivel personalizado no venga vacío, si viene, lo seteamos null. Sino se normaliza con la limpieza  
+    SET p_nivelPersonalizado = NULLIF(TRIM(p_nivelPersonalizado), '');
+    
+    -- validamos el ingreso de nivel personalizado o nivel normalizado
+    -- si recibimos nivel personalizado, anio y idNivel van NULL
+    IF p_nivelPersonalizado IS NOT NULL THEN
+		IF p_idNivel IS NOT NULL OR p_anio IS NOT NULL THEN
+			SIGNAL SQLSTATE '45000'	SET MESSAGE_TEXT = 'Si ingresa un nivel personalizado, el nivel y el año deben ser NULL.';
+		END IF;
+	ELSE
+		-- Si es nivel normalizado, idNivel y anio son obligatorios y personalizado NULL
+		IF p_idNivel IS NULL OR p_idNivel <= 0 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar un nivel escolar válido.';
+		END IF;
+		IF p_anio IS NULL OR p_anio <= 0 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar un año válido.';
+		END IF;
+        IF p_idNivel = 1 AND p_anio NOT BETWEEN 3 AND 5 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El año ingresado no es valido para Preescolar.';
+        END IF;
+        IF p_idNivel = 2 AND p_anio NOT BETWEEN 1 AND 7 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El año ingresado no es válido para Primaria.';
+        END IF;
+        IF p_idNivel = 3 AND p_anio NOT BETWEEN 1 AND 6 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El año ingresado no es válido para Secundaria.';
+        END IF;
+        
+	END IF;
+    
+    -- valido la longitud del nivel personalizado
+    IF p_nivelPersonalizado IS NOT NULL THEN 
+		IF CHAR_LENGTH(p_nivelPersonalizado) > 30 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nivel personalizado no puede superar los 30 caracteres.';
+		END IF;
+	END IF;
+    
+    -- Valido el ingreso de la división 
+    IF p_division IS NULL OR TRIM(p_division) = '' THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar una división válida.';
+    END IF;
+    
+    SET p_division = TRIM(p_division);
+    
+    -- valido la longitud de la división
+    IF CHAR_LENGTH(TRIM(p_division)) > 50 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La división no puede superar los 50 caracteres.';
+    END IF;
+    
+     -- valido capacidad que no sea menor a 1 ni 
+     IF p_capacidad IS NULL OR p_capacidad < 1 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Capacidad de alumnos inválida.';
+     END IF;
+     
+     SET p_inscriptos = COALESCE(p_inscriptos, 0);
+     
+    -- valido el ingreso de inscriptos- no debe superar capacidad 
+    IF p_inscriptos < 0 OR p_inscriptos > p_capacidad THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cantidad de alumnos inscriptos inválidos.';
+    END IF;
+    
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED; -- para que la  segunda ejecucion no tenga una versión desactualizada de datos. Luego del bloqueo FOR UPDATE puede ver los datos que insertó la primer ejecución del sp.
+    
+    START TRANSACTION;
+    
+		-- valido que exista idAdministradorInstitucion y que tenga cuenta activa 
+		IF NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON a.idUsuario = u.id 
+																  WHERE a.id = p_idAdministradorInstitucion AND u.activo = TRUE) THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Administrador de institución inexistente o usuario inactivo.';
+		END IF;
+		
+		-- Obtengo el idInstitucion y tipo institucion
+		SELECT idInstitucion
+		INTO v_idInstitucion
+		FROM AdministradoresInstitucion
+		WHERE id = p_idAdministradorInstitucion;
+        
+        -- bloqueamos fila para evitar dos registros iguales paralelos (duplicidad)
+        SELECT idTipoInstitucion, estado
+		INTO v_idTipoInstitucion, v_estado
+		FROM Instituciones
+		WHERE id = v_idInstitucion
+		FOR UPDATE;
+	
+		-- valido que la institucion exista - la tenga asignada el administrador
+		IF v_idInstitucion IS NULL THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El administrador no tiene una institución asignada.';
+		END IF;
+        
+        -- valido la variable obtenida v_idTipoInstitucion
+        IF v_idTipoInstitucion IS NULL OR v_idTipoInstitucion NOT BETWEEN 1 AND 8 THEN 
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El tipo de institucion no es válido.';
+        END IF;
+		
+		-- valido que la institución este activa
+		IF v_estado IS NULL OR v_estado = FALSE THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Institución inexistente o inactiva.';
+		END IF;
+        -- validamos que solo los institutos de idiomas pueden utilizar niveles personalizados
+		IF p_nivelPersonalizado IS NOT NULL AND v_idTipoInstitucion <> 4 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo los institutos de idiomas pueden registrar cursos con nivel personalizado.';
+		END IF;
+        
+        -- valido que el turno exista 
+		IF NOT EXISTS (SELECT 1 FROM Turnos WHERE id = p_idTurno) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El turno seleccionado no existe.';
+		END IF;
+        
+        -- valido que nivel normalizado exista 
+        IF p_nivelPersonalizado IS NULL THEN 
+			IF NOT EXISTS (SELECT 1 FROM NivelesEscolares WHERE id = p_idNivel) THEN
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nivel escolar seleccionado no existe.';
+			END IF;
+        END IF;
+        
+        -- valido que no haya un curso con las mismas características en la institución
+        IF p_nivelPersonalizado IS NULL AND p_anio IS NOT NULL AND p_idNivel IS NOT NULL THEN 
+			IF EXISTS (SELECT 1 FROM Cursos WHERE anio = p_anio AND idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND idNivel = p_idNivel AND division = p_division AND idInstitucion =v_idInstitucion) THEN 
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso ya se encuentra registrado.';
+			END IF;
+        END IF;
+        
+        -- valido que no haya un curso con las mismas características en la institución
+        IF p_nivelPersonalizado IS NOT NULL AND p_anio IS NULL AND p_idNivel IS NULL THEN 
+			IF EXISTS (SELECT 1 FROM Cursos WHERE idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND division = p_division AND nivelPersonalizado = p_nivelPersonalizado AND idInstitucion =v_idInstitucion) THEN 
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso personalizado ya se encuentra registrado.';
+			END IF;
+        END IF;
+        
+        -- valido que el tipo de institucion permite el nivel personalizado 
+        IF v_idTipoInstitucion = 4 AND p_idNivel IS NOT NULL THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los institutos de idiomas deben registrar cursos con nivel personalizado.';
+		END IF;
+
+        
+        -- valido que el tipo de institucion corresponda al nivel seleccionado 
+		IF p_idNivel IS NOT NULL THEN
+			IF v_idTipoInstitucion = 1 THEN
+				IF p_idNivel <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece nivel Preescolar.';
+				END IF;
+            
+			ELSEIF v_idTipoInstitucion = 2 THEN
+				IF p_idNivel <> 2 THEN 
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece nivel Primaria.';
+				END IF;
+			
+            ELSEIF v_idTipoInstitucion = 3 THEN
+				IF p_idNivel <> 3 THEN
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece nivel Secundaria.';
+				END IF;
+
+            ELSEIF v_idTipoInstitucion = 5 THEN
+				IF p_idNivel NOT IN (1, 2) THEN
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece niveles Preescolar y Primaria.';
+				END IF;
+                
+			ELSEIF v_idTipoInstitucion = 6 THEN
+				IF p_idNivel NOT IN (2, 3) THEN
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece niveles Primaria y Secundaria.';
+				END IF;
+                
+			ELSEIF v_idTipoInstitucion = 7 THEN
+				IF p_idNivel NOT IN (1, 2, 3) THEN
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nivel seleccionado no corresponde a la institución.';
+				END IF;
+                
+			ELSEIF v_idTipoInstitucion = 8 THEN
+				IF p_idNivel NOT IN (1, 3) THEN
+					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución solo ofrece niveles Preescolar y Secundaria.';
+				END IF;
+			END IF;
+		END IF;
+        
+        INSERT INTO Cursos (idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos) 
+        VALUES (v_idInstitucion, p_idTurno, p_cicloLectivo, p_idNivel, p_anio, p_nivelPersonalizado, p_division, p_capacidad, p_inscriptos);
+        
+        SET v_idCurso = LAST_INSERT_ID();
+        
+        COMMIT;
+        
+        -- retornamos valores 
+        SELECT  
+        id AS Id,
+        idInstitucion AS IdInstitucion,
+        idTurno AS IdTurno,
+        cicloLectivo AS CicloLectivo,
+        idNivel AS IdNivel,
+        anio AS Anio,
+        nivelPersonalizado AS NivelPersonalizado,
+        division AS Division,
+        capacidad AS Capacidad, 
+        inscriptos AS Inscriptos
+        FROM Cursos 
+        WHERE id = v_idCurso;
+        
+END$$
+
+DELIMITER ;
+ 

@@ -33,7 +33,11 @@ INSERT INTO TipoInstitucion (id, tipoInstitucion) VALUES
   (1, 'Jardín'),
   (2, 'Primaria'),
   (3, 'Secundaria'),
-  (4, 'Instituto de idiomas');
+  (4, 'Instituto de idiomas'),
+  (5, 'Jardín-Primaria'),
+  (6, 'Primaria-Secundaria'),
+  (7, 'Jardín-Primaria-Secundaria'),
+  (8, 'Jardín-Secundaria');
 
 INSERT INTO Idiomas (id, idioma) VALUES
   (1, 'Español'),
@@ -52,7 +56,8 @@ INSERT INTO EstadosPostulacion (id, descripcion) VALUES
   (1, 'Pendiente'),
   (2, 'Aceptado'),
   (3, 'Confirmado'),
-  (4, 'Rechazado');
+  (4, 'Rechazado'),
+  (5, 'Cancelado');
 
 INSERT INTO NivelesEscolares (id, descripcion) VALUES
   (1, 'Preescolar'),
