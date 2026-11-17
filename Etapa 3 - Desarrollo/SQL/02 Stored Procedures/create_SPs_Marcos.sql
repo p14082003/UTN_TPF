@@ -577,46 +577,207 @@ DELIMITER ;
 
 
 -- ---------------------------------------------------------------------
--- sp_Telefono_Institucion_Agregar
--- Agrega un telefono a la institucion del administrador.
+-- sp_Telefono_Agregar
+-- Agrega un telefono a una institucion, a un administrador o a un responsable.
+--   p_tipoDueno: 'Institucion' | 'Administrador' | 'Responsable'
+--   p_idDueno:   id de esa institucion / administrador / responsable.
+-- Permisos (Dev&Co no edita telefonos):
+--   Institucion   -> administrador activo de esa institucion.
+--   Administrador -> el propio administrador (su usuario tiene que estar activo).
+--   Responsable   -> el propio responsable (su usuario tiene que estar activo).
+-- Maximo 2 telefonos por dueño y sin repetir el numero.
 -- Un solo INSERT: no necesita transaccion ni handler.
 -- ---------------------------------------------------------------------
-DROP PROCEDURE IF EXISTS sp_Telefono_Institucion_Agregar;
+DROP PROCEDURE IF EXISTS sp_Telefono_Agregar;
 
 DELIMITER $$
 
-CREATE PROCEDURE sp_Telefono_Institucion_Agregar(
-  IN p_idAdministrador INT,
-  IN p_idInstitucion   INT,
-  IN p_telefono        VARCHAR(30)
+CREATE PROCEDURE sp_Telefono_Agregar(
+  IN p_idUsuarioActor INT,
+  IN p_tipoDueno      VARCHAR(15),
+  IN p_idDueno        INT,
+  IN p_telefono       VARCHAR(30)
 )
 BEGIN
+  DECLARE v_cantidad INT DEFAULT 0;
+  DECLARE v_repetido INT DEFAULT 0;
+
   SET p_telefono = TRIM(p_telefono);
 
-  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR COALESCE(p_telefono,'') = '' THEN
+  IF p_idUsuarioActor IS NULL OR p_idDueno IS NULL OR COALESCE(p_telefono,'') = '' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+  IF p_tipoDueno IS NULL OR p_tipoDueno NOT IN ('Institucion', 'Administrador', 'Responsable') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El tipo de dueño no es válido.';
   END IF;
 
-  -- El administrador tiene que estar activo y ser de esa institucion
-  IF NOT EXISTS (SELECT 1
-                 FROM AdministradoresInstitucion a
-                 JOIN Usuarios u ON u.id = a.idUsuario
-                 WHERE a.id = p_idAdministrador
-                   AND a.idInstitucion = p_idInstitucion
-                   AND u.activo = TRUE) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+  -- Permiso y cantidad de telefonos actuales, segun el tipo de dueño
+  IF p_tipoDueno = 'Institucion' THEN
+    IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idDueno) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1
+                   FROM AdministradoresInstitucion a
+                   JOIN Usuarios u ON u.id = a.idUsuario
+                   WHERE a.idUsuario = p_idUsuarioActor
+                     AND a.idInstitucion = p_idDueno
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+    END IF;
+
+    SELECT COUNT(*), COALESCE(SUM(telefono = p_telefono), 0)
+    INTO v_cantidad, v_repetido
+    FROM Telefonos WHERE idInstitucion = p_idDueno;
+
+  ELSEIF p_tipoDueno = 'Administrador' THEN
+    IF NOT EXISTS (SELECT 1
+                   FROM AdministradoresInstitucion a
+                   JOIN Usuarios u ON u.id = a.idUsuario
+                   WHERE a.id = p_idDueno
+                     AND a.idUsuario = p_idUsuarioActor
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar estos teléfonos.';
+    END IF;
+
+    SELECT COUNT(*), COALESCE(SUM(telefono = p_telefono), 0)
+    INTO v_cantidad, v_repetido
+    FROM Telefonos WHERE idAdministrador = p_idDueno;
+
+  ELSE
+    IF NOT EXISTS (SELECT 1
+                   FROM Responsables r
+                   JOIN Usuarios u ON u.id = r.idUsuario
+                   WHERE r.id = p_idDueno
+                     AND r.idUsuario = p_idUsuarioActor
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar estos teléfonos.';
+    END IF;
+
+    SELECT COUNT(*), COALESCE(SUM(telefono = p_telefono), 0)
+    INTO v_cantidad, v_repetido
+    FROM Telefonos WHERE idResponsable = p_idDueno;
   END IF;
 
-  IF EXISTS (SELECT 1 FROM Telefonos WHERE idInstitucion = p_idInstitucion AND telefono = p_telefono) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución ya tiene ese teléfono.';
+  IF v_repetido > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya tiene ese teléfono.';
   END IF;
 
-  INSERT INTO Telefonos (idInstitucion, telefono)
-  VALUES (p_idInstitucion, p_telefono);
+  IF v_cantidad >= 2 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya tiene el máximo de 2 teléfonos.';
+  END IF;
+
+  IF p_tipoDueno = 'Institucion' THEN
+    INSERT INTO Telefonos (idInstitucion, telefono) VALUES (p_idDueno, p_telefono);
+  ELSEIF p_tipoDueno = 'Administrador' THEN
+    INSERT INTO Telefonos (idAdministrador, telefono) VALUES (p_idDueno, p_telefono);
+  ELSE
+    INSERT INTO Telefonos (idResponsable, telefono) VALUES (p_idDueno, p_telefono);
+  END IF;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Telefono_Eliminar
+-- Quita un telefono de una institucion, de un administrador o de un responsable
+-- (se identifica por el id de la fila de Telefonos). Mismos tipos y permisos que
+-- sp_Telefono_Agregar. Sin transaccion ni handler.
+-- Si el telefono tambien es de otro dueño no se borra: solo se le saca este dueño.
+-- Si no tenia otro dueño, se borra.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Telefono_Eliminar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Telefono_Eliminar(
+  IN p_idUsuarioActor INT,
+  IN p_tipoDueno      VARCHAR(15),
+  IN p_idDueno        INT,
+  IN p_idTelefono     INT
+)
+BEGIN
+  IF p_idUsuarioActor IS NULL OR p_idDueno IS NULL OR p_idTelefono IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF p_tipoDueno IS NULL OR p_tipoDueno NOT IN ('Institucion', 'Administrador', 'Responsable') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El tipo de dueño no es válido.';
+  END IF;
+
+  IF p_tipoDueno = 'Institucion' THEN
+    IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idDueno) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1
+                   FROM AdministradoresInstitucion a
+                   JOIN Usuarios u ON u.id = a.idUsuario
+                   WHERE a.idUsuario = p_idUsuarioActor
+                     AND a.idInstitucion = p_idDueno
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
+    END IF;
+
+    -- El telefono tiene que ser de ese dueño (evita borrar uno ajeno mandando otro id)
+    IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idInstitucion = p_idDueno) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No tiene ese teléfono.';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM Telefonos
+               WHERE id = p_idTelefono AND (idAdministrador IS NOT NULL OR idResponsable IS NOT NULL)) THEN
+      UPDATE Telefonos SET idInstitucion = NULL
+      WHERE id = p_idTelefono AND idInstitucion = p_idDueno;
+    ELSE
+      DELETE FROM Telefonos WHERE id = p_idTelefono AND idInstitucion = p_idDueno;
+    END IF;
+
+  ELSEIF p_tipoDueno = 'Administrador' THEN
+    IF NOT EXISTS (SELECT 1
+                   FROM AdministradoresInstitucion a
+                   JOIN Usuarios u ON u.id = a.idUsuario
+                   WHERE a.id = p_idDueno
+                     AND a.idUsuario = p_idUsuarioActor
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar estos teléfonos.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idAdministrador = p_idDueno) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No tiene ese teléfono.';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM Telefonos
+               WHERE id = p_idTelefono AND (idInstitucion IS NOT NULL OR idResponsable IS NOT NULL)) THEN
+      UPDATE Telefonos SET idAdministrador = NULL
+      WHERE id = p_idTelefono AND idAdministrador = p_idDueno;
+    ELSE
+      DELETE FROM Telefonos WHERE id = p_idTelefono AND idAdministrador = p_idDueno;
+    END IF;
+
+  ELSE
+    IF NOT EXISTS (SELECT 1
+                   FROM Responsables r
+                   JOIN Usuarios u ON u.id = r.idUsuario
+                   WHERE r.id = p_idDueno
+                     AND r.idUsuario = p_idUsuarioActor
+                     AND u.activo = TRUE) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar estos teléfonos.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idResponsable = p_idDueno) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No tiene ese teléfono.';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM Telefonos
+               WHERE id = p_idTelefono AND (idInstitucion IS NOT NULL OR idAdministrador IS NOT NULL)) THEN
+      UPDATE Telefonos SET idResponsable = NULL
+      WHERE id = p_idTelefono AND idResponsable = p_idDueno;
+    ELSE
+      DELETE FROM Telefonos WHERE id = p_idTelefono AND idResponsable = p_idDueno;
+    END IF;
+  END IF;
 END$$
 
 DELIMITER ;
@@ -820,58 +981,6 @@ BEGIN
   WHERE idInstitucion = p_idInstitucion;
 
   COMMIT;
-END$$
-
-DELIMITER ;
-
-
--- ---------------------------------------------------------------------
--- sp_Telefono_Institucion_Eliminar
--- Quita un telefono de la institucion del administrador (se identifica por
--- el id de la fila de Telefonos). Sin transaccion ni handler.
--- Si el telefono tambien es de otro titular (administrador o responsable) no se borra:
--- solo se le saca la institucion. Si era solo de la institucion, se borra.
--- ---------------------------------------------------------------------
-DROP PROCEDURE IF EXISTS sp_Telefono_Institucion_Eliminar;
-
-DELIMITER $$
-
-CREATE PROCEDURE sp_Telefono_Institucion_Eliminar(
-  IN p_idAdministrador INT,
-  IN p_idInstitucion   INT,
-  IN p_idTelefono      INT
-)
-BEGIN
-  IF p_idAdministrador IS NULL OR p_idInstitucion IS NULL OR p_idTelefono IS NULL THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
-  END IF;
-
-  IF NOT EXISTS (SELECT 1 FROM Instituciones WHERE id = p_idInstitucion) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no existe.';
-  END IF;
-
-  IF NOT EXISTS (SELECT 1
-                 FROM AdministradoresInstitucion a
-                 JOIN Usuarios u ON u.id = a.idUsuario
-                 WHERE a.id = p_idAdministrador
-                   AND a.idInstitucion = p_idInstitucion
-                   AND u.activo = TRUE) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para modificar esta institución.';
-  END IF;
-
-  -- El telefono tiene que ser de esa institucion (evita borrar uno ajeno mandando otro id)
-  IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institución no tiene ese teléfono.';
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM Telefonos
-             WHERE id = p_idTelefono AND (idAdministrador IS NOT NULL OR idResponsable IS NOT NULL)) THEN
-    UPDATE Telefonos SET idInstitucion = NULL
-    WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
-  ELSE
-    DELETE FROM Telefonos
-    WHERE id = p_idTelefono AND idInstitucion = p_idInstitucion;
-  END IF;
 END$$
 
 DELIMITER ;
