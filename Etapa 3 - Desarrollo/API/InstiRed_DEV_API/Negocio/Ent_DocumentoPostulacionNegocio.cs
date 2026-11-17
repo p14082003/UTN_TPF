@@ -7,13 +7,22 @@ namespace Negocio
 {
     public class Ent_DocumentoPostulacionNegocio
     {
-        public List<Ent_DocumentoPostulacion> listar()
+        public List<Ent_DocumentoPostulacion> listar(int? idPostulacionAlumnos = null)
         {
             List<Ent_DocumentoPostulacion> lista = new List<Ent_DocumentoPostulacion>();
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearConsulta("SELECT `id`, `idPostulacionAlumnos`, `descripcion`, `ruta` FROM `DocumentosPostulacion` ORDER BY `id`");
+                string consulta = "SELECT `id`, `idPostulacionAlumnos`, `descripcion`, `ruta` FROM `DocumentosPostulacion`";
+                if (idPostulacionAlumnos.HasValue)
+                {
+                    consulta += " WHERE `idPostulacionAlumnos` = @idPostulacionAlumnos";
+                }
+                datos.setearConsulta(consulta + " ORDER BY `id`");
+                if (idPostulacionAlumnos.HasValue)
+                {
+                    datos.setearParametro("@idPostulacionAlumnos", idPostulacionAlumnos.Value);
+                }
                 datos.ejecutarLectura();
                 MySqlDataReader? lector = datos.Lector;
                 if (lector == null)

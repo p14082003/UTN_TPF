@@ -7,6 +7,7 @@ namespace Dominio.DTOs
         public int IdTipoUsuario { get; set; }
         public int? IdResponsable { get; set; }
         public int? IdInstitucion { get; set; }
+        public int? IdAdministradorInstitucion { get; set; }
         public string? Nombre { get; set; }
     }
 }

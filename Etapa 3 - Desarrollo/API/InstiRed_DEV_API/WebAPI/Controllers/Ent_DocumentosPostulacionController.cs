@@ -19,12 +19,12 @@ namespace WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<Ent_DocumentoPostulacion>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] int? idPostulacionAlumnos = null)
         {
             try
             {
                 Ent_DocumentoPostulacionNegocio negocio = new Ent_DocumentoPostulacionNegocio();
-                return Ok(negocio.listar());
+                return Ok(negocio.listar(idPostulacionAlumnos));
             }
             catch (Exception ex)
             {

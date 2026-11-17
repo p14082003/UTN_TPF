@@ -73,6 +73,7 @@
     <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="FormularioInstitucion.aspx" />
     <Content Include="GestionarPostulacionAlumno.aspx" />
+    <Content Include="DescargarDocumentoAlumno.ashx" />
     <Content Include="ListadoInstituciones.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
@@ -108,6 +109,9 @@
     </Compile>
     <Compile Include="GestionarPostulacionAlumno.aspx.designer.cs">
       <DependentUpon>GestionarPostulacionAlumno.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DescargarDocumentoAlumno.ashx.cs">
+      <DependentUpon>DescargarDocumentoAlumno.ashx</DependentUpon>
     </Compile>
     <Compile Include="ListadoInstituciones.aspx.cs">
       <DependentUpon>ListadoInstituciones.aspx</DependentUpon>

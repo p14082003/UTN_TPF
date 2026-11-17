@@ -69,6 +69,14 @@ namespace Negocio
             }
         }
 
+        public static async Task<HttpResponseMessage> DescargarDocumentoPostulacionAsync(int id)
+        {
+            using (var request = CrearRequest(HttpMethod.Get, "archivos/PostulacionesAlumnos/documento/" + id))
+            {
+                return await cliente.SendAsync(request);
+            }
+        }
+
         public static async Task<List<ImagenInstitucion>> ListarImagenesAsync()
         {
             var imagenes = await GetAsync<List<ImagenInstitucion>>("ent/Imagenes");
@@ -128,6 +136,13 @@ namespace Negocio
             public HttpStatusCode Estado { get; set; }
             public string Mensaje { get; set; }
             public string Cuerpo { get; set; }
+        }
+
+        public class DocumentoPostulacion
+        {
+            public int Id { get; set; }
+            public int IdPostulacionAlumnos { get; set; }
+            public string Descripcion { get; set; }
         }
 
         public class ImagenInstitucion

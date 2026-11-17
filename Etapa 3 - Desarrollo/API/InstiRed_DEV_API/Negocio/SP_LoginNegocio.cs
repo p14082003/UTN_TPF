@@ -48,6 +48,10 @@ namespace Negocio
                 {
                     respuesta.IdInstitucion = Convert.ToInt32(lector["IdInstitucion"]);
                 }
+                if (lector["IdAdministradorInstitucion"] != DBNull.Value)
+                {
+                    respuesta.IdAdministradorInstitucion = Convert.ToInt32(lector["IdAdministradorInstitucion"]);
+                }
                 if (lector["Nombre"] != DBNull.Value)
                 {
                     respuesta.Nombre = (string)lector["Nombre"];

@@ -13,6 +13,21 @@ namespace Presentacion
 
     public partial class GestionarPostulacionAlumno
     {
+        protected global::System.Web.UI.WebControls.Label lblPendientes;
+        protected global::System.Web.UI.WebControls.Label lblAceptadas;
+        protected global::System.Web.UI.WebControls.Label lblRechazadas;
+        protected global::System.Web.UI.WebControls.Literal litAlumno;
+        protected global::System.Web.UI.WebControls.Literal litCurso;
+        protected global::System.Web.UI.WebControls.Literal litDniAlumno;
+        protected global::System.Web.UI.WebControls.Literal litFechaNacimientoAlumno;
+        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
+        protected global::System.Web.UI.WebControls.Literal litTutor;
+        protected global::System.Web.UI.WebControls.Literal litRolResponsable;
+        protected global::System.Web.UI.WebControls.Literal litCorreoTutor;
+        protected global::System.Web.UI.WebControls.Literal litTelefonosResponsable;
+        protected global::System.Web.UI.WebControls.Repeater rptDocumentos;
+        protected global::System.Web.UI.WebControls.Panel pnlSinDocumentos;
+
 
         /// <summary>
         /// Control pnlMensaje.
@@ -76,24 +91,6 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCerrarDetalle;
-
-        /// <summary>
-        /// Control hlDocumento1.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink hlDocumento1;
-
-        /// <summary>
-        /// Control hlDocumento2.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink hlDocumento2;
 
         /// <summary>
         /// Control pnlConVacantes.

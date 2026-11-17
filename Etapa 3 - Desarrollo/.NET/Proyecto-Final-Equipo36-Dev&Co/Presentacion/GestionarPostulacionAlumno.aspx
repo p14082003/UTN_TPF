@@ -1,5 +1,38 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="GestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.GestionarPostulacionAlumno" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.GestionarPostulacionAlumno" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .encabezado-postulacion {
+            display: grid;
+            grid-template-columns: minmax(4.5rem, 1fr) minmax(0, max-content) minmax(4.5rem, 1fr);
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .encabezado-postulacion h2 {
+            grid-column: 2;
+            margin: 0;
+            font-size: clamp(1.125rem, 2vw, 1.5rem);
+            text-align: center;
+        }
+
+        .volver-postulacion {
+            grid-column: 3;
+            justify-self: end;
+        }
+
+        .datos-postulacion {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .datos-postulacion {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="p-3 bg-fondo rounded-4">
@@ -7,7 +40,7 @@
         <!-- TÍTULO -->
         <header class="mb-4 ps-2">
             <h1 tabindex="0" class="text-indigo fw-bold">Postulaciones recibidas</h1>
-            <p class="text-muted">Gestión de las postulaciones de alumnos a tu institución. El tutor recibe una notificación con cada decisión.</p>
+            <p class="text-muted">Gestión de las postulaciones de alumnos a tu institución.</p>
         </header>
 
         <!-- MENSAJE DE RESULTADO DE LA ÚLTIMA ACCIÓN -->
@@ -21,8 +54,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center px-2 py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-hourglass-split text-lavanda fs-4 d-block d-sm-inline me-sm-2"></i>Pendientes</h5>
-                        <!--Cantidad hardcodeada -->
-                        <h2 class="display-4 fw-bold text-indigo mt-3">8</h2>
+                        <h2 class="display-4 fw-bold text-indigo mt-3"><asp:Label ID="lblPendientes" runat="server" /></h2>
                     </div>
                 </div>
             </div>
@@ -30,8 +62,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center px-2 py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-check-circle text-lavanda fs-4 d-block d-sm-inline me-sm-2"></i>Aceptadas</h5>
-                        <!--Cantidad hardcodeada -->
-                        <h2 class="display-4 fw-bold text-indigo mt-3">21</h2>
+                        <h2 class="display-4 fw-bold text-indigo mt-3"><asp:Label ID="lblAceptadas" runat="server" /></h2>
                     </div>
                 </div>
             </div>
@@ -39,8 +70,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center px-2 py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-x-octagon text-lavanda fs-4 d-block d-sm-inline me-sm-2"></i>Rechazadas</h5>
-                        <!--Cantidad hardcodeada -->
-                        <h2 class="display-4 fw-bold text-indigo mt-3">5</h2>
+                        <h2 class="display-4 fw-bold text-indigo mt-3"><asp:Label ID="lblRechazadas" runat="server" /></h2>
                     </div>
                 </div>
             </div>
@@ -60,9 +90,10 @@
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
                         <Columns>
-                            <asp:BoundField DataField="NombreAlumno" HeaderText="Alumno" />
+                            <asp:BoundField DataField="Alumno" HeaderText="Alumno" />
                             <asp:BoundField DataField="Curso" HeaderText="Curso" />
-                            <asp:BoundField DataField="FechaPostulacion" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
+                            <asp:BoundField DataField="Fecha" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
+                            <asp:BoundField DataField="CodigoSeguimiento" HeaderText="Código de seguimiento" ItemStyle-CssClass="text-nowrap" />
                             <asp:BoundField DataField="NombreTutor" HeaderText="Tutor" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
@@ -80,55 +111,72 @@
 
         <!-- VISTA 3: DETALLE DE LA POSTULACIÓN -->
         <asp:Panel ID="pnlDetalle" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Revisión de Postulación</h5>
-                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCerrarDetalle_Click" />
+            <div class="card-header bg-indigo text-white encabezado-postulacion">
+                <h2>Revisión de Postulación</h2>
+                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnCerrarDetalle_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
-                <!-- Datos del alumno y la postulación (valores de ejemplo) -->
+                <!-- Datos del alumno y la postulación -->
                 <div class="p-4 bg-fondo rounded-4 border border-neutro mb-4">
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <span class="text-muted d-block small">Alumno</span>
-                            <span class="text-indigo fw-bold fs-5">Martina Gómez</span>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="text-muted d-block small">Curso</span>
-                            <span class="text-indigo fw-bold fs-5">1° año - Turno mañana</span>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="text-muted d-block small">Tutor</span>
-                            <span class="text-indigo fw-bold fs-5">Laura Gómez</span>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="text-muted d-block small">Correo del tutor</span>
-                            <span class="text-indigo fw-bold fs-5">laura.gomez@mail.com</span>
-                        </div>
+                    <div class="datos-postulacion">
+                        <dl class="mb-0">
+                            <dt class="text-muted small fw-normal">Código de seguimiento</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litCodigoSeguimiento" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Alumno</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litAlumno" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Curso</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litCurso" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">DNI del alumno</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litDniAlumno" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Fecha de nacimiento</dt>
+                            <dd class="text-indigo fw-bold fs-5 mb-0"><asp:Literal ID="litFechaNacimientoAlumno" runat="server" Mode="Encode" /></dd>
+                        </dl>
+
+                        <dl class="mb-0">
+                            <dt class="text-muted small fw-normal">Tutor</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litTutor" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Rol del responsable</dt>
+                            <dd class="text-indigo fw-bold fs-5"><asp:Literal ID="litRolResponsable" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Correo del tutor</dt>
+                            <dd class="text-indigo fw-bold fs-5 text-break"><asp:Literal ID="litCorreoTutor" runat="server" Mode="Encode" /></dd>
+
+                            <dt class="text-muted small fw-normal">Teléfonos del responsable</dt>
+                            <dd class="text-indigo fw-bold fs-5 mb-0"><asp:Literal ID="litTelefonosResponsable" runat="server" Mode="Encode" /></dd>
+                        </dl>
                     </div>
                 </div>
 
-                <!-- Documentación (valores de ejemplo) -->
+                <!-- Documentación -->
                 <div class="mb-4">
                     <span class="text-muted d-block small mb-2">Documentación presentada</span>
                     <ul class="list-unstyled mb-0">
-                        <li class="p-3 bg-fondo rounded-4 border border-neutro mb-2">
-                            <i class="bi bi-file-earmark-text text-lavanda me-2"></i>
-                            <asp:HyperLink ID="hlDocumento1" runat="server" CssClass="link-lilaClaro" Target="_blank" NavigateUrl="#">DNI del alumno.pdf</asp:HyperLink>
-                        </li>
-                        <li class="p-3 bg-fondo rounded-4 border border-neutro mb-2">
-                            <i class="bi bi-file-earmark-text text-lavanda me-2"></i>
-                            <asp:HyperLink ID="hlDocumento2" runat="server" CssClass="link-lilaClaro" Target="_blank" NavigateUrl="#">Certificado de estudios.pdf</asp:HyperLink>
-                        </li>
+                        <asp:Repeater ID="rptDocumentos" runat="server">
+                            <ItemTemplate>
+                                <li class="p-3 bg-fondo rounded-4 border border-neutro mb-2">
+                                    <i class="bi bi-file-earmark-text text-lavanda me-2"></i>
+                                    <a href="<%#: ResolveUrl(Eval("Id", "~/DescargarDocumentoAlumno.ashx?id={0}")) %>" class="link-lilaClaro"><%#: Eval("Descripcion") %></a>
+                                </li>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </ul>
+                    <asp:Panel ID="pnlSinDocumentos" runat="server" Visible="false" CssClass="text-muted">
+                        No hay documentos adjuntos.
+                    </asp:Panel>
                 </div>
 
                 <!-- Vacantes: el code-behind muestra uno de los dos paneles -->
                 <asp:Panel ID="pnlConVacantes" runat="server" CssClass="p-3 bg-fondo rounded-4 border border-neutro">
                     <i class="bi bi-check-circle-fill text-lavanda me-2"></i>
                     <span class="text-indigo">Vacantes disponibles en este curso:
-                        <asp:Label ID="lblVacantes" runat="server" CssClass="fw-bold" Text="3" />.
-                        Al aceptar la postulación se descuenta una vacante.
+                        <asp:Label ID="lblVacantes" runat="server" CssClass="fw-bold" />.
+                        La vacante se descuenta cuando el responsable confirma la postulación.
                     </span>
                 </asp:Panel>
 
