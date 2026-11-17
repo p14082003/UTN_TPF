@@ -23,13 +23,36 @@ namespace Negocio
                     throw new InvalidOperationException("No se inicializó el lector de datos.");
                 }
 
-                bool ok = false;
-                if (lector.Read() && lector["Clave"] != DBNull.Value)
+                if (!lector.Read() || lector["Clave"] == DBNull.Value)
                 {
-                    string hashGuardado = (string)lector["Clave"];
-                    ok = ContraseñaHelper.verificar(hashGuardado, ingreso.Clave);
+                    return new SP_Login_out { Ok = false };
                 }
-                return new SP_Login_out { Ok = ok };
+
+                string hashGuardado = (string)lector["Clave"];
+                if (!ContraseñaHelper.verificar(hashGuardado, ingreso.Clave))
+                {
+                    return new SP_Login_out { Ok = false };
+                }
+
+                var respuesta = new SP_Login_out
+                {
+                    Ok = true,
+                    IdUsuario = Convert.ToInt32(lector["IdUsuario"]),
+                    IdTipoUsuario = Convert.ToInt32(lector["IdTipoUsuario"])
+                };
+                if (lector["IdResponsable"] != DBNull.Value)
+                {
+                    respuesta.IdResponsable = Convert.ToInt32(lector["IdResponsable"]);
+                }
+                if (lector["IdInstitucion"] != DBNull.Value)
+                {
+                    respuesta.IdInstitucion = Convert.ToInt32(lector["IdInstitucion"]);
+                }
+                if (lector["Nombre"] != DBNull.Value)
+                {
+                    respuesta.Nombre = (string)lector["Nombre"];
+                }
+                return respuesta;
             }
             catch (MySqlException ex)
             {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Presentacion.Auth;
 
 namespace Presentacion
 {
@@ -18,6 +19,13 @@ namespace Presentacion
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!UsuarioSesion.TieneRol(Session, UsuarioSesion.AdministradorInstitucion))
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+            Response.Cache.SetNoStore();
             if (!IsPostBack)
             {
                 // TEMPORAL: datos de ejemplo para poder probar la pantalla.

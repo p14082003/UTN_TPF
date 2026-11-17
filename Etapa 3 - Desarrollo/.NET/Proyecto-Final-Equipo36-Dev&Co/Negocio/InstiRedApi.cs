@@ -20,7 +20,7 @@ namespace Negocio
             Timeout = TimeSpan.FromSeconds(15)
         };
 
-        public static async Task<Respuesta> PostAsync(string ruta, object datos)
+        public static async Task<Respuesta> PostAsync(string ruta, object datos, bool leerCuerpo = false)
         {
             var json = new JavaScriptSerializer();
 
@@ -30,14 +30,19 @@ namespace Negocio
 
                 using (HttpResponseMessage respuesta = await cliente.SendAsync(request))
                 {
+                    string cuerpo = null;
+                    if (leerCuerpo || respuesta.StatusCode == HttpStatusCode.BadRequest)
+                    {
+                        cuerpo = await respuesta.Content.ReadAsStringAsync();
+                    }
+
                     string mensaje = null;
                     if (respuesta.StatusCode == HttpStatusCode.BadRequest)
                     {
-                        string cuerpo = await respuesta.Content.ReadAsStringAsync();
                         mensaje = LeerMensajeApi(json, cuerpo);
                     }
 
-                    return new Respuesta { Estado = respuesta.StatusCode, Mensaje = mensaje };
+                    return new Respuesta { Estado = respuesta.StatusCode, Mensaje = mensaje, Cuerpo = cuerpo };
                 }
             }
         }
@@ -122,6 +127,7 @@ namespace Negocio
         {
             public HttpStatusCode Estado { get; set; }
             public string Mensaje { get; set; }
+            public string Cuerpo { get; set; }
         }
 
         public class ImagenInstitucion

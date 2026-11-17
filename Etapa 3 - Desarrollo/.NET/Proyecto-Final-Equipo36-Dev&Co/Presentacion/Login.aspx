@@ -1,8 +1,8 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="Presentacion.Login" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" Async="true" CodeBehind="Login.aspx.cs" Inherits="Presentacion.Login" %>
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="es">
 <head runat="server">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -35,19 +35,21 @@
                              </div>
 
                              <div class="input-group mb-3">
-                                 <asp:TextBox runat="server" ID="txtUsuario" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Usuario"/>
+                                 <asp:TextBox runat="server" ID="txtEmail" TextMode="Email" MaxLength="100" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="username" />
                              </div>
                   
                              <div class="input-group mb-3">
-                                 <asp:TextBox runat="server" ID="txtPassword" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Contraseña" TextMode="Password"/>
+                                 <asp:TextBox runat="server" ID="txtPassword" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password" TextMode="Password" MaxLength="255" EnableViewState="false" ValidateRequestMode="Disabled" />
+                             </div>
+
+                             <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger d-block mb-3" role="alert" Visible="false" />
+
+                             <div class="input-group mb-3">
+                                 <asp:Button CssClass="btn-lilaOscuro w-100 fs-6" ID="btnLogin" runat="server" Text="Ingresar" OnClick="btnLogin_Click" />
                              </div>
 
                              <div class="input-group mb-3">
-                                 <asp:Button CssClass="btn-lilaOscuro w-100 fs-6" ID="btnLogin" runat="server" Text="Ingresar"/>
-                             </div>
-
-                             <div class="input-group mb-3">
-                                 <asp:Button CssClass="btn-lilaClaro w-100 fs-6" ID="btnRegistrarse" OnClick="btnRegistrarse_Click" runat="server" Text="Registrarse" CausesValidation="False" />
+                                 <asp:Button CssClass="btn-lilaClaro w-100 fs-6" ID="btnRegistrarse" OnClick="btnRegistrarse_Click" runat="server" Text="Registrarse" CausesValidation="False" formnovalidate="formnovalidate" />
                              </div>
 
                              <div class="text-end mb-3">

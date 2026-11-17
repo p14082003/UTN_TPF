@@ -32,6 +32,11 @@ namespace Presentacion
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
+        protected global::System.Web.UI.WebControls.HyperLink lnkIniciarSesion;
+        protected global::System.Web.UI.WebControls.Panel pnlSesion;
+        protected global::System.Web.UI.WebControls.Literal litSaludo;
+        protected global::System.Web.UI.WebControls.Button btnCerrarSesion;
+
         /// <summary>
         /// Control ContentPlaceHolder1.
         /// </summary>

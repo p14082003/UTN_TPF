@@ -17,7 +17,7 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(SP_Login_out), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(SP_Login_out), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult Post([FromBody] SP_Login_in ingreso)
         {
@@ -27,18 +27,18 @@ namespace WebAPI.Controllers
                 SP_Login_out respuesta = negocio.login(ingreso);
                 if (!respuesta.Ok)
                 {
-                    return BadRequest(respuesta);
+                    return BadRequest(new { Ok = false });
                 }
                 return Ok(respuesta);
             }
             catch (ArgumentException)
             {
-                return BadRequest(new SP_Login_out { Ok = false });
+                return BadRequest(new { Ok = false });
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al procesar el login.");
-                return StatusCode(500, new { Ok = false, Message = "No se pudo completar el ingreso. Intente nuevamente más tarde." });
+                return StatusCode(500, new { Ok = false });
             }
         }
     }

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using Presentacion.Auth;
 
 namespace Presentacion
 {
@@ -11,7 +7,24 @@ namespace Presentacion
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            var usuario = UsuarioSesion.Obtener(Session);
+            lnkIniciarSesion.Visible = usuario == null;
+            pnlSesion.Visible = usuario != null;
 
+            if (usuario != null)
+            {
+                Response.Cache.SetNoStore();
+                litSaludo.Text = string.IsNullOrWhiteSpace(usuario.Nombre)
+                    ? "¡Hola!"
+                    : "¡Hola, " + usuario.Nombre + "!";
+            }
+        }
+
+        protected void btnCerrarSesion_Click(object sender, EventArgs e)
+        {
+            Session.Clear();
+            Session.Abandon();
+            Response.Redirect("~/ListadoInstituciones.aspx");
         }
     }
 }
