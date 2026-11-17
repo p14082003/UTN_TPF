@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="RegistroResponsable.aspx.cs" Inherits="Presentacion.RegistroResponsable" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="RegistroResponsable.aspx.cs" Inherits="Presentacion.RegistroResponsable" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -17,38 +17,6 @@
                 <div class="card-body p-3 p-md-4">
                     <!--Datos personales-->
                     <h4 class="text-indigo mb-3">DATOS PERSONALES</h4>
-                     <asp:Label ID="lblParentesco" runat="server" Text="Rol/Parentesco:" CssClass="form-label fw-bold"></asp:Label>
-                    <div class="row g-2 mb-3">
-                        <!--Rol/parentesco-->
-                       
-                            <div class="col-12 md:col-4">
-                                <div class =" border border-neutro rounded-3 p-2">
-                                    <div class=" form-check mb-0">
-                                        <asp:RadioButton ID="rbPadre" runat="server" GroupName="Parentesco" CssClass="form-check-input"/>
-                                        <asp:Label ID="lblPadre" runat="server" AssociatedControlID="rbPadre" Text="Padre" CssClass="form-check-label ms-2"></asp:Label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 md:col-4">
-                                <div class="border border-neutro rounded-3 p-2">
-                                    <div class="form-check mb-0"> 
-                                        <asp:RadioButton ID="rbMadre" runat="server" GroupName="Parentesco" CssClass="form-check-input" />
-                                        <asp:Label ID="lblMadre" runat="server" AssociatedControlID="rbMadre" Text="Madre" CssClass="form-check-label ms-2"></asp:Label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class= "col-12 md:col-4">
-                                <div class ="border border-neutro rounded-3 p-2">
-                                    <div class="form-check mb-0">
-                                        <asp:RadioButton ID="rbTutor" runat="server" GroupName="Parentesco" CssClass="form-check-input" />
-                                        <asp:Label ID="lbTutor" runat="server" Text="Tutor Legal" AssociatedControlID="rbTutor" CssClass="form-check-label ms-2"></asp:Label>
-                                    </div>
-                                </div>
-                            </div>
-                        
-                    </div>
                      <!--Datos Personales-->
                     <div class="row g-2 mb-3">
                         <div class="col-12">
@@ -83,7 +51,7 @@
                          </div>
                          <div class="col-12 md:col-6">
                             <asp:Label ID="lblEmail" runat="server" Text="Correo Electrónico" AssociatedControlID="txtEmail" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtEmail" runat="server" TextMode="Email" placeholder="tunombre@ejemplo.com" MaxLength="50" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtEmail" runat="server" TextMode="Email" placeholder="tunombre@ejemplo.com" MaxLength="100" CssClass="form-control"></asp:TextBox>
                          </div>
                          <div class="col-12">
                              <asp:Label ID="lblDomicilio" runat="server" Text="Domicilio" AssociatedControlID="txtDomicilio" CssClass="form-label text-indigo"></asp:Label>
@@ -97,13 +65,17 @@
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblClave" runat="server" Text="Contraseña" AssociatedControlID="txtClave" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtClave" runat="server" TextMode="Password" placeholder="********" MaxLength="255" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtClave" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control" aria-describedby="requisitosClave"></asp:TextBox>
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblClaveRepetida" runat="server" Text="Confirmar contraseña" AssociatedControlID="txtClaveRepetida" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtClaveRepetida" runat="server" TextMode="Password" placeholder="********" MaxLength="255" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtClaveRepetida" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control"></asp:TextBox>
                         </div>
+                        <div id="requisitosClave" class="col-12 form-text mt-1">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>
                     </div>
+                    <asp:Panel ID="pnlResultado" runat="server" Visible="false" role="status">
+                        <asp:Literal ID="litResultado" runat="server" Mode="Encode" />
+                    </asp:Panel>
                     <!--Botones-->
                     <div class ="row g-2 mb-3">
                         <div class="col-12">

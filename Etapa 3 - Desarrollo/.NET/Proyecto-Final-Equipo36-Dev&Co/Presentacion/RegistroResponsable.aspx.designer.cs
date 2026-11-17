@@ -15,69 +15,6 @@ namespace Presentacion
     {
 
         /// <summary>
-        /// Control lblParentesco.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblParentesco;
-
-        /// <summary>
-        /// Control rbPadre.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButton rbPadre;
-
-        /// <summary>
-        /// Control lblPadre.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPadre;
-
-        /// <summary>
-        /// Control rbMadre.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButton rbMadre;
-
-        /// <summary>
-        /// Control lblMadre.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMadre;
-
-        /// <summary>
-        /// Control rbTutor.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButton rbTutor;
-
-        /// <summary>
-        /// Control lbTutor.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbTutor;
-
-        /// <summary>
         /// Control lblDatosPersonales.
         /// </summary>
         /// <remarks>
@@ -265,6 +202,16 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtClaveRepetida;
+
+        /// <summary>
+        /// Control pnlResultado.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlResultado;
+
+        /// <summary>
+        /// Control litResultado.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litResultado;
 
         /// <summary>
         /// Control btnRegistrar.

@@ -419,3 +419,4 @@ FodyWeavers.xsd
 
 # file with sensitive fnfo
 appsettings.Local.json
+Web.Local.config

@@ -55,6 +55,7 @@
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="MasterPage.Master" />
+    <Content Include="Web.Local.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
