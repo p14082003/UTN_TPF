@@ -13,6 +13,10 @@ namespace Presentacion
 
     public partial class DetalleInstitucion
     {
+        protected global::System.Web.UI.WebControls.Panel pnlError;
+        protected global::System.Web.UI.WebControls.Label lblError;
+        protected global::System.Web.UI.WebControls.Panel pnlDetalle;
+
 
         /// <summary>
         /// Control pnlImagenes.
@@ -96,22 +100,13 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Label lblEmail;
 
         /// <summary>
-        /// Control lblTelefonoPrincipal.
+        /// Control rptTelefonos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTelefonoPrincipal;
-
-        /// <summary>
-        /// Control lblTelefonoAlternativo.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTelefonoAlternativo;
+        protected global::System.Web.UI.WebControls.Repeater rptTelefonos;
 
         /// <summary>
         /// Control lblDireccion.

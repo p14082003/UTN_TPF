@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="DetalleInstitucion.aspx.cs" Inherits="Presentacion.DetalleInstitucion" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="DetalleInstitucion.aspx.cs" Inherits="Presentacion.DetalleInstitucion" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -25,6 +25,17 @@
             color: #FFFFFF !important;
         }
 
+        .galeria-fotos {
+            --separacion-fotos: 1rem;
+            height: 40dvh;
+        }
+
+        .foto-unica {
+            width: calc((100% - var(--separacion-fotos)) / 2);
+            height: 100%;
+            object-fit: contain;
+        }
+
         * {
             scrollbar-color: #373A72 transparent;
         }
@@ -36,13 +47,24 @@
 
 <div class="container-fluid">
 
+        <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="card m-4 p-4">
+            <asp:Label ID="lblError" runat="server" role="status" />
+            <a href="ListadoInstituciones.aspx" class="link-lilaClaro mt-2">Volver al listado</a>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlDetalle" runat="server" Visible="false">
         <!-- Carousel de imagenes -->
-        <asp:Panel ID="pnlImagenes" runat="server">
+        <asp:Panel ID="pnlImagenes" runat="server" Visible="false">
             <div class="row m-4">
                 <div class="col-12">
-                    <div class="card p-5" style="height: 40dvh;">
+                    <% if (ImagenesVisibles == 1) { %>
+                        <div class="card p-5 galeria-fotos">
+                            <img src="<%: UrlFotoUnica %>" alt="<%: DescripcionFotoUnica %>" class="foto-unica d-block mx-auto rounded-5">
+                        </div>
+                    <% } else { %>
+                    <div class="card p-5 galeria-fotos">
 
-                        <div id="carouselMultiple" class="carousel slide h-100 d-flex flex-column" data-bs-autoplay="true" data-bs-ends="wrap" style="--bs-carousel-items: 3; --bs-carousel-items-gap: 1rem;">
+                        <div id="carouselMultiple" class="carousel slide h-100 d-flex flex-column" data-bs-autoplay="true" data-bs-ends="wrap" style="--bs-carousel-items: <%= ImagenesVisibles %>; --bs-carousel-items-gap: var(--separacion-fotos);">
 
                             <!-- Controles -->
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -84,7 +106,7 @@
                                 <asp:Repeater ID="rptImagenes" runat="server">
                                     <ItemTemplate>
                                         <div class="carousel-item h-100 <%# Container.ItemIndex == 0 ? "active" : "" %>">
-                                            <img src="<%# Eval("Url") %>"
+                                            <img src="<%#: Eval("UrlPublica") %>"
                                                 class="d-block w-100 h-100 rounded-5"
                                                 style="object-fit: cover;" alt="<%#: Eval("Descripcion") %>">
                                         </div>
@@ -95,6 +117,7 @@
                             </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
             </div>
         </asp:Panel>
@@ -115,7 +138,7 @@
                         <asp:Repeater ID="rptIdiomas" runat="server">
                             <ItemTemplate>
                                 <div class="btn-lilaClaro">
-                                    <%#: Eval("NombreIdioma") %>
+                                    <%#: Container.DataItem %>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
@@ -151,8 +174,11 @@
 
                     <div class="mb-4">
                         <label class="text-indigo fw-bold">Teléfonos</label>
-                        <asp:Label ID="lblTelefonoPrincipal" runat="server" CssClass="d-block"></asp:Label>
-                        <asp:Label ID="lblTelefonoAlternativo" runat="server" CssClass="d-block"></asp:Label>
+                        <asp:Repeater ID="rptTelefonos" runat="server">
+                            <ItemTemplate>
+                                <span class="d-block"><%#: Container.DataItem %></span>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
 
                     <div class="mb-4">
@@ -179,7 +205,7 @@
                         <ItemTemplate>
                             <div class="border-bottom border-neutro py-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-indigo"><%#: Eval("Responsable.Nombre") %></span>
+                                    <span class="fw-bold text-indigo"><%#: Eval("NombreResponsable") %> <%#: Eval("ApellidoResponsable") %></span>
                                     <small class="text-muted"><%# Eval("Fecha", "{0:dd/MM/yyyy}") %></small>
                                 </div>
 
@@ -210,31 +236,36 @@
                 <div id="mapa"></div>
             </div>
         </div>
+        </asp:Panel>
 
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Traer datos de la institucion
-        var institucion = <%= institucionJson %>;
+        var institucion = <%= InstitucionJson %>;
+        if (institucion && typeof L !== 'undefined') {
+            var ubicacion = [institucion.Latitud, institucion.Longitud];
+            var mapa = L.map('mapa').setView(ubicacion, 12);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapa);
 
-        // Generar mapa
-        var mapa = L.map('mapa').setView([institucion.Latitud, institucion.Longitud], 12);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(mapa);
-
-        // Generar marcadores
-        var marcador = L.marker([institucion.Latitud, institucion.Longitud])
-            .addTo(mapa)
-            .bindPopup('<b>' + institucion.Nombre + '</b><br>' + institucion.Direccion);
+            var popup = document.createElement('div');
+            var nombre = document.createElement('b');
+            nombre.textContent = institucion.Nombre;
+            popup.appendChild(nombre);
+            popup.appendChild(document.createElement('br'));
+            popup.appendChild(document.createTextNode(institucion.Direccion || ''));
+            L.marker(ubicacion).addTo(mapa).bindPopup(popup);
+        }
 
         // Reset: al intentar avanzar más allá del final, vuelve al inicio
         (function () {
             var carrusel = document.getElementById('carouselMultiple');
+            if (!carrusel) return;
             var inner = carrusel.querySelector('.carousel-inner');
-            var visibles = 3; // el mismo valor que --bs-carousel-items
+            var visibles = <%= ImagenesVisibles %>;
             var ultimo = carrusel.querySelectorAll('.carousel-item').length - visibles;
 
             carrusel.addEventListener('slide.bs.carousel', function (e) {

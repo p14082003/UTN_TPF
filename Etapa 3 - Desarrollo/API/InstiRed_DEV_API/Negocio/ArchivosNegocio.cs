@@ -26,6 +26,42 @@ namespace Negocio
             return imagen.UrlImagen;
         }
 
+        public string obtenerRutaImagenInstitucionPublica(int id)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearConsulta(
+                    "SELECT im.urlImagen FROM Imagenes im " +
+                    "INNER JOIN Instituciones i ON im.idInstitucion = i.id " +
+                    "WHERE im.id = @id AND i.estado = 1");
+                datos.setearParametro("@id", id);
+                datos.ejecutarLectura();
+                MySqlDataReader? lector = datos.Lector;
+                if (lector == null)
+                {
+                    throw new InvalidOperationException("No se inicializó el lector de datos.");
+                }
+
+                if (!lector.Read())
+                {
+                    throw new FileNotFoundException();
+                }
+
+                string ruta = lector.GetString(0);
+                if (!ArchivoHelper.esRutaImagenInstitucion(ruta))
+                {
+                    throw new FileNotFoundException();
+                }
+
+                return ruta;
+            }
+            finally
+            {
+                datos.cerrarConexion();
+            }
+        }
+
         public string obtenerRutaAdministrador(int id, string tipo)
         {
             if (id <= 0)

@@ -1,263 +1,172 @@
 ﻿using Dominio;
+using Negocio;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class ListadoInstituciones : System.Web.UI.Page
+    public partial class ListadoInstituciones : Page
     {
-        public List<Institucion> listaInstituciones;
-        public string InstitucionesJson { get; set; }
+        protected const string ImagenGenerica = "https://placehold.co/400x250";
+        public string InstitucionesJson { get; private set; } = "[]";
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
-            {       
-                CargarDiscapacidades();
-                CargarIdiomas();
-                CargarListado();
+            {
+                foreach (string tipo in Discapacidad.ObtenerTiposDiscapacidad())
+                {
+                    ddlDiscapacidades.Items.Add(new ListItem(tipo, tipo));
+                }
             }
 
+            RegisterAsyncTask(new PageAsyncTask(CargarListadoAsync));
         }
 
-        private void CargarListado()
+        private async Task CargarListadoAsync()
         {
-            List<Institucion> lista = CargarInstituciones(txtFiltro.Text.Trim(), ddlDiscapacidades.SelectedValue, int.Parse(ddlIdiomas.SelectedValue));
+            int idIdioma = int.Parse(ddlIdiomas.SelectedValue);
+            List<InstitucionListado> instituciones;
+            List<IdiomaInstitucion> relaciones = new List<IdiomaInstitucion>();
 
-            // Repeater de cards
-            rptInstituciones.DataSource = lista;
-            rptInstituciones.DataBind();
-
-            // Json para los marcadores del mapa
-            InstitucionesJson = new JavaScriptSerializer().Serialize(
-                lista.Select(i => new { i.Id, i.Nombre, i.Direccion, i.Latitud, i.Longitud }));
-        }
-
-        private List<Institucion> CargarInstituciones(string texto, string tipoDiscapacidad, int idIdioma)
-        {
-            listaInstituciones = ObtenerHardcodeadas(); // SE TIENE QUE TRAER LA LISTA CON LA CLASE DE NEGOCIO
-            List<Institucion> listaFiltrada = new List<Institucion>();
-
-            foreach (Institucion institucion in listaInstituciones)
+            try
             {
-                bool bandera = true;
-
-                // Texto: nombre o dirección
-                if (texto != "")
+                if (ddlIdiomas.Items.Count == 1)
                 {
-                    string aux = texto.ToLower();
-
-                    if (!institucion.Nombre.ToLower().Contains(aux) && !institucion.Direccion.ToLower().Contains(aux))
-                    {
-                        bandera = false;
-                    }
+                    List<Idioma> idiomas = await InstiRedApi.GetAsync<List<Idioma>>("ent/Idiomas");
+                    ddlIdiomas.DataSource = idiomas;
+                    ddlIdiomas.DataValueField = "Id";
+                    ddlIdiomas.DataTextField = "NombreIdioma";
+                    ddlIdiomas.DataBind();
                 }
 
-                // Discapacidad
-                if (tipoDiscapacidad != "" && tipoDiscapacidad != "0")
-                {
-                    if (institucion.Discapacidad == null || !institucion.Discapacidad.ObtenerAccesibilidades().Contains(tipoDiscapacidad))
-                    {
-                        bandera = false;
-                    }
-                }
+                instituciones = await InstiRedApi.GetAsync<List<InstitucionListado>>("vw/Instituciones?estado=true");
 
-                // Idioma
                 if (idIdioma != 0)
                 {
-                    bool tieneIdioma = false;
-
-                    if (institucion.Idiomas != null)
-                    {
-                        foreach (Idioma idioma in institucion.Idiomas)
-                        {
-                            if (idioma.Id == idIdioma)
-                            {
-                                tieneIdioma = true;
-                            }
-                        }
-                    }
-
-                    if (!tieneIdioma)
-                    {
-                        bandera = false;
-                    }
-                }
-
-                if (bandera)
-                {
-                    listaFiltrada.Add(institucion);
+                    relaciones = await InstiRedApi.GetAsync<List<IdiomaInstitucion>>("ent/IdiomaInstitucion");
                 }
             }
+            catch (Exception ex)
+            {
+                Trace.Warn("ListadoInstituciones", "Error al consultar la API de InstiRed.", ex);
+                lblListado.Text = "No pudimos cargar las instituciones. Intentá nuevamente.";
+                lblListado.Visible = true;
+                return;
+            }
 
-            return listaFiltrada;
+            string texto = txtFiltro.Text.Trim();
+            string tipoDiscapacidad = ddlDiscapacidades.SelectedValue;
+            var idsPorIdioma = new HashSet<int>(relaciones
+                .Where(relacion => relacion.IdIdioma == idIdioma)
+                .Select(relacion => relacion.IdInstitucion));
+
+            var lista = new List<InstitucionListado>();
+            foreach (InstitucionListado institucion in instituciones)
+            {
+                if (texto != "" && !CoincideTexto(institucion, texto))
+                {
+                    continue;
+                }
+
+                if (tipoDiscapacidad != "0" && !TieneAccesibilidad(institucion, tipoDiscapacidad))
+                {
+                    continue;
+                }
+
+                if (idIdioma != 0 && !idsPorIdioma.Contains(institucion.IdInstitucion))
+                {
+                    continue;
+                }
+
+                lista.Add(institucion);
+            }
+
+            if (lista.Count > 0)
+            {
+                await CargarFotosAsync(lista);
+            }
+
+            rptInstituciones.DataSource = lista;
+            rptInstituciones.DataBind();
+            lblListado.Text = "No encontramos instituciones con esos filtros.";
+            lblListado.Visible = lista.Count == 0;
+
+            InstitucionesJson = new JavaScriptSerializer().Serialize(
+                lista.Select(i => new { Id = i.IdInstitucion, i.Nombre, i.Direccion, i.Latitud, i.Longitud }));
         }
 
-        private void CargarDiscapacidades()
+        private async Task CargarFotosAsync(List<InstitucionListado> instituciones)
         {
-            foreach(string tipo in Discapacidad.ObtenerTiposDiscapacidad())
+            try
             {
-                ddlDiscapacidades.Items.Add(new ListItem(tipo, tipo));
+                var imagenes = await InstiRedApi.ListarImagenesAsync();
+                var fotosPorInstitucion = imagenes.ToLookup(imagen => imagen.IdInstitucion);
+
+                foreach (InstitucionListado institucion in instituciones)
+                {
+                    var foto = fotosPorInstitucion[institucion.IdInstitucion].FirstOrDefault();
+                    if (foto != null)
+                    {
+                        institucion.UrlFoto = foto.UrlPublica;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("ListadoInstituciones", "Error al consultar las fotos de las instituciones.", ex);
             }
         }
 
-        private void CargarIdiomas()
+        private static bool CoincideTexto(InstitucionListado institucion, string texto)
         {
-            // ACA DEBERIA IR EL MÉTODO DE NEGOCIO QUE TRAIGA LA LISTA DE IDIOMAS DE LA BD
-            List<Idioma> lista = new List<Idioma>();
-
-            lista.Add(new Idioma { Id = 1, NombreIdioma = "Español" });
-            lista.Add(new Idioma { Id = 2, NombreIdioma = "Inglés" });
-
-            ddlIdiomas.DataSource = lista;
-            ddlIdiomas.DataValueField = "Id";
-            ddlIdiomas.DataTextField = "NombreIdioma";
-            ddlIdiomas.DataBind();  
+            return (institucion.Nombre ?? "").IndexOf(texto, StringComparison.CurrentCultureIgnoreCase) >= 0
+                || (institucion.Direccion ?? "").IndexOf(texto, StringComparison.CurrentCultureIgnoreCase) >= 0;
         }
 
-        protected void btnFiltrar_Click(object sender, EventArgs e)
+        private static bool TieneAccesibilidad(InstitucionListado institucion, string tipo)
         {
-            CargarListado();
-        }
-
-        protected void btnDetalle_Click(object sender, EventArgs e)
-        {
-            Button boton = (Button)sender;
-            int id = int.Parse(boton.CommandArgument);
-
-            Response.Redirect("DetalleInstitucion.aspx?id=" + id, false);
-        }
-
-        private List<Institucion> ObtenerHardcodeadas()
-        {
-            Idioma espanol = new Idioma { Id = 1, NombreIdioma = "Español" };
-            Idioma ingles = new Idioma { Id = 2, NombreIdioma = "Inglés" };
-
-            List<Institucion> instituciones = new List<Institucion>
+            var discapacidad = new Discapacidad
             {
-                new Institucion
-                {
-                    Id = 1,
-                    Nombre = "Instituto Educativo San Martín",
-                    Cuit = "30-12345678-9",
-                    Direccion = "Av. Corrientes 1000, Buenos Aires",
-                    Email = "contacto@sanmartin.com",
-                    Descripcion = "Institución educativa de nivel secundario.",
-                    Latitud = -34.6037,
-                    Longitud = -58.3816,
-                    Discapacidad = new Discapacidad { Movilidad = true },
-                    Idiomas = new List<Idioma> { espanol },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 2,
-                    Nombre = "Escuela Primaria Belgrano",
-                    Cuit = "30-98765432-1",
-                    Direccion = "Av. Rivadavia 2000, Buenos Aires",
-                    Email = "info@belgrano.com",
-                    Descripcion = "Institución educativa de nivel primario.",
-                    Latitud = -34.6090,
-                    Longitud = -58.3920,
-                    Discapacidad = new Discapacidad { Movilidad = true, Visual = true, Auditiva = true, Verbal = true, Intelectual = true, SindromeDown = true, Autismo = true },
-                    Idiomas = new List<Idioma> { espanol, ingles },
-                    Imagenes = new List<Imagen>(),
-                    Estado = true,
-                },
-                new Institucion
-                {
-                    Id = 3,
-                    Nombre = "Colegio Nuestra Señora",
-                    Cuit = "30-45678912-3",
-                    Direccion = "Av. Santa Fe 1500, Buenos Aires",
-                    Email = "contacto@nuestrasenora.com",
-                    Descripcion = "Institución educativa de nivel inicial y secundario.",
-                    Latitud = -34.5950,
-                    Longitud = -58.3980,
-                    Discapacidad = new Discapacidad { Movilidad = true, Auditiva = true, Verbal = true },
-                    Idiomas = new List<Idioma> { espanol, ingles },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 4,
-                    Nombre = "Instituto Técnico Nacional",
-                    Cuit = "30-78912345-6",
-                    Direccion = "Av. Independencia 800, Buenos Aires",
-                    Email = "info@tecnico.com",
-                    Descripcion = "Institución de formación técnica.",
-                    Latitud = -34.6170,
-                    Longitud = -58.3810,
-                    Discapacidad = new Discapacidad(),
-                    Idiomas = new List<Idioma> { espanol },
-                     Imagenes = new List<Imagen> { new Imagen { Url = "https://placehold.co/400x250?text=prueba" } },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 5,
-                    Nombre = "Escuela Integral del Sur",
-                    Cuit = "30-32165498-7",
-                    Direccion = "Av. San Juan 1200, Buenos Aires",
-                    Email = "contacto@integraldelsur.com",
-                    Descripcion = "Institución educativa integral.",
-                    Latitud = -34.6210,
-                    Longitud = -58.3890,
-                    Discapacidad = new Discapacidad { Movilidad = true },
-                    Idiomas = new List<Idioma> { espanol },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 6,
-                    Nombre = "Colegio Nuestra Señora del Carmen",
-                    Cuit = "30-45678912-3",
-                    Direccion = "Av. Santa Fe 100, Buenos Aires",
-                    Email = "contacto@nuestrasenoradelcarmen.com",
-                    Descripcion = "Institución educativa de nivel inicial y secundario.",
-                    Latitud = -34.5950,
-                    Longitud = -59.3980,
-                    Discapacidad = new Discapacidad { Movilidad = true, Verbal = true, Intelectual = true, Autismo = true },
-                    Idiomas = new List<Idioma> { espanol, ingles },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 7,
-                    Nombre = "Instituto Técnico Estatal",
-                    Cuit = "30-78912345-6",
-                    Direccion = "Av. Independencia 1200, Buenos Aires",
-                    Email = "info@tecnicoestatal.com",
-                    Descripcion = "Institución de formación técnica.",
-                    Latitud = -34.6170,
-                    Longitud = -59.3810,
-                    Discapacidad = new Discapacidad { Movilidad = true },
-                    Idiomas = new List<Idioma> { ingles },
-                    Estado = true
-                },
-                new Institucion
-                {
-                    Id = 8,
-                    Nombre = "Escuela Integral del Norte",
-                    Cuit = "30-32165498-7",
-                    Direccion = "Av. San Juan 600, Buenos Aires",
-                    Email = "contacto@integraldelnorte.com",
-                    Descripcion = "Institución educativa integral.",
-                    Latitud = -34.6210,
-                    Longitud = -59.3890,
-                    Discapacidad = new Discapacidad(),
-                    Idiomas = new List<Idioma> { espanol, ingles },
-                    Estado = true
-                }
+                Movilidad = institucion.Movilidad == true,
+                Visual = institucion.Visual == true,
+                Auditiva = institucion.Auditiva == true,
+                Verbal = institucion.Verbal == true,
+                Intelectual = institucion.Intelectual == true,
+                SindromeDown = institucion.SindromeDown == true,
+                Autismo = institucion.Autismo == true
             };
 
-            return instituciones;
+            return discapacidad.ObtenerAccesibilidades().Contains(tipo);
+        }
+
+        private class InstitucionListado
+        {
+            public int IdInstitucion { get; set; }
+            public string Nombre { get; set; }
+            public string Direccion { get; set; }
+            public string Descripcion { get; set; }
+            public string UrlFoto { get; set; } = ImagenGenerica;
+            public double Latitud { get; set; }
+            public double Longitud { get; set; }
+            public bool? Movilidad { get; set; }
+            public bool? Visual { get; set; }
+            public bool? Auditiva { get; set; }
+            public bool? Verbal { get; set; }
+            public bool? Intelectual { get; set; }
+            public bool? SindromeDown { get; set; }
+            public bool? Autismo { get; set; }
+        }
+
+        private class IdiomaInstitucion
+        {
+            public int IdInstitucion { get; set; }
+            public int IdIdioma { get; set; }
         }
     }
 }

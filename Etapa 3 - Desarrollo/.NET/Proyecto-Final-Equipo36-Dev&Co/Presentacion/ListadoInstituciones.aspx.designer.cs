@@ -50,6 +50,8 @@ namespace Presentacion
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnFiltrar;
 
+        protected global::System.Web.UI.WebControls.Label lblListado;
+
         /// <summary>
         /// Control rptInstituciones.
         /// </summary>

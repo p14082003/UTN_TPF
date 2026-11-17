@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Negocio;
 using Negocio.Helpers;
@@ -52,7 +53,18 @@ namespace WebAPI.Controllers
             return descargar(() => negocio.obtenerRutaImagenInstitucion(id), (archivos, ruta) => archivos.abrirImagenInstitucion(ruta));
         }
 
-        private IActionResult descargar(Func<string> obtenerRuta, Func<ArchivoHelper, string, FileStream> abrir)
+        [AllowAnonymous]
+        [HttpGet("/publico/Instituciones/imagen/{id:int:min(1)}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult GetImagenInstitucionPublica(int id)
+        {
+            ArchivosNegocio negocio = new ArchivosNegocio();
+            return descargar(() => negocio.obtenerRutaImagenInstitucionPublica(id), (archivos, ruta) => archivos.abrirImagenInstitucion(ruta), comoAdjunto: false);
+        }
+
+        private IActionResult descargar(Func<string> obtenerRuta, Func<ArchivoHelper, string, FileStream> abrir, bool comoAdjunto = true)
         {
             try
             {
@@ -62,7 +74,12 @@ namespace WebAPI.Controllers
                 FileStream contenido = abrir(archivos, ruta);
                 Response.Headers["X-Content-Type-Options"] = "nosniff";
                 Response.Headers["Cache-Control"] = "no-store";
-                return File(contenido, contentType, Path.GetFileName(ruta));
+                if (comoAdjunto)
+                {
+                    return File(contenido, contentType, Path.GetFileName(ruta));
+                }
+
+                return File(contenido, contentType);
             }
             catch (ArgumentException ex)
             {

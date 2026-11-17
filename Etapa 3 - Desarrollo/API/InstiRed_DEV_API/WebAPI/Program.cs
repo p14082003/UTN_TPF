@@ -37,6 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
 app.Use(ValidarApiKey);
 
 app.MapControllers();
@@ -46,20 +47,21 @@ app.Run();
 
 static Task ValidarApiKey(HttpContext context, RequestDelegate siguiente)
 {
-    // Valor de contraseña externalizado para no exponerlo en github
-    string? apiKey = context.RequestServices.GetRequiredService<IConfiguration>()["ApiKey"];
-    //Si se encuentra vacio o null arroja 500
-    if (string.IsNullOrWhiteSpace(apiKey))
+    if (context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() == null)
     {
-        context.Response.StatusCode = 500;
-        return context.Response.WriteAsync("Falta configurar la API key en el servidor.");
-    }
-    string claveRecibida = context.Request.Headers["X-Api-Key"].ToString();
-    //Si es erronea se arroja 401
-    if (claveRecibida != apiKey)
-    {
-        context.Response.StatusCode = 401;
-        return context.Response.WriteAsync("API key ausente o incorrecta.");
+        string? apiKey = context.RequestServices.GetRequiredService<IConfiguration>()["ApiKey"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            context.Response.StatusCode = 500;
+            return context.Response.WriteAsync("Falta configurar la API key en el servidor.");
+        }
+
+        string claveRecibida = context.Request.Headers["X-Api-Key"].ToString();
+        if (claveRecibida != apiKey)
+        {
+            context.Response.StatusCode = 401;
+            return context.Response.WriteAsync("API key ausente o incorrecta.");
+        }
     }
 
     //Tambien se verifica la cadena de MySQL

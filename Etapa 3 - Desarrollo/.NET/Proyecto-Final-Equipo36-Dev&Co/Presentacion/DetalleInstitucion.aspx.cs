@@ -1,179 +1,164 @@
 ﻿using Dominio;
+using Negocio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class DetalleInstitucion : System.Web.UI.Page
+    public partial class DetalleInstitucion : Page
     {
-        Institucion institucion;
-        public string institucionJson { get; set; }
-        List<Imagen> imagenes;
+        protected string InstitucionJson { get; private set; } = "null";
+        protected int ImagenesVisibles { get; private set; }
+        protected string UrlFotoUnica { get; private set; }
+        protected string DescripcionFotoUnica { get; private set; }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            CargarInstitucion();
-
-            // Marcador del mapa
-            institucionJson = new JavaScriptSerializer().Serialize(new { institucion.Id, institucion.Nombre, institucion.Direccion, institucion.Latitud, institucion.Longitud });
-
-            if (!IsPostBack)
+            int id;
+            if (!int.TryParse(Request.QueryString["id"], out id) || id <= 0)
             {
-                CargarCampos();
-                CargarRepeaters();
+                MostrarError("Elegí una institución desde el listado.", 400);
+                return;
             }
+
+            RegisterAsyncTask(new PageAsyncTask(() => CargarDetalleAsync(id)));
         }
 
-        public void CargarInstitucion()
+        private async Task CargarDetalleAsync(int id)
         {
-            institucion = new Institucion
+            try
             {
-                Id = 1,
-                Nombre = "Jardín de Infantes N° 902 Arco Iris",
-                Cuit = "30710000014",
-                Direccion = "Av. Hipólito Yrigoyen 1250, Gral. Pacheco",
-                Email = "jardin902@instired.test",
-                Descripcion = "Jardín de infantes con salas de 4 y 5 años, patio de juegos y acompañamiento cercano a las familias.",
-                Latitud = -34.4586,
-                Longitud = -58.6431,
-
-                Discapacidad = new Discapacidad { Id = 1, Movilidad = true },
-
-                TipoInstitucion = new TipoInstitucion { Id = 1, TipoDeInstitucion = "Jardín" },
-
-                Idiomas = new List<Idioma>
+                var institucion = await InstiRedApi.GetAsync<InstitucionApi>("vw/Instituciones/" + id, permitirNoEncontrado: true);
+                if (institucion == null || !institucion.Estado)
                 {
-                    new Idioma { Id = 1, NombreIdioma = "Español" },
-                    new Idioma { Id = 2, NombreIdioma = "Inglés" },
-                    new Idioma { Id = 3, NombreIdioma = "Portuges" }
-                },
-
-                Cursos = new List<Curso>
-                {
-                    new Curso { Id = 1, NivelPersonalizado = "Sala de 4", Division = "Azul", CicloLectivo = 2026, Capacidad = 20, Inscriptos = 1 },
-                    new Curso { Id = 2, NivelPersonalizado = "Sala de 5", Division = "Roja", CicloLectivo = 2026, Capacidad = 22, Inscriptos = 1 }
-                },
-
-                Telefonos = new List<Telefono>
-                {
-                    new Telefono { Id = 1, NumeroTelefono = "+54 11 5555-0101" },
-                    new Telefono { Id = 2, NumeroTelefono = "+54 11 3434-9090"}
-                },
-
-                Resenias = new List<Resenia>
-                {
-                    new Resenia
-                    {
-                        Id = 1,
-                        Calificacion = 5,
-                        Comentario = "Las seños son un amor y mis hijos van felices todos los días. Muy buena comunicación con las familias.",
-                        RespuestaInstitucion = "¡Gracias por su comentario! Nos alegra que haya tenido una buena experiencia.",
-                        Fecha = new DateTime(2026, 4, 10),
-                        Responsable = new Responsable { Id = 1, Nombre = "Laura Benítez" }
-                    },
-                    new Resenia
-                    {
-                        Id = 2,
-                        Calificacion = 4,
-                        Comentario = "Excelente propuesta pedagógica. Solo mejoraría el horario de ingreso, que es un poco temprano.",
-                        RespuestaInstitucion = null,
-                        Fecha = new DateTime(2026, 5, 2),
-                        Responsable = new Responsable { Id = 2, Nombre = "Carlos Benítez" }
-                    }
-                },
-
-                Imagenes = new List<Imagen>
-                {
-                    new Imagen { Id = 1, Descripcion = "Fachada del jardín", Url = "https://placehold.co/1200x400?text=Fachada" },
-                    new Imagen { Id = 2, Descripcion = "Patio de juegos", Url = "https://placehold.co/1200x400?text=Patio" },
-                    new Imagen { Id = 2, Descripcion = "Aula", Url = "https://placehold.co/1200x400?text=Aula" },
-                    new Imagen { Id = 2, Descripcion = "Comedor", Url = "https://placehold.co/1200x400?text=Comedor" }
-                }
-            };
-        }
-
-        public void CargarCampos()
-        {
-            lblNombreInstitucion.Text = institucion.Nombre;
-            lblDescripcion.Text = institucion.Descripcion;
-
-            lblTipoInstitucion.Text = institucion.TipoInstitucion.TipoDeInstitucion;
-            lblDireccion.Text = institucion.Direccion;
-            lblEmail.Text = institucion.Email;
-            lblTelefonoPrincipal.Text = institucion.Telefonos[0].NumeroTelefono;
-            lblTelefonoAlternativo.Text = institucion.Telefonos[1].NumeroTelefono;
-        }
-
-        public void CargarRepeaters()
-        {
-            CargarRepeaterImagenes();
-            CargarRepeaterIdiomas();
-            CargarRepeaterAccesibilidad();
-            CargarRepeaterResenias();
-        }
-
-        public void CargarRepeaterImagenes()
-        {
-            // Imagenes
-            if (institucion.Imagenes != null && institucion.Imagenes.Count > 0)
-            {
-                int visibles = 3;
-
-                imagenes = new List<Imagen>(institucion.Imagenes);
-
-                for (int i = 0; i < visibles - 1 && i < institucion.Imagenes.Count; i++)
-                {
-                    imagenes.Add(institucion.Imagenes[i]);
+                    MostrarError("No encontramos la institución solicitada.", 404);
+                    return;
                 }
 
-                rptImagenes.DataSource = imagenes;
-                rptImagenes.DataBind();
-
-                // Indicador de slide (Imagen seleccionada)
-                rptIndicadores.DataSource = institucion.Imagenes;
-                rptIndicadores.DataBind();
-
-                pnlImagenes.Visible = true;
+                CargarFicha(institucion);
+                await Task.WhenAll(CargarReseniasAsync(id), CargarImagenesAsync(id));
+                pnlDetalle.Visible = true;
             }
-            else
+            catch (Exception ex)
             {
-                pnlImagenes.Visible = false;
+                Trace.Warn("DetalleInstitucion", "Error al consultar la API de InstiRed.", ex);
+                MostrarError("No pudimos cargar el detalle de la institución. Intentá nuevamente.", 502);
             }
         }
 
-        public void CargarRepeaterIdiomas()
+        private void CargarFicha(InstitucionApi institucion)
         {
-            rptIdiomas.DataSource = institucion.Idiomas;
+            lblNombreInstitucion.Text = HttpUtility.HtmlEncode(institucion.Nombre);
+            lblDescripcion.Text = HttpUtility.HtmlEncode(institucion.Descripcion);
+            lblTipoInstitucion.Text = HttpUtility.HtmlEncode(institucion.TipoInstitucion);
+            lblDireccion.Text = HttpUtility.HtmlEncode(institucion.Direccion);
+            lblEmail.Text = HttpUtility.HtmlEncode(institucion.Email);
+
+            rptTelefonos.DataSource = SepararValores(institucion.Telefonos);
+            rptTelefonos.DataBind();
+            rptIdiomas.DataSource = SepararValores(institucion.Idiomas);
             rptIdiomas.DataBind();
+
+            var discapacidad = new Discapacidad
+            {
+                Movilidad = institucion.Movilidad == true,
+                Visual = institucion.Visual == true,
+                Auditiva = institucion.Auditiva == true,
+                Verbal = institucion.Verbal == true,
+                Intelectual = institucion.Intelectual == true,
+                SindromeDown = institucion.SindromeDown == true,
+                Autismo = institucion.Autismo == true
+            };
+            rptAccesibilidades.DataSource = discapacidad.ObtenerAccesibilidades();
+            rptAccesibilidades.DataBind();
+
+            InstitucionJson = new JavaScriptSerializer().Serialize(
+                new { institucion.Nombre, institucion.Direccion, institucion.Latitud, institucion.Longitud });
         }
 
-        public void CargarRepeaterAccesibilidad()
+        private async Task CargarReseniasAsync(int id)
         {
-            List<string> caracteristicas = null;
-
-            if (institucion.Discapacidad != null)
-            {
-                caracteristicas = institucion.Discapacidad.ObtenerAccesibilidades();
-            }
-
-            if (caracteristicas != null && caracteristicas.Count > 0)
-            {
-                rptAccesibilidades.DataSource = caracteristicas;
-                rptAccesibilidades.DataBind();
-            }
-        }
-
-        public void CargarRepeaterResenias()
-        {
-            rptResenias.DataSource = institucion.Resenias;
+            var resenias = await InstiRedApi.GetAsync<List<ReseniaApi>>("vw/ValoracionesPorInstitucion?idInstitucion=" + id);
+            rptResenias.DataSource = resenias.OrderByDescending(resenia => resenia.Fecha);
             rptResenias.DataBind();
-
-            pnlSinResenias.Visible = institucion.Resenias == null || !institucion.Resenias.Any();
+            pnlSinResenias.Visible = resenias.Count == 0;
         }
+
+        private async Task CargarImagenesAsync(int id)
+        {
+            var imagenes = await InstiRedApi.ListarImagenesAsync();
+            var imagenesInstitucion = imagenes.Where(imagen => imagen.IdInstitucion == id).ToList();
+
+            if (imagenesInstitucion.Count == 0)
+            {
+                return;
+            }
+
+            ImagenesVisibles = Math.Min(3, imagenesInstitucion.Count);
+            pnlImagenes.Visible = true;
+            if (ImagenesVisibles == 1)
+            {
+                UrlFotoUnica = imagenesInstitucion[0].UrlPublica;
+                DescripcionFotoUnica = imagenesInstitucion[0].Descripcion;
+                return;
+            }
+
+            rptImagenes.DataSource = imagenesInstitucion.Concat(imagenesInstitucion.Take(ImagenesVisibles - 1));
+            rptImagenes.DataBind();
+            rptIndicadores.DataSource = imagenesInstitucion;
+            rptIndicadores.DataBind();
+        }
+
+        private static string[] SepararValores(string valores)
+        {
+            return (valores ?? "").Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private void MostrarError(string mensaje, int estado)
+        {
+            InstitucionJson = "null";
+            pnlDetalle.Visible = false;
+            pnlError.Visible = true;
+            lblError.Text = mensaje;
+            Response.StatusCode = estado;
+            Response.TrySkipIisCustomErrors = true;
+        }
+
+        private class InstitucionApi
+        {
+            public string Nombre { get; set; }
+            public string Descripcion { get; set; }
+            public string TipoInstitucion { get; set; }
+            public string Direccion { get; set; }
+            public string Email { get; set; }
+            public string Telefonos { get; set; }
+            public string Idiomas { get; set; }
+            public double Latitud { get; set; }
+            public double Longitud { get; set; }
+            public bool Estado { get; set; }
+            public bool? Movilidad { get; set; }
+            public bool? Visual { get; set; }
+            public bool? Auditiva { get; set; }
+            public bool? Verbal { get; set; }
+            public bool? Intelectual { get; set; }
+            public bool? SindromeDown { get; set; }
+            public bool? Autismo { get; set; }
+        }
+
+        private class ReseniaApi
+        {
+            public string NombreResponsable { get; set; }
+            public string ApellidoResponsable { get; set; }
+            public int Calificacion { get; set; }
+            public string Comentario { get; set; }
+            public string RespuestaInstitucion { get; set; }
+            public DateTime Fecha { get; set; }
+        }
+
     }
 }
