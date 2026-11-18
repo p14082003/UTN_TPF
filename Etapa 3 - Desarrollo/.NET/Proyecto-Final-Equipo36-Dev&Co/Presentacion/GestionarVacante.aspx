@@ -45,8 +45,9 @@
 
         <!-- VISTA 2: LISTADO DE CURSOS -->
         <asp:Panel ID="pnlListado" runat="server" CssClass="card shadow-sm mb-5 border-0">
-            <div class="card-header bg-indigo text-white py-3">
+            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Cursos de la institución</h5>
+                <asp:Button ID="btnNuevoCurso" runat="server" Text="Nuevo curso" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnNuevoCurso_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
@@ -141,6 +142,70 @@
                 <div class="d-flex justify-content-end gap-3 mt-4">
                     <asp:Button ID="btnCancelar" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro fw-bold rounded-pill px-4" OnClick="btnCerrarEdicion_Click" />
                     <asp:Button ID="btnGuardar" runat="server" Text="Guardar vacantes" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnGuardar_Click" />
+                </div>
+            </div>
+        </asp:Panel>
+
+        <!-- VISTA 4: ALTA DE CURSO -->
+        <asp:Panel ID="pnlAlta" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
+            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Alta de curso</h5>
+                <asp:Button ID="btnCerrarAlta" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCancelarAlta_Click" />
+            </div>
+            <div class="card-body bg-white rounded-bottom-4">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label for="<%= ddlAltaCiclo.ClientID %>" class="form-label text-indigo fw-semibold">Año calendario</label>
+                        <asp:DropDownList ID="ddlAltaCiclo" runat="server" CssClass="form-select border-neutro" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="<%= ddlAltaTurno.ClientID %>" class="form-label text-indigo fw-semibold">Turno</label>
+                        <asp:DropDownList ID="ddlAltaTurno" runat="server" CssClass="form-select border-neutro" />
+                    </div>
+                </div>
+
+                <!-- Instituciones comunes: nivel + año -->
+                <asp:Panel ID="pnlAltaEstandar" runat="server" CssClass="p-3 bg-fondo rounded-4 border border-neutro mb-3">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="<%= ddlAltaNivel.ClientID %>" class="form-label text-indigo fw-semibold">Nivel</label>
+                            <asp:DropDownList ID="ddlAltaNivel" runat="server" CssClass="form-select border-neutro" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="<%= txtAltaAnio.ClientID %>" class="form-label text-indigo fw-semibold">Año</label>
+                            <asp:TextBox ID="txtAltaAnio" runat="server" TextMode="Number" CssClass="form-control border-neutro" />
+                            <div class="form-text">Preescolar: 3 a 5 · Primaria: 1 a 7 · Secundaria: 1 a 6.</div>
+                        </div>
+                    </div>
+                </asp:Panel>
+
+                <!-- Institutos de idiomas: nombre personalizado -->
+                <asp:Panel ID="pnlAltaPersonalizado" runat="server" Visible="false" CssClass="p-3 bg-fondo rounded-4 border border-neutro mb-3">
+                    <label for="<%= txtAltaPersonalizado.ClientID %>" class="form-label text-indigo fw-semibold">Nombre del curso</label>
+                    <asp:TextBox ID="txtAltaPersonalizado" runat="server" CssClass="form-control border-neutro" MaxLength="30" />
+                    <div class="form-text">Ej: 2nd Children. Los institutos de idiomas registran sus cursos con nombre propio.</div>
+                </asp:Panel>
+
+                <div class="row g-3 mb-2">
+                    <div class="col-12 col-md-6">
+                        <label for="<%= txtAltaDivision.ClientID %>" class="form-label text-indigo fw-semibold">División</label>
+                        <asp:TextBox ID="txtAltaDivision" runat="server" CssClass="form-control border-neutro" MaxLength="50" />
+                        <div class="form-text">Si hay una sola, completá con 1. Ej: A, Salita azul, Lunes y miércoles.</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="<%= txtAltaCapacidad.ClientID %>" class="form-label text-indigo fw-semibold">Capacidad</label>
+                        <asp:TextBox ID="txtAltaCapacidad" runat="server" TextMode="Number" CssClass="form-control border-neutro" />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="<%= txtAltaInscriptos.ClientID %>" class="form-label text-indigo fw-semibold">Inscriptos</label>
+                        <asp:TextBox ID="txtAltaInscriptos" runat="server" TextMode="Number" CssClass="form-control border-neutro" Text="0" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <asp:Button ID="btnCancelarAlta" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro fw-bold rounded-pill px-4" OnClick="btnCancelarAlta_Click" />
+                    <asp:Button ID="btnGuardarCurso" runat="server" Text="Crear curso" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnGuardarCurso_Click" />
                 </div>
             </div>
         </asp:Panel>
