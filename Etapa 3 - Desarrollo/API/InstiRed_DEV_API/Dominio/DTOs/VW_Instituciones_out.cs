@@ -6,6 +6,7 @@ namespace Dominio.DTOs
         public string Nombre { get; set; } = "";
         public string Direccion { get; set; } = "";
         public string Email { get; set; } = "";
+        public string Cuit { get; set; } = "";
         public double Latitud { get; set; }
         public double Longitud { get; set; }
         public string Descripcion { get; set; } = "";

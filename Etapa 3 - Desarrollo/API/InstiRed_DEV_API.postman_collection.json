@@ -2382,6 +2382,36 @@
           ]
         },
         {
+          "name": "RegistrarCurso",
+          "item": [
+            {
+              "name": "Registrar Curso",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministradorInstitucion\": 1,\n  \"idTurno\": 1,\n  \"cicloLectivo\": 2027,\n  \"idNivel\": 1,\n  \"anio\": 4,\n  \"nivelPersonalizado\": null,\n  \"division\": \"A\",\n  \"capacidad\": 25,\n  \"inscriptos\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RegistrarCurso",
+                "description": "Ejemplo para Preescolar. Usá el ID de un administrador activo con una institución que ofrezca ese nivel. Para un instituto de idiomas, completá nivelPersonalizado y enviá idNivel y anio en null."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "CrearInstitucion",
           "item": [
             {
@@ -2496,6 +2526,126 @@
                 },
                 "url": "{{baseUrl}}/sp/ReactivarInstitucion",
                 "description": "Usá un usuario DevCo activo. Las postulaciones que se rechazaron al dar la baja conservan su estado."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AgregarTelefono",
+          "item": [
+            {
+              "name": "AgregarTelefono",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"tipoDueno\": \"Institucion\",\n  \"idDueno\": 1,\n  \"telefono\": \"+54 11 4000-0000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/AgregarTelefono",
+                "description": "Tipos de dueño: Institucion, Administrador o Responsable. Usá el ID de usuario habilitado para gestionar ese dueño."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "EliminarTelefono",
+          "item": [
+            {
+              "name": "EliminarTelefono",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"tipoDueno\": \"Institucion\",\n  \"idDueno\": 1,\n  \"idTelefono\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/EliminarTelefono",
+                "description": "Usá el ID de la fila de Teléfonos. Si el teléfono está compartido, se quita solo el dueño indicado."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "DarDeBajaAdministradorInstitucion",
+          "item": [
+            {
+              "name": "DarDeBajaAdministradorInstitucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"idAdministrador\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/DarDeBajaAdministradorInstitucion",
+                "description": "Usá como actor un usuario DevCo activo o un administrador habilitado por el procedimiento."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "ReactivarAdministradorInstitucion",
+          "item": [
+            {
+              "name": "ReactivarAdministradorInstitucion",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"idAdministrador\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/ReactivarAdministradorInstitucion",
+                "description": "Usá como actor un usuario DevCo activo o un administrador habilitado por el procedimiento."
               },
               "response": []
             }
@@ -2831,6 +2981,41 @@
     {
       "name": "vistas",
       "item": [
+        {
+          "name": "AdministradoresPorInstitucion",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/AdministradoresPorInstitucion",
+                "description": "Incluye administradores asociados a una institución, con el estado activo de su usuario."
+              },
+              "response": []
+            },
+            {
+              "name": "Filtrar por institución",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/AdministradoresPorInstitucion?idInstitucion=1",
+                "description": "Usá el ID de la institución para obtener sus administradores activos e inactivos."
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener por ID de administrador",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/AdministradoresPorInstitucion/1",
+                "description": "Devuelve 404 si el administrador no existe en la vista."
+              },
+              "response": []
+            }
+          ]
+        },
         {
           "name": "Instituciones",
           "item": [

@@ -1,5 +1,5 @@
 using Dominio.DTOs;
-using Negocio.Helpers;
+using Dominio;
 
 namespace Negocio
 {
@@ -8,12 +8,18 @@ namespace Negocio
         public void agregar(SP_AgregarTelefonoInstitucion_in registro)
         {
             validar(registro);
-            ProcedimientoHelper.ejecutar("sp_Telefono_Institucion_Agregar", datos =>
+            Ent_AdministradorInstitucion? administrador = new Ent_AdministradorInstitucionNegocio().obtenerPorId(registro.IdAdministrador);
+            if (administrador == null || administrador.IdInstitucion != registro.IdInstitucion)
             {
-                datos.setearParametro("@p_idAdministrador", registro.IdAdministrador);
-                datos.setearParametro("@p_idInstitucion", registro.IdInstitucion);
-                datos.setearParametro("@p_telefono", registro.Telefono.Trim());
-                datos.ejecutarAccion();
+                throw new ArgumentException("No cuenta con permiso para modificar esta institución.");
+            }
+
+            new SP_AgregarTelefonoNegocio().agregar(new SP_AgregarTelefono_in
+            {
+                IdUsuarioActor = administrador.IdUsuario,
+                TipoDueno = "Institucion",
+                IdDueno = registro.IdInstitucion,
+                Telefono = registro.Telefono
             });
         }
 

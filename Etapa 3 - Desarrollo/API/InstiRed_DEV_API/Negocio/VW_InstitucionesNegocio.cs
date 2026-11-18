@@ -20,7 +20,7 @@ namespace Negocio
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearConsulta("SELECT idInstitucion, nombre, direccion, email, latitud, longitud, descripcion, estado, idTipoInstitucion, tipoInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo, idiomas, telefonos, promedioCalificacion, cantidadResenias FROM vw_Instituciones WHERE (@idTipoInstitucion IS NULL OR idTipoInstitucion = @idTipoInstitucion) AND (@estado IS NULL OR estado = @estado) AND (@nombre IS NULL OR nombre LIKE CONCAT('%', @nombre, '%')) ORDER BY nombre, idInstitucion");
+                datos.setearConsulta("SELECT idInstitucion, nombre, direccion, email, cuit, latitud, longitud, descripcion, estado, idTipoInstitucion, tipoInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo, idiomas, telefonos, promedioCalificacion, cantidadResenias FROM vw_Instituciones WHERE (@idTipoInstitucion IS NULL OR idTipoInstitucion = @idTipoInstitucion) AND (@estado IS NULL OR estado = @estado) AND (@nombre IS NULL OR nombre LIKE CONCAT('%', @nombre, '%')) ORDER BY nombre, idInstitucion");
                 datos.setearParametro("@idTipoInstitucion", idTipoInstitucion);
                 datos.setearParametro("@estado", estado);
                 datos.setearParametro("@nombre", nombre?.Trim());
@@ -51,7 +51,7 @@ namespace Negocio
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearConsulta("SELECT idInstitucion, nombre, direccion, email, latitud, longitud, descripcion, estado, idTipoInstitucion, tipoInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo, idiomas, telefonos, promedioCalificacion, cantidadResenias FROM vw_Instituciones WHERE idInstitucion = @id");
+                datos.setearConsulta("SELECT idInstitucion, nombre, direccion, email, cuit, latitud, longitud, descripcion, estado, idTipoInstitucion, tipoInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo, idiomas, telefonos, promedioCalificacion, cantidadResenias FROM vw_Instituciones WHERE idInstitucion = @id");
                 datos.setearParametro("@id", id);
                 datos.ejecutarLectura();
                 MySqlDataReader? lector = datos.Lector;
@@ -78,6 +78,7 @@ namespace Negocio
             registro.Nombre = (string)lector["nombre"];
             registro.Direccion = (string)lector["direccion"];
             registro.Email = (string)lector["email"];
+            registro.Cuit = (string)lector["cuit"];
             registro.Latitud = Convert.ToDouble(lector["latitud"]);
             registro.Longitud = Convert.ToDouble(lector["longitud"]);
             registro.Descripcion = (string)lector["descripcion"];
