@@ -76,6 +76,7 @@
     <Content Include="RegistroResponsable.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
+    <Content Include="RegistroAlumno.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FormularioAdministradorInstitucion.aspx.cs">
@@ -134,6 +135,13 @@
     </Compile>
     <Compile Include="RegistroResponsable.aspx.designer.cs">
       <DependentUpon>RegistroResponsable.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RegistroAlumno.aspx.cs">
+      <DependentUpon>RegistroAlumno.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RegistroAlumno.aspx.designer.cs">
+      <DependentUpon>RegistroAlumno.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
