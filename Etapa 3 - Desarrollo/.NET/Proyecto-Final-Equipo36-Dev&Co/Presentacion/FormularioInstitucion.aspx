@@ -107,46 +107,47 @@
 
                     <div class="row">
                         <div class="col-8">
-                            <!-- NOMBRE -->
+                            <!-- NOMBRE (BD: VARCHAR(100)) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblNombre" runat="server" Text="Nombre de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
+                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="100" required="required" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
                             </div>
                         </div>
 
                         <div class="col-4">
-                            <!-- CUIT -->
+                            <!-- CUIT (BD: VARCHAR(11), se guardan solo los 11 digitos, sin guiones) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblCuit" runat="server" Text="CUIT de la institución" CssClass="form-label fw-semibold"> </asp:Label>
-                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" placeholder="XX-XXXXXXXX-X"></asp:TextBox>
+                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" required="required" pattern="[0-9]{11}" title="El CUIT debe tener 11 dígitos, sin guiones" inputmode="numeric" placeholder="11 dígitos, sin guiones"></asp:TextBox>
                             </div>
                         </div>
                     </div>
 
-                    <!-- EMAIL -->
+                    <!-- EMAIL (BD: VARCHAR(100)) -->
                     <div class="mb-4">
                         <asp:Label ID="lblEmail" runat="server" Text="Correo electrónico" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
+                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" required="required" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
                     </div>
 
-                    <!-- TELEFONOS -->
+                    <!-- TELEFONOS (opcionales. BD: VARCHAR(30)) -->
                     <div class="row">
                         <div class="col-6 mb-4">
                             <asp:Label ID="lblTelefono" runat="server" Text="Teléfono principal" CssClass="form-label fw-semibold"></asp:Label>
-                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 11 0000-0000"></asp:TextBox>
+                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 11 0000-0000"></asp:TextBox>
                         </div>
                             
                         <div class="col-6 mb-4">
                             <asp:Label ID="lblTelefonoAlternativo" runat="server" Text="Télefono alternativo" CssClass="form-label fw-semibold"></asp:Label>
-                            <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" placeholder="+54 9 11 0000-0000"></asp:TextBox>
+                            <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 9 11 0000-0000"></asp:TextBox>
                         </div>
 
                     </div>
 
-                    <!-- DESCRIPCION -->
+                    <!-- DESCRIPCION (BD: VARCHAR(3000)) -->
+                    <!-- En MultiLine ASP.NET no renderiza MaxLength, por eso va como atributo "maxlength" directo -->
                     <div class="mb-4">
                         <asp:Label ID="lblDescripcion" runat="server" Text="Descripción de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtDescripcion" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" style="resize: none;" placeholder="Contá brevemente qué ofrece tu institución"></asp:TextBox>
+                        <asp:TextBox ID="txtDescripcion" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" maxlength="3000" required="required" style="resize: none;" placeholder="Contá brevemente qué ofrece tu institución"></asp:TextBox>
                     </div>
 
                 </div>
@@ -157,11 +158,11 @@
         <div class="row m-4">
             <div class="col">
                 <div class="card p-5">
-                    <!-- UBICACION -->
+                    <!-- UBICACION (BD: VARCHAR(100)) -->
                     <div class="mb-4">
                         <asp:Label ID="lblDireccion" runat="server" Text="Dirección de la institución" CssClass="form-label fw-semibold"></asp:Label>
                         <div class="d-flex gap-4">
-                            <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" placeholder="Calle, número y localidad"></asp:TextBox>
+                            <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" MaxLength="100" required="required" placeholder="Calle, número y localidad"></asp:TextBox>
                             <button type="button" id="btnVerificarDireccion" class="btn-lilaOscuro">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -175,7 +176,7 @@
                         <div id="mapa"></div>
                     </div>
 
-                    <!-- GUARDAR COORDENADAS -->
+                    <!-- GUARDAR COORDENADAS (BD: latitud y longitud NOT NULL, se validan en validarUbicacion()) -->
                     <asp:HiddenField ID="hfLatitud" runat="server" />
                     <asp:HiddenField ID="hfLongitud" runat="server" />
                 </div>
@@ -217,7 +218,8 @@
                                     </div>
                                     <div class="dialog-footer">
                                         <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dlgIdiomas').close()">Cancelar</button>
-                                        <asp:Button ID="btnAgregarIdioma" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" OnClick="btn_AgregarIdioma_Click" />
+                                        <!-- formnovalidate: sin esto el navegador exige completar los campos required antes de agregar un idioma -->
+                                        <asp:Button ID="btnAgregarIdioma" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btn_AgregarIdioma_Click" />
 
                                     </div>
                                 </dialog>
@@ -255,7 +257,7 @@
                                     </div>
                                     <div class="dialog-footer">
                                         <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dlgAccesibilidades').close()">Cancelar</button>
-                                        <asp:Button ID="btnAgregarAccesibilidad" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" OnClick="btn_AgregarAccesibilidad_Click" />
+                                        <asp:Button ID="btnAgregarAccesibilidad" runat="server" Text="Agregar" CssClass="btn-lilaOscuro" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btn_AgregarAccesibilidad_Click" />
                                     </div>
                                 </dialog>
                             </ContentTemplate>
@@ -270,47 +272,53 @@
         <div class="row m-4">
             <div class="col">
                 <div class="card p-5">
-                
+
                     <!-- CARGA DE IMAGENES -->
                     <asp:Label ID="lblImagenes" runat="server" Text="Imagenes de las instalaciones" CssClass="form-label fw-semibold mb-5"></asp:Label>
-                    <asp:FileUpload ID="FileUpload1" runat="server" CssClass="form-control mb-5 mt-3"/>
-
+                    <div class="d-flex align-items-start gap-4 mb-4">
+                        <asp:FileUpload ID="fuImagenes" runat="server" CssClass="form-control" AllowMultiple="true" accept=".jpg,.jpeg,.png"/>
+                        <asp:Button ID="btnSubirImagenes" runat="server" CssClass="btn-lilaOscuro flex-shrink-0" Text="Subir imagenes" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btnSubirImagenes_Click"></asp:Button>
+                    </div>
                     <!-- CARROUSEL DE IMAGENES (REPEATER DE ASP) -->
-                    <div class="row">
-                        <div id="carouselMultiple" class="carousel slide" data-bs-ends="wrap" style="--bs-carousel-items: 3; --bs-carousel-items-gap: 1rem;">
+                    <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Conditional">
+                        <ContentTemplate>
+                            <div class="row">
+                                <div id="carouselMultiple" class="carousel slide" data-bs-ends="wrap" style="--bs-carousel-items: 3; --bs-carousel-items-gap: 1rem;">
 
-                            <!-- CONTROLES -->
-                            <div class="d-flex justify-content-end align-items-center">
-                                <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="prev" style="--bs-carousel-control-icon-width: 1rem;">
-                                    <span class="carousel-icon-prev" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="next" style="--bs-carousel-control-icon-width: 1rem;">
-                                    <span class="carousel-icon-next" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
-                            </div>
+                                    <!-- CONTROLES -->
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="prev" style="--bs-carousel-control-icon-width: 1rem;">
+                                            <span class="carousel-icon-prev" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselMultiple" data-bs-slide="next" style="--bs-carousel-control-icon-width: 1rem;">
+                                            <span class="carousel-icon-next" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                    </div>
 
-                            <!-- IMAGENES -->
-                            <div class="carousel-inner">
-                                <asp:Repeater ID="rptImagenes" runat="server" OnItemCommand="rptImagenes_ItemCommand">
-                                    <ItemTemplate>
-                                        <div class='carousel-item <%# Container.ItemIndex == 0 ? "active" : "" %>'>
-                                            <div class="card">
-                                                <asp:Image runat="server" ImageUrl='<%# Eval("Url") %>' AlternateText="Imagen de las instalaciones" CssClass="d-block w-100 h-100 rounded-5" />
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between">
-                                                        <p>Imagen <%# Eval("Descripcion") %></p>
-                                                        <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" />
+                                    <!-- IMAGENES -->
+                                    <div class="carousel-inner">
+                                        <asp:Repeater ID="rptImagenes" runat="server" OnItemCommand="rptImagenes_ItemCommand">
+                                            <ItemTemplate>
+                                                <div class='carousel-item <%# Container.ItemIndex == 0 ? "active" : "" %>'>
+                                                    <div class="card">
+                                                        <asp:Image runat="server" ImageUrl='<%# Eval("Url") %>' AlternateText="Imagen de las instalaciones" CssClass="d-block w-100 rounded-5" style="aspect-ratio: 4 / 3; object-fit: contain; background-color: #F7F5FC" />
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between">
+                                                                <p>Imagen <%# Eval("Descripcion") %></p>
+                                                                <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" formnovalidate="formnovalidate" />
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
 
                 </div>
             </div>
@@ -319,13 +327,11 @@
         <!-- BOTON PARA GUARDAR DATOS -->
         <div class="row m-4">
             <div class="col">
-                <div class="p-5">
-                    <asp:Button ID="btnGuardar" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 mb-4"/>
-                    <p class="text-center text-secondary small">
-                        ¿Ya registraste tu colegio?
-                        <a href="#" class="link-lilaClaro">Iniciá sesión como institución</a>
-                    </p>
-                </div>
+                <asp:Button ID="btnGuardar" runat="server" Text="Registrar institución" CssClass="btn btn-lilaOscuro w-100 mb-4" OnClientClick="return validarUbicacion();" OnClick="btnGuardar_Click"/>
+                <p class="text-center text-secondary small">
+                    ¿Ya registraste tu colegio?
+                    <a href="#" class="link-lilaClaro">Iniciá sesión como institución</a>
+                </p>
             </div>
         </div>
     </div>
@@ -334,20 +340,25 @@
     <script>
 
         // CAROUSEL: Al intentar avanzar en la ultima imagen, vuelve al inicio
-        (function () {
-            var carrusel = document.getElementById('carouselMultiple');
+        // Se escucha en document y no en el carousel porque UpdatePanel1 lo vuelve a dibujar en cada postback parcial (al eliminar una imagen)
+        // y un listener puesto directamente en el elemento se perderia. La cantidad de items tambien se calcula en cada evento.
+        document.addEventListener('slide.bs.carousel', function (e) {
+            var carrusel = e.target;
+
+            if (carrusel.id !== 'carouselMultiple') {
+                return;
+            }
+
             var inner = carrusel.querySelector('.carousel-inner');
             var visibles = 3; // el mismo valor que --bs-carousel-items
             var ultimo = carrusel.querySelectorAll('.carousel-item').length - visibles;
 
-            carrusel.addEventListener('slide.bs.carousel', function (e) {
-                // Solo al avanzar un paso más allá del final (no al retroceder desde la primera)
-                if (e.to > ultimo && e.to === e.from + 1) {
-                    e.preventDefault();
-                    inner.scrollTo({ left: 0, behavior: 'smooth' });
-                }
-            });
-        })();
+            // Solo al avanzar un paso más allá del final (no al retroceder desde la primera)
+            if (e.to > ultimo && e.to === e.from + 1) {
+                e.preventDefault();
+                inner.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+        });
 
         // MAPA
         var institucion = <%= institucionJson %>;
@@ -405,6 +416,19 @@
             mensaje.className = 'form-text ' + (esError ? 'text-danger' : '');
         }
 
+        // Latitud y longitud son NOT NULL en la BD y un HiddenField no admite "required",
+        // por eso se validan aca antes de enviar el formulario (btnGuardar)
+        function validarUbicacion() {
+
+            if (!hfLat.value || !hfLng.value) {
+                mostrarMensaje('Confirmá la ubicación: tocá la lupa o arrastrá el marcador en el mapa.', true);
+                document.getElementById('mapa').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            return true;
+        }
+
         var inicial = coordenadasIniciales();
 
         // Mostrar mapa
@@ -448,7 +472,7 @@
                 // API Endpoint + Parametros
                 var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ar&accept-language=es&q=' + encodeURIComponent(direccion);
                 var respuesta = await fetch(url);
-                
+
                 if (!respuesta.ok) {
                     throw new Error('HTTP ' + respuesta.status);
                 }
@@ -484,6 +508,14 @@
         }
 
         btnVerificar.addEventListener('click', verificarDireccion);
+
+        // Enter en la dirección: ubica en el mapa en vez de enviar el formulario
+        txtDireccion.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verificarDireccion();
+            }
+        });
     </script>
 
 </asp:Content>
