@@ -101,6 +101,20 @@ SELECT id, email, clave, activo FROM Usuarios WHERE email = 'testadmin@mail.com'
 -- Se vuelve a rechazar para dejarlo en estado "rechazado" (los tests de Crear lo usan inactivo)
 CALL sp_PostulacionAdmin_Rechazar(@idPost3, 23, 'Documentacion incompleta.');
 
+-- REINTENTO con telefono compartido: el unico telefono del administrador pasa a ser tambien del responsable 1.
+-- El reintento no debe cambiarle el numero al responsable: le saca el administrador a esa fila y crea un
+-- telefono nuevo, exclusivo del administrador.
+SET @idTelAdm = (SELECT id FROM Telefonos WHERE idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com')) LIMIT 1);
+UPDATE Telefonos SET idResponsable = 1 WHERE id = @idTelAdm;
+CALL sp_AdministradorInstitucion_Registrar(
+  'Test', 'AdminNuevo', '12121212', 'Calle Nueva 999', '1990-05-11',
+  'otraClave', 'testadmin@mail.com', '777777',
+  'Instituto fest', '30999999992', 'fest_c.pdf', 'habilitacion_fest_c.pdf', 'laboral_fest_c.pdf',
+  'PAI-TEST-0007', @idPost4);
+SELECT id, telefono, idResponsable FROM Telefonos WHERE idAdministrador = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = (SELECT id FROM Usuarios WHERE email = 'testadmin@mail.com'));   -- 1 fila: '777777', sin responsable
+SELECT id, telefono, idAdministrador, idResponsable FROM Telefonos WHERE id = @idTelAdm;   -- la fila compartida sigue existiendo, sin cambios en el numero: '555555', idAdministrador NULL, idResponsable 1
+CALL sp_PostulacionAdmin_Rechazar(@idPost4, 23, 'Documentacion incompleta.');   -- queda rechazado de nuevo para los tests que siguen
+
 -- OBTENER CLAVE PARA REINTENTO
 CALL sp_AdministradorInstitucion_ObtenerClaveReintento('TESTadmin@mail.com');   -- 1 fila: la clave guardada (rechazado, inactivo, sin institucion)
 /* CASOS DONDE NO DEVUELVE EL HASH DE LA CLAVE (0 FILAS) */
@@ -176,13 +190,76 @@ SELECT id, idInstitucion FROM AdministradoresInstitucion WHERE id = @idAdmin2;  
 /* CALL sp_Institucion_Crear(@idAdmin2, 'Otra 1', 'a@b.com', 100, -58.5, 'x', 1, 0,0,0,0,0,0,0, @idX); */     -- ERROR COORDENADAS
 /* CALL sp_Institucion_Crear(@idAdmin2, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 99, 0,0,0,0,0,0,0, @idX); */  -- ERROR TIPO NO EXISTE
 
--- AGREGAR TELEFONO. Orden: admin, institucion, telefono
-CALL sp_Telefono_Institucion_Agregar(@idAdmin2, @idInst, '+54 11 4000-0000');
-SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 1 fila
-/* CALL sp_Telefono_Institucion_Agregar(@idAdmin2, @idInst, '+54 11 4000-0000'); */   -- ERROR YA TIENE ESE TELEFONO
-/* CALL sp_Telefono_Institucion_Agregar(@idAdmin2, @idInst, '  '); */                 -- ERROR FALTAN DATOS
-/* CALL sp_Telefono_Institucion_Agregar(@idAdmin1, @idInst, '1111'); */               -- ERROR SIN PERMISO (otro administrador no aceptado)
-/* CALL sp_Telefono_Institucion_Agregar(@idAdmin2, 999999, '1111'); */                -- ERROR INSTITUCION NO EXISTE
+-- =====================================================================
+-- TELEFONOS (general): sp_Telefono_Agregar y sp_Telefono_Eliminar, juntos
+-- Usa @idInst y @idAdmin1/@idAdmin2 de arriba
+-- =====================================================================
+-- AGREGAR TELEFONO (general). Orden: usuario que actua (idUsuario), tipo de dueño, id del dueño, telefono
+-- Tipos: 'Institucion' (id de la institucion), 'Administrador' (id del administrador), 'Responsable' (id del responsable)
+SET @idUsuarioAdmin1 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin1);   -- testadmin (rechazado, inactivo)
+SET @idUsuarioAdmin2 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin2);   -- testadmin2 (activo, de @idInst)
+SET @idUsuarioResp2  = (SELECT idUsuario FROM Responsables WHERE id = 2);                         -- responsable 2 del archivo de INSERTs (1 telefono)
+
+-- Institucion (puede el administrador activo de esa institucion)
+CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', @idInst, '+54 11 4000-0000');
+CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', @idInst, '+54 11 4000-0001');
+SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 2 filas
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', @idInst, '+54 11 4000-0000'); */   -- ERROR YA TIENE ESE TELEFONO
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', @idInst, '+54 11 4000-0002'); */   -- ERROR YA TIENE EL MAXIMO DE 2 TELEFONOS
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', @idInst, '  '); */                 -- ERROR FALTAN DATOS
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin1, 'Institucion', @idInst, '1111'); */               -- ERROR SIN PERMISO (otro administrador no aceptado)
+/* CALL sp_Telefono_Agregar(23, 'Institucion', @idInst, '1111'); */                             -- ERROR SIN PERMISO (Dev&Co no edita telefonos)
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Institucion', 999999, '1111'); */                -- ERROR INSTITUCION NO EXISTE
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Colegio', @idInst, '1111'); */                   -- ERROR TIPO DE DUEÑO NO VALIDO
+
+-- Administrador (solo el propio administrador). testadmin2 ya tiene el telefono de su registro: queda con 2
+CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Administrador', @idAdmin2, '1166660001');
+SELECT * FROM Telefonos WHERE idAdministrador = @idAdmin2;          -- 2 filas ('121214' y '1166660001')
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Administrador', @idAdmin2, '1166660009'); */     -- ERROR YA TIENE EL MAXIMO DE 2 TELEFONOS
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Administrador', @idAdmin1, '1166660009'); */     -- ERROR SIN PERMISO (telefonos de otro administrador)
+/* CALL sp_Telefono_Agregar(23, 'Administrador', @idAdmin2, '1166660009'); */                   -- ERROR SIN PERMISO (Dev&Co)
+
+-- Responsable (solo el propio responsable). El responsable 2 ya tiene 1 telefono: queda con 2
+CALL sp_Telefono_Agregar(@idUsuarioResp2, 'Responsable', 2, '1166660002');
+SELECT * FROM Telefonos WHERE idResponsable = 2;                    -- 2 filas
+/* CALL sp_Telefono_Agregar(@idUsuarioResp2, 'Responsable', 2, '1166660009'); */                -- ERROR YA TIENE EL MAXIMO DE 2 TELEFONOS
+/* CALL sp_Telefono_Agregar(@idUsuarioResp2, 'Responsable', 1, '1166660009'); */                -- ERROR SIN PERMISO (telefonos de otro responsable)
+/* CALL sp_Telefono_Agregar(@idUsuarioAdmin2, 'Responsable', 2, '1166660009'); */               -- ERROR SIN PERMISO (un administrador no edita telefonos de un responsable)
+
+-- ELIMINAR TELEFONO (general). Orden: usuario que actua (idUsuario), tipo de dueño, id del dueño, id del telefono
+SET @idTel = (SELECT id FROM Telefonos WHERE idInstitucion = @idInst AND telefono = '+54 11 4000-0000');
+SET @idTelAdm2 = (SELECT id FROM Telefonos WHERE idAdministrador = @idAdmin2 AND telefono = '1166660001');
+SET @idTelResp2 = (SELECT id FROM Telefonos WHERE idResponsable = 2 AND telefono = '1166660002');
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin1, 'Institucion', @idInst, @idTel); */          -- ERROR SIN PERMISO
+/* CALL sp_Telefono_Eliminar(23, 'Institucion', @idInst, @idTel); */                         -- ERROR SIN PERMISO (Dev&Co)
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, 999999); */           -- ERROR NO TIENE ESE TELEFONO
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, @idTelAdm2); */       -- ERROR NO TIENE ESE TELEFONO (es de un administrador, no de la institucion)
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Colegio', @idInst, @idTel); */               -- ERROR TIPO DE DUEÑO NO VALIDO
+CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, @idTel);
+SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 1 fila ('+54 11 4000-0001')
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, @idTel); */           -- ERROR NO TIENE ESE TELEFONO (ya se quito)
+
+-- ELIMINAR TELEFONO COMPARTIDO: un telefono de la institucion que tambien es del administrador no se borra,
+-- solo se le saca la institucion (el administrador lo conserva).
+INSERT INTO Telefonos (idInstitucion, idAdministrador, telefono) VALUES (@idInst, @idAdmin2, '+54 11 4111-1111');
+SET @idTelComp = LAST_INSERT_ID();
+CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, @idTelComp);
+SELECT id, idInstitucion, idAdministrador FROM Telefonos WHERE id = @idTelComp;   -- 1 fila: idInstitucion NULL, idAdministrador = @idAdmin2 (sigue existiendo)
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Institucion', @idInst, @idTelComp); */      -- ERROR NO TIENE ESE TELEFONO (ya no es de la institucion)
+
+-- Ahora el administrador lo quita: como ya no tiene otro dueño, se borra
+CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Administrador', @idAdmin2, @idTelComp);
+SELECT * FROM Telefonos WHERE id = @idTelComp;                      -- 0 filas
+
+-- Administrador y responsable quitan el telefono que agregaron
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Administrador', @idAdmin1, @idTelAdm2); */  -- ERROR SIN PERMISO (telefonos de otro administrador)
+CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Administrador', @idAdmin2, @idTelAdm2);
+SELECT * FROM Telefonos WHERE idAdministrador = @idAdmin2;          -- 1 fila ('121214')
+
+/* CALL sp_Telefono_Eliminar(@idUsuarioResp2, 'Responsable', 2, 11); */                      -- ERROR NO TIENE ESE TELEFONO (el 11 es del responsable 1)
+/* CALL sp_Telefono_Eliminar(@idUsuarioAdmin2, 'Responsable', 2, @idTelResp2); */            -- ERROR SIN PERMISO (un administrador no edita telefonos de un responsable)
+CALL sp_Telefono_Eliminar(@idUsuarioResp2, 'Responsable', 2, @idTelResp2);
+SELECT * FROM Telefonos WHERE idResponsable = 2;                    -- 1 fila (la original del archivo de INSERTs)
 
 -- AGREGAR IDIOMA. Orden: admin, institucion, idioma
 CALL sp_Idioma_Institucion_Agregar(@idAdmin2, @idInst, 2);
@@ -211,14 +288,6 @@ SELECT * FROM Discapacidades WHERE idInstitucion = @idInst;         -- ahora vis
 /* CALL sp_Institucion_Modificar(@idAdmin2, @idInst, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 99, 0,0,0,0,0,0,0); */  -- ERROR TIPO NO EXISTE
 /* CALL sp_Institucion_Modificar(@idAdmin1, @idInst, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */   -- ERROR SIN PERMISO
 /* CALL sp_Institucion_Modificar(@idAdmin2, 999999, 'Otra 1', 'a@b.com', -34.4, -58.5, 'x', 1, 0,0,0,0,0,0,0); */    -- ERROR INSTITUCION NO EXISTE
-
--- ELIMINAR TELEFONO. Orden: admin, institucion, id del telefono
-SET @idTel = (SELECT id FROM Telefonos WHERE idInstitucion = @idInst LIMIT 1);
-/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin1, @idInst, @idTel); */   -- ERROR SIN PERMISO
-/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, 999999); */   -- ERROR NO TIENE ESE TELEFONO
-CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel);
-SELECT * FROM Telefonos WHERE idInstitucion = @idInst;              -- 0 filas
-/* CALL sp_Telefono_Institucion_Eliminar(@idAdmin2, @idInst, @idTel); */   -- ERROR NO TIENE ESE TELEFONO (ya se quito)
 
 -- ELIMINAR IDIOMA. Orden: admin, institucion, idioma
 /* CALL sp_Idioma_Institucion_Eliminar(@idAdmin1, @idInst, 2); */          -- ERROR SIN PERMISO
@@ -294,6 +363,57 @@ WHERE a.id = @idAdmin3;
 
 SET @idUsuario3 = (SELECT idUsuario FROM AdministradoresInstitucion WHERE id = @idAdmin3);
 
+-- BAJA / REACTIVAR ADMINISTRADOR. Orden: usuario que actua (idUsuario), administrador objetivo (idAdministrador)
+-- Deberian fallar (se corre de a uno):
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdmin2); */          -- ERROR NO PODES DARTE DE BAJA A VOS MISMO
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario1, @idAdmin3); */          -- ERROR SIN PERMISO (el actor esta inactivo)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuarioOtraInst, @idAdmin3); */   -- ERROR SIN PERMISO (administrador de otra institucion)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, 999999); */                      -- ERROR EL ADMINISTRADOR NO EXISTE
+/* CALL sp_AdministradorInstitucion_DarDeBaja(NULL, @idAdmin3); */                 -- ERROR FALTAN DATOS
+
+-- Baja hecha por otro administrador de la misma institucion
+CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 0
+SELECT idInstitucion FROM AdministradoresInstitucion WHERE id = @idAdmin3;         -- sigue siendo @idInst (no se desvincula)
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin3); */                   -- ERROR YA ESTA INACTIVO
+/* CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin2); */                   -- ERROR ULTIMO ADMINISTRADOR ACTIVO (admin3 ya esta de baja)
+
+-- Reactivacion hecha por Dev&Co
+/* CALL sp_AdministradorInstitucion_Reactivar(@idUsuarioOtraInst, @idAdmin3); */   -- ERROR SIN PERMISO (administrador de otra institucion)
+CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 1
+/* CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin3); */                   -- ERROR YA ESTA ACTIVO
+
+-- Baja hecha por Dev&Co y reactivacion hecha por otro administrador de la misma institucion
+CALL sp_AdministradorInstitucion_DarDeBaja(23, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 0
+CALL sp_AdministradorInstitucion_Reactivar(@idUsuario2, @idAdmin3);
+SELECT activo FROM Usuarios WHERE id = @idUsuario3;                                -- 1
+
+-- Una cuenta que nunca fue aprobada no se puede reactivar (testadmin: solo tiene postulaciones rechazadas)
+/* CALL sp_AdministradorInstitucion_Reactivar(23, @idAdmin1); */                   -- ERROR LA CUENTA NUNCA FUE APROBADA
+/* CALL sp_AdministradorInstitucion_Reactivar(23, 999999); */                      -- ERROR EL ADMINISTRADOR NO EXISTE
+/* CALL sp_AdministradorInstitucion_Reactivar(NULL, @idAdmin3); */                 -- ERROR FALTAN DATOS
+
+-- CREAR ADICIONAL con una persona que ya existe por otro rol: Laura Benitez (documento 33456872) es responsable
+-- en el archivo de INSERTs. Se reutiliza su persona y se conservan sus datos guardados (los nuevos se ignoran),
+-- pero necesita su propia cuenta de administrador con un email distinto al de responsable.
+CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Otro', 'Nombre', '33456872', 'Otra calle 1', '2000-01-01', 'clave123', 'laura.admin@mail.com', '1155550004', @idAdmin4);
+SELECT @idAdmin4;
+SELECT nombre, apellido, domicilio, fechaNacimiento FROM Personas WHERE documento = '33456872';   -- 1 sola fila, con los datos originales: Laura, Benitez, Calle Italia 450, 1987-02-11
+SELECT a.idPersona, a.idInstitucion, u.email, u.activo
+FROM AdministradoresInstitucion a
+JOIN Usuarios u ON u.id = a.idUsuario
+WHERE a.id = @idAdmin4;                                                                              -- idPersona = 1, idInstitucion = @idInst, email laura.admin@mail.com, activo = 1
+SELECT idUsuario FROM Responsables WHERE idPersona = 1;                                              -- sigue su usuario de responsable (1): ahora la persona tiene dos cuentas
+/* CALL sp_AdministradorInstitucion_CrearAdicional(@idUsuario2, 'Laura', 'Benitez', '33456872', 'Calle Italia 450', '1987-02-11', 'clave123', 'lbenitez@mail.test', '1155550004', @idAdmin5); */   -- ERROR EMAIL YA REGISTRADO (usa el email de su cuenta de responsable)
+
+-- Una baja de administrador no afecta a los de otra institucion.
+SET @idAdminOtraInst = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = @idUsuarioOtraInst);
+/* CALL sp_AdministradorInstitucion_DarDeBaja(@idUsuario2, @idAdminOtraInst); */     -- ERROR SIN PERMISO (testadmin2 no es de esa institucion)
+/* CALL sp_AdministradorInstitucion_Reactivar(@idUsuario2, @idAdminOtraInst); */     -- ERROR SIN PERMISO (idem)
+SELECT activo FROM Usuarios WHERE id = @idUsuarioOtraInst;                           -- 1: el administrador de la otra institucion sigue activo
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;
@@ -306,10 +426,14 @@ DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresIn
 DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'testadmin3@mail.com');
 DELETE FROM Usuarios WHERE email = 'testadmin3@mail.com';
 DELETE FROM Personas WHERE documento = '12121215';
+DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'laura.admin@mail.com'));
+DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email = 'laura.admin@mail.com');
+DELETE FROM Usuarios WHERE email = 'laura.admin@mail.com';
 DELETE FROM Discapacidades WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 UPDATE AdministradoresInstitucion SET idInstitucion = NULL WHERE idInstitucion IN (SELECT id FROM Instituciones WHERE cuit = '30999999994');
 DELETE FROM Instituciones WHERE cuit = '30999999994';
 DELETE FROM PostulacionesAdminInstitucion WHERE codigoSeguimiento LIKE 'PAI-TEST-%';
+DELETE FROM Telefonos WHERE telefono = '555555' AND idAdministrador IS NULL AND idResponsable = 1;
 DELETE FROM Telefonos WHERE idAdministrador IN (SELECT id FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com')));
 DELETE FROM AdministradoresInstitucion WHERE idUsuario IN (SELECT id FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com'));
 DELETE FROM Usuarios WHERE email IN ('testadmin@mail.com', 'testadmin2@mail.com');

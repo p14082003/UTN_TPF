@@ -185,6 +185,7 @@ SELECT i.id                  AS idInstitucion,
        i.nombre,
        i.direccion,
        i.email,
+       i.cuit,
        i.latitud,
        i.longitud,
        i.descripcion,
@@ -215,7 +216,23 @@ FROM Instituciones i
 JOIN TipoInstitucion ti    ON ti.id = i.idTipoInstitucion
 LEFT JOIN Discapacidades d ON d.idInstitucion = i.id;
 
-
+-- ==============================================================================
+-- ==============================================================================
+-- ==============================================================================
+-- Solo aparecen los administradores que ya tienen institucion: los que estan pendientes o fueron
+-- rechazados todavia no tienen una y se ven en vw_Postulaciones_Admin_Institucion.
+CREATE OR REPLACE VIEW vw_Administradores_Por_Institucion AS
+SELECT a.id                  AS idAdministrador,
+       a.idInstitucion,
+       p.nombre              AS nombreAdministrador,
+       p.apellido            AS apellidoAdministrador,
+       p.documento           AS docAdministrador,
+       u.email               AS emailAdministrador,
+       u.activo              AS usuarioActivo
+FROM AdministradoresInstitucion a
+JOIN Personas p ON p.id = a.idPersona
+JOIN Usuarios u ON u.id = a.idUsuario
+WHERE a.idInstitucion IS NOT NULL;
 
 
 
