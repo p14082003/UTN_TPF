@@ -69,9 +69,19 @@ namespace Negocio
             }
         }
 
-        public static async Task<HttpResponseMessage> DescargarDocumentoPostulacionAsync(int id)
+        public static Task<HttpResponseMessage> DescargarDocumentoPostulacionAsync(int id)
         {
-            using (var request = CrearRequest(HttpMethod.Get, "archivos/PostulacionesAlumnos/documento/" + id))
+            return DescargarArchivoAsync("archivos/PostulacionesAlumnos/documento/" + id);
+        }
+
+        public static Task<HttpResponseMessage> DescargarDocumentoAdminAsync(int id, string tipo)
+        {
+            return DescargarArchivoAsync("archivos/PostulacionesAdminInstitucion/" + tipo + "/" + id);
+        }
+
+        private static async Task<HttpResponseMessage> DescargarArchivoAsync(string ruta)
+        {
+            using (var request = CrearRequest(HttpMethod.Get, ruta))
             {
                 return await cliente.SendAsync(request);
             }

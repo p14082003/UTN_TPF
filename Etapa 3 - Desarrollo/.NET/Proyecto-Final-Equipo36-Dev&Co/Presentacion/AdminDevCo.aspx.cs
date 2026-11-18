@@ -1,15 +1,29 @@
-﻿using System;
+﻿using Negocio;
+using Presentacion.Auth;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Presentacion.Auth;
 
 namespace Presentacion
 {
-    public partial class AdminDevCo : System.Web.UI.Page
+    public partial class AdminDevCo : Page
     {
+        private const string RutaSolicitudes = "vw/PostulacionesAdminInstitucion";
+        private const string RutaInstituciones = "vw/Instituciones";
+        private const int Pendiente = 1;
+        private const int Confirmado = 3;
+        private const int Rechazado = 4;
+
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+            ViewStateUserKey = Session.SessionID;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!UsuarioSesion.TieneRol(Session, UsuarioSesion.DevCo))
@@ -21,60 +35,43 @@ namespace Presentacion
             Response.Cache.SetNoStore();
             if (!IsPostBack)
             {
-                CargarSolicitudesFalsas(); // Solo cargamos la tabla la primera vez
                 MostrarVista("solicitudes");
+                Ejecutar(async () =>
+                {
+                    await CargarSolicitudesAsync();
+                    await CargarInstitucionesAsync();
+                });
             }
         }
 
-        // ---------------------------------------------------------------------
-        // DATOS DE PRUEBA (hardcodeados). reemplazar por la llamada a la API que se indica en cada uno.
-        // ---------------------------------------------------------------------
-        private void CargarSolicitudesFalsas()
+        private async Task CargarSolicitudesAsync()
         {
-            // API: traer las solicitudes de vw_Postulaciones_Admin_Institucion filtradas por el estado elegido
-            // en ddlFiltroEstado (Pendiente / Confirmado / Rechazado / (FALTA Cancelado - ver con Juli) / Todas). Entra mostrando Pendiente por defecto.
-            var lista = new List<object>
+            string estado = ddlFiltroEstado.SelectedValue;
+            string ruta = RutaSolicitudes;
+            if (estado != "")
             {
-                new { IdPostulacion = 12, Fecha = "29/10/2026", NombreInstitucion = "Instituto Nuevo Horizonte", Cuit = "30-71000012-0", Administrador = "Ramiro Villalba", Email = "rvillalba@mail.test", Estado = "Pendiente" },
-                new { IdPostulacion = 13, Fecha = "03/11/2026", NombreInstitucion = "Colegio San Martín", Cuit = "30-12345678-9", Administrador = "Julia Peralta", Email = "jperalta@mail.test", Estado = "Pendiente" },
-                new { IdPostulacion = 14, Fecha = "09/11/2026", NombreInstitucion = "Academia Oxford (Inglés)", Cuit = "33-44445555-9", Administrador = "Mario Quiroga", Email = "mquiroga@mail.test", Estado = "Pendiente" }
-            };
+                ruta += "?idEstado=" + estado;
+            }
 
-            dgvSolicitudes.DataSource = lista;
+            var solicitudes = await InstiRedApi.GetAsync<List<SolicitudApi>>(ruta);
+            dgvSolicitudes.DataSource = solicitudes;
             dgvSolicitudes.DataBind();
+            if (estado == "" || estado == Pendiente.ToString())
+            {
+                litPendientes.Text = solicitudes.Count(s => s.IdEstado == Pendiente).ToString();
+            }
         }
 
-        private void CargarInstitucionesFalsas()
+        private async Task CargarInstitucionesAsync()
         {
-            // API: traer las instituciones de vw_Instituciones (agregue el cuit a la vista por si tienen que volver a crearlo)
-            var lista = new List<object>
-            {
-                new { IdInstitucion = 1, Nombre = "Jardín de Infantes N° 902 Arco Iris", Cuit = "30-71000001-4", Tipo = "Jardín", Email = "jardin902@instired.test", Estado = "Activa" },
-                new { IdInstitucion = 4, Nombre = "Instituto de Idiomas Lingua Norte", Cuit = "30-71000004-9", Tipo = "Instituto de idiomas", Email = "info@linguanorte.instired.test", Estado = "Activa" },
-                new { IdInstitucion = 8, Nombre = "Escuela Primaria N° 31 Juana Manso", Cuit = "30-71000008-1", Tipo = "Primaria", Email = "primaria31@instired.test", Estado = "Dada de baja" }
-            };
-
-            dgvInstituciones.DataSource = lista;
+            var instituciones = await InstiRedApi.GetAsync<List<InstitucionApi>>(RutaInstituciones);
+            int activas = instituciones.Count(i => i.Estado);
+            litActivas.Text = activas.ToString();
+            litDadasDeBaja.Text = (instituciones.Count - activas).ToString();
+            dgvInstituciones.DataSource = instituciones;
             dgvInstituciones.DataBind();
         }
 
-        private void CargarAdministradoresFalsos()
-        {
-            // API: traer los administradores de la institución elegida con su estado (activo / dado de baja).
-            // nueva vista creada para esto vw_Administradores_Por_Institucion.
-            var lista = new List<object>
-            {
-                new { IdAdministrador = 4, NombreCompleto = "Gabriela Torres", Documento = "34087532", Email = "gtorres.adm@mail.test", Estado = "Activo", Activo = true },
-                new { IdAdministrador = 9, NombreCompleto = "Natalia Ocampo", Documento = "30441275", Email = "nocampo@mail.test", Estado = "Dado de baja", Activo = false }
-            };
-
-            dgvAdministradores.DataSource = lista;
-            dgvAdministradores.DataBind();
-        }
-
-        // ---------------------------------------------------------------------
-        // MENÚ Y PANELES
-        // ---------------------------------------------------------------------
         private void MostrarVista(string vista)
         {
             pnlSolicitudes.Visible = vista == "solicitudes";
@@ -85,13 +82,28 @@ namespace Presentacion
 
         private void MostrarMensaje(string texto, bool exito)
         {
-            lblMensaje.Text = texto;
+            lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = exito ? "fw-bold fg-success" : "fw-bold fg-danger";
             pnlMensaje.Visible = true;
         }
 
-        // Deja la zona de rechazo como nueva. Los controles recuerdan su estado entre clicks,
-        // por eso hay que llamarlo al abrir y al cerrar el detalle.
+        private void Ejecutar(Func<Task> accion)
+        {
+            pnlMensaje.Visible = false;
+            RegisterAsyncTask(new PageAsyncTask(async () =>
+            {
+                try
+                {
+                    await accion();
+                }
+                catch (Exception ex)
+                {
+                    Trace.Warn("AdminDevCo", "Error al comunicarse con InstiRed.", ex);
+                    MostrarMensaje("No se pudo actualizar el panel. Intentá nuevamente.", false);
+                }
+            }));
+        }
+
         private void ReiniciarRechazo()
         {
             txtMotivoRechazo.Text = "";
@@ -102,59 +114,74 @@ namespace Presentacion
 
         protected void btnMenuSolicitudes_Click(object sender, EventArgs e)
         {
-            pnlMensaje.Visible = false;
-            CargarSolicitudesFalsas();
             MostrarVista("solicitudes");
+            Ejecutar(CargarSolicitudesAsync);
         }
 
         protected void btnMenuInstituciones_Click(object sender, EventArgs e)
         {
-            pnlMensaje.Visible = false;
-            CargarInstitucionesFalsas();
             MostrarVista("instituciones");
+            Ejecutar(CargarInstitucionesAsync);
         }
 
-        // ---------------------------------------------------------------------
-        // SOLICITUDES
-        // ---------------------------------------------------------------------
         protected void ddlFiltroEstado_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // API: volver a pedir las solicitudes con el estado elegido (ddlFiltroEstado.SelectedValue)
-            CargarSolicitudesFalsas();
+            Ejecutar(CargarSolicitudesAsync);
         }
 
         protected void btnVerSolicitud_Click(object sender, EventArgs e)
         {
-            pnlMensaje.Visible = false;
+            int id = int.Parse(((LinkButton)sender).CommandArgument);
+            Ejecutar(() => CargarDetalleSolicitudAsync(id));
+        }
 
-            // El botón apretado trae en CommandArgument el id de la solicitud de su fila:
-            // int idPostulacion = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: con ese id traer el detalle de la solicitud y completar el panel (hoy está escrito a mano en el .aspx).
-            // Guardar el id (por ejemplo en ViewState) para usarlo al aprobar o rechazar.
+        private async Task CargarDetalleSolicitudAsync(int id)
+        {
+            var solicitud = await InstiRedApi.GetAsync<SolicitudApi>(RutaSolicitudes + "/" + id, permitirNoEncontrado: true);
+            if (solicitud == null)
+            {
+                MostrarMensaje("La solicitud ya no está disponible.", false);
+                return;
+            }
 
-            // API: si la solicitud ya fue resuelta, mostrar su estado y el motivo del rechazo, y ocultar los botones.
-            // Con el estado y el motivoRechazo de la solicitud elegida:
-            //   bool pendiente = estado == "Pendiente";
-            //   pnlAcciones.Visible = pendiente;                 // solo se aprueba o rechaza si está Pendiente
-            //   pnlResuelta.Visible = !pendiente;
-            //   lblSolEstado.Text = estado == "Confirmado" ? "Aprobada" : "Rechazada";
-            //   lblSolEstado.CssClass = estado == "Confirmado" ? "fw-bold fg-success" : "fw-bold fg-danger";
-            //   pnlMotivoRechazo.Visible = estado == "Rechazado";
-            //   lblMotivoRechazo.Text = motivoRechazo;
+            ViewState["IdPostulacion"] = solicitud.IdPostulacion;
+            litSolInstitucion.Text = solicitud.NombreInstitucion;
+            litSolCuit.Text = solicitud.CuitInstitucion;
+            litSolFecha.Text = solicitud.Fecha.ToString("dd/MM/yyyy");
+            litSolCodigo.Text = solicitud.CodigoSeguimiento;
+            litSolAdministrador.Text = solicitud.Administrador;
+            litSolDocumento.Text = solicitud.DocAdministrador;
+            litSolEmail.Text = solicitud.EmailAdministrador;
+
+            PrepararAdjunto(lnkConstanciaFiscal, id, "constancia-fiscal", solicitud.RutaConstanciaFiscal);
+            PrepararAdjunto(lnkHabilitacion, id, "habilitacion", solicitud.RutaHabilitacion);
+            PrepararAdjunto(lnkConstanciaLaboral, id, "constancia-laboral", solicitud.RutaConstanciaLaboral);
+
             ReiniciarRechazo();
+            bool pendiente = solicitud.IdEstado == Pendiente;
+            pnlAcciones.Visible = pendiente;
+            pnlResuelta.Visible = !pendiente;
+            lblSolEstado.Text = Server.HtmlEncode(solicitud.EstadoVisible);
+            lblSolEstado.CssClass = solicitud.IdEstado == Confirmado ? "fw-bold fg-success" : "fw-bold fg-danger";
+            pnlMotivoRechazo.Visible = solicitud.IdEstado == Rechazado;
+            lblMotivoRechazo.Text = Server.HtmlEncode(solicitud.MotivoRechazo);
             MostrarVista("detalleSolicitud");
+        }
+
+        private void PrepararAdjunto(HyperLink enlace, int id, string tipo, string ruta)
+        {
+            enlace.Visible = !string.IsNullOrWhiteSpace(ruta);
+            enlace.NavigateUrl = "~/DescargarDocumentoAdmin.ashx?id=" + id + "&tipo=" + tipo;
         }
 
         protected void btnVolverSolicitud_Click(object sender, EventArgs e)
         {
-            ReiniciarRechazo();
-            CargarSolicitudesFalsas();
-            MostrarVista("solicitudes");
+            btnMenuSolicitudes_Click(sender, e);
         }
 
         protected void btnDesplegarRechazo_Click(object sender, EventArgs e)
         {
-            // Mostramos la caja de texto para escribir el motivo y ocultamos los botones principales
+            pnlMensaje.Visible = false;
             panelRechazo.Visible = true;
             btnDesplegarRechazo.Visible = false;
             btnAprobar.Visible = false;
@@ -162,102 +189,211 @@ namespace Presentacion
 
         protected void btnCancelarRechazo_Click(object sender, EventArgs e)
         {
+            pnlMensaje.Visible = false;
             ReiniciarRechazo();
         }
 
         protected void btnAprobar_Click(object sender, EventArgs e)
         {
-            // API: aprobar la solicitud con sp_PostulacionAdmin_Aprobar(idPostulacion, idUsuarioDevCo)
-            // idUsuarioDevCo deberia estar en la sesión del login. Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Después de aprobar: ¿enviar mail de aviso al administrador?
-
-            MostrarMensaje("Solicitud aprobada.", true);
-
-            ReiniciarRechazo();
-            CargarSolicitudesFalsas();
-            MostrarVista("solicitudes");
+            ResolverSolicitud("sp/AprobarPostulacionAdmin", "", "Solicitud aprobada.");
         }
 
         protected void btnConfirmarRechazo_Click(object sender, EventArgs e)
         {
-            // El motivo es obligatorio: si está vacío no se llama a la API y se queda en pantalla
             string motivo = txtMotivoRechazo.Text.Trim();
-
-            if (motivo == "")
+            if (motivo == "" || motivo.Length > 255)
             {
-                MostrarMensaje("El motivo de rechazo es obligatorio.", false);
+                MostrarMensaje("Ingresá un motivo de rechazo de hasta 255 caracteres.", false);
                 return;
             }
 
-            // API: rechazar la solicitud con sp_PostulacionAdmin_Rechazar(idPostulacion, idUsuarioDevCo, motivo)
-            // Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Después de rechazar: ¿enviar mail al administrador con el motivo??
-
-            MostrarMensaje("Solicitud rechazada.", true);
-
-            ReiniciarRechazo();
-            CargarSolicitudesFalsas();
-            MostrarVista("solicitudes");
+            ResolverSolicitud("sp/RechazarPostulacionAdmin", motivo, "Solicitud rechazada.");
         }
 
-        // ---------------------------------------------------------------------
-        // INSTITUCIONES
-        // ---------------------------------------------------------------------
+        private void ResolverSolicitud(string ruta, string motivo, string mensaje)
+        {
+            int idPostulacion = (int)ViewState["IdPostulacion"];
+            int idUsuarioDevCo = UsuarioSesion.Obtener(Session).IdUsuario;
+            object datos = new { idPostulacion, idUsuarioDevCo };
+            if (motivo != "")
+            {
+                datos = new { idPostulacion, idUsuarioDevCo, motivoRechazo = motivo };
+            }
+
+            Ejecutar(async () =>
+            {
+                if (await GuardarAsync(ruta, datos))
+                {
+                    MostrarVista("solicitudes");
+                    await CargarSolicitudesAsync();
+                    string estado = ddlFiltroEstado.SelectedValue;
+                    if (estado != "" && estado != Pendiente.ToString())
+                    {
+                        var pendientes = await InstiRedApi.GetAsync<List<SolicitudApi>>(RutaSolicitudes + "?idEstado=" + Pendiente);
+                        litPendientes.Text = pendientes.Count.ToString();
+                    }
+                    MostrarMensaje(mensaje, true);
+                }
+            });
+        }
+
         protected void btnVerInstitucion_Click(object sender, EventArgs e)
         {
-            pnlMensaje.Visible = false;
+            int id = int.Parse(((LinkButton)sender).CommandArgument);
+            Ejecutar(() => CargarDetalleInstitucionAsync(id));
+        }
 
-            // int idInstitucion = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: con ese id traer el detalle de la institución (hoy esta hardcodeado en el .aspx)
-            // y mostrar pnlBajaInstitucion si está activa o pnlReactivarInstitucion si está dada de baja.
-            // Guardar el id para usarlo en la baja, la reactivación y la lista de administradores.
+        private async Task CargarDetalleInstitucionAsync(int id)
+        {
+            var institucion = await InstiRedApi.GetAsync<InstitucionApi>(RutaInstituciones + "/" + id, permitirNoEncontrado: true);
+            if (institucion == null)
+            {
+                MostrarMensaje("La institución ya no está disponible.", false);
+                return;
+            }
 
-            CargarAdministradoresFalsos();
+            var administradores = await ListarAdministradoresAsync(id);
+            ViewState["IdInstitucion"] = institucion.IdInstitucion;
+            litInstNombre.Text = institucion.Nombre;
+            litInstCuit.Text = institucion.Cuit;
+            litInstTipo.Text = institucion.TipoInstitucion;
+            litInstEmail.Text = institucion.Email;
+            lblInstEstado.Text = institucion.EstadoVisible;
+            lblInstEstado.CssClass = institucion.Estado ? "fw-bold fg-success" : "fw-bold fg-danger";
+            pnlBajaInstitucion.Visible = institucion.Estado;
+            pnlReactivarInstitucion.Visible = !institucion.Estado;
+
+            dgvAdministradores.DataSource = administradores;
+            dgvAdministradores.DataBind();
             MostrarVista("detalleInstitucion");
+        }
+
+        private Task<List<AdministradorApi>> ListarAdministradoresAsync(int idInstitucion)
+        {
+            return InstiRedApi.GetAsync<List<AdministradorApi>>("vw/AdministradoresPorInstitucion?idInstitucion=" + idInstitucion);
         }
 
         protected void btnVolverInstitucion_Click(object sender, EventArgs e)
         {
-            CargarInstitucionesFalsas();
-            MostrarVista("instituciones");
+            btnMenuInstituciones_Click(sender, e);
         }
 
         protected void btnBajaInstitucion_Click(object sender, EventArgs e)
         {
-            // API: dar de baja la institución con sp_Institucion_DarDeBaja(idInstitucion, idUsuarioDevCo)
-            // Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Despues recargar el detalle para que pase a mostrar el botón Reactivar.
-
-            MostrarMensaje("Institución dada de baja.", true);
+            CambiarEstadoInstitucion("sp/DarDeBajaInstitucion", "Institución dada de baja.");
         }
 
         protected void btnReactivarInstitucion_Click(object sender, EventArgs e)
         {
-            // API: reactivar la institución con sp_Institucion_Reactivar(idInstitucion, idUsuarioDevCo)
-            // Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Despues recargar el detalle para que pase a mostrar el boton para dar de baja.
+            CambiarEstadoInstitucion("sp/ReactivarInstitucion", "Institución reactivada.");
+        }
 
-            MostrarMensaje("Institución reactivada.", true);
+        private void CambiarEstadoInstitucion(string ruta, string mensaje)
+        {
+            int idInstitucion = (int)ViewState["IdInstitucion"];
+            int idUsuarioDevCo = UsuarioSesion.Obtener(Session).IdUsuario;
+            Ejecutar(async () =>
+            {
+                if (await GuardarAsync(ruta, new { idInstitucion, idUsuarioDevCo }))
+                {
+                    await CargarDetalleInstitucionAsync(idInstitucion);
+                    await CargarInstitucionesAsync();
+                    MostrarMensaje(mensaje, true);
+                }
+            });
         }
 
         protected void btnBajaAdministrador_Click(object sender, EventArgs e)
         {
-            // int idAdministrador = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: dar de baja al administrador con sp_AdministradorInstitucion_DarDeBaja(idUsuarioDevCo, idAdministrador)
-            // Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Despues recargar la lista de administradores.
-
-            MostrarMensaje("Administrador dado de baja.", true);
+            CambiarEstadoAdministrador(sender, darDeBaja: true);
         }
 
         protected void btnReactivarAdministrador_Click(object sender, EventArgs e)
         {
-            // int idAdministrador = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: reactivar al administrador con sp_AdministradorInstitucion_Reactivar(idUsuarioDevCo, idAdministrador)
-            // Si la API devuelve error, mostrar su mensaje con MostrarMensaje(mensaje, false).
-            // Despues recargar la lista de administradores.
+            CambiarEstadoAdministrador(sender, darDeBaja: false);
+        }
 
-            MostrarMensaje("Administrador reactivado.", true);
+        private void CambiarEstadoAdministrador(object sender, bool darDeBaja)
+        {
+            int idAdministrador = int.Parse(((LinkButton)sender).CommandArgument);
+            int idInstitucion = (int)ViewState["IdInstitucion"];
+            int idUsuarioActor = UsuarioSesion.Obtener(Session).IdUsuario;
+            Ejecutar(async () =>
+            {
+                if (darDeBaja)
+                {
+                    var administradores = await ListarAdministradoresAsync(idInstitucion);
+                    var activos = administradores.Where(a => a.UsuarioActivo).ToList();
+                    if (activos.Count == 1 && activos[0].IdAdministrador == idAdministrador)
+                    {
+                        MostrarMensaje("No se puede dar de baja al último administrador activo de la institución.", false);
+                        return;
+                    }
+                }
+
+                string ruta = darDeBaja ? "sp/DarDeBajaAdministradorInstitucion" : "sp/ReactivarAdministradorInstitucion";
+                if (await GuardarAsync(ruta, new { idAdministrador, idUsuarioActor }))
+                {
+                    await CargarDetalleInstitucionAsync(idInstitucion);
+                    MostrarMensaje(darDeBaja ? "Administrador dado de baja." : "Administrador reactivado.", true);
+                }
+            });
+        }
+
+        private async Task<bool> GuardarAsync(string ruta, object datos)
+        {
+            var respuesta = await InstiRedApi.PostAsync(ruta, datos);
+            if (respuesta.Estado == HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            MostrarMensaje(respuesta.Mensaje ?? "No se pudo completar la operación.", false);
+            return false;
+        }
+
+        private class SolicitudApi
+        {
+            public int IdPostulacion { get; set; }
+            public DateTime Fecha { get; set; }
+            public int IdEstado { get; set; }
+            public string Estado { get; set; }
+            public string NombreAdministrador { get; set; }
+            public string ApellidoAdministrador { get; set; }
+            public string DocAdministrador { get; set; }
+            public string EmailAdministrador { get; set; }
+            public string NombreInstitucion { get; set; }
+            public string CuitInstitucion { get; set; }
+            public string CodigoSeguimiento { get; set; }
+            public string RutaConstanciaFiscal { get; set; }
+            public string RutaHabilitacion { get; set; }
+            public string RutaConstanciaLaboral { get; set; }
+            public string MotivoRechazo { get; set; }
+            public string Administrador => (NombreAdministrador + " " + ApellidoAdministrador).Trim();
+            public string EstadoVisible => IdEstado == Confirmado ? "Aprobada" : Estado;
+        }
+
+        private class InstitucionApi
+        {
+            public int IdInstitucion { get; set; }
+            public string Nombre { get; set; }
+            public string Cuit { get; set; }
+            public string TipoInstitucion { get; set; }
+            public string Email { get; set; }
+            public bool Estado { get; set; }
+            public string EstadoVisible => Estado ? "Activa" : "Dada de baja";
+        }
+
+        private class AdministradorApi
+        {
+            public int IdAdministrador { get; set; }
+            public string NombreAdministrador { get; set; }
+            public string ApellidoAdministrador { get; set; }
+            public string DocAdministrador { get; set; }
+            public string EmailAdministrador { get; set; }
+            public bool UsuarioActivo { get; set; }
+            public string NombreCompleto => (NombreAdministrador + " " + ApellidoAdministrador).Trim();
+            public string EstadoVisible => UsuarioActivo ? "Activo" : "Dado de baja";
         }
     }
 }

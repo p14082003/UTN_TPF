@@ -13,6 +13,24 @@ namespace Presentacion
 
     public partial class AdminDevCo
     {
+        protected global::System.Web.UI.WebControls.Literal litPendientes;
+        protected global::System.Web.UI.WebControls.Literal litActivas;
+        protected global::System.Web.UI.WebControls.Literal litDadasDeBaja;
+        protected global::System.Web.UI.WebControls.Literal litSolInstitucion;
+        protected global::System.Web.UI.WebControls.Literal litSolCuit;
+        protected global::System.Web.UI.WebControls.Literal litSolFecha;
+        protected global::System.Web.UI.WebControls.Literal litSolCodigo;
+        protected global::System.Web.UI.WebControls.Literal litSolAdministrador;
+        protected global::System.Web.UI.WebControls.Literal litSolDocumento;
+        protected global::System.Web.UI.WebControls.Literal litSolEmail;
+        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaFiscal;
+        protected global::System.Web.UI.WebControls.HyperLink lnkHabilitacion;
+        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaLaboral;
+        protected global::System.Web.UI.WebControls.Literal litInstNombre;
+        protected global::System.Web.UI.WebControls.Literal litInstCuit;
+        protected global::System.Web.UI.WebControls.Literal litInstTipo;
+        protected global::System.Web.UI.WebControls.Literal litInstEmail;
+        protected global::System.Web.UI.WebControls.Label lblInstEstado;
 
         /// <summary>
         /// Control pnlMensaje.

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="AdminDevCo.aspx.cs" Inherits="Presentacion.AdminDevCo" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="AdminDevCo.aspx.cs" Inherits="Presentacion.AdminDevCo" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -22,8 +22,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-hourglass-split text-lavanda fs-4 me-2"></i>Pendientes</h5>
-                        <!-- API: cantidad de solicitudes con estado Pendiente -->
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3">12</h2>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litPendientes" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
@@ -31,8 +30,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-building-check text-lavanda fs-4 me-2"></i>Activas</h5>
-                        <!-- API: cantidad de instituciones con estado activo -->
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3">45</h2>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litActivas" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
@@ -40,8 +38,7 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-x-octagon text-lavanda fs-4 me-2"></i>Dadas de baja</h5>
-                        <!-- API: cantidad de instituciones dadas de baja -->
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3">3</h2>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litDadasDeBaja" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
@@ -64,10 +61,11 @@
                 <div class="mb-3" style="max-width: 260px;">
                     <label for="<%= ddlFiltroEstado.ClientID %>" class="form-label text-indigo fw-bold">Mostrar</label>
                     <asp:DropDownList ID="ddlFiltroEstado" runat="server" CssClass="form-control border-neutro" AutoPostBack="true" OnSelectedIndexChanged="ddlFiltroEstado_SelectedIndexChanged">
-                        <asp:ListItem Text="Pendientes" Value="Pendiente" Selected="True"></asp:ListItem>
-                        <asp:ListItem Text="Aprobadas" Value="Confirmado"></asp:ListItem>
-                        <asp:ListItem Text="Rechazadas" Value="Rechazado"></asp:ListItem>
-                        <asp:ListItem Text="Todas" Value="Todas"></asp:ListItem>
+                        <asp:ListItem Text="Pendientes" Value="1" Selected="True"></asp:ListItem>
+                        <asp:ListItem Text="Aprobadas" Value="3"></asp:ListItem>
+                        <asp:ListItem Text="Rechazadas" Value="4"></asp:ListItem>
+                        <asp:ListItem Text="Canceladas" Value="5"></asp:ListItem>
+                        <asp:ListItem Text="Todas" Value=""></asp:ListItem>
                     </asp:DropDownList>
                 </div>
                 <div class="table-responsive">
@@ -75,12 +73,12 @@
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay solicitudes para mostrar.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <Columns>
-                            <asp:BoundField DataField="Fecha" HeaderText="Fecha" />
+                            <asp:BoundField DataField="Fecha" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
                             <asp:BoundField DataField="NombreInstitucion" HeaderText="Institución" />
-                            <asp:BoundField DataField="Cuit" HeaderText="CUIT" />
+                            <asp:BoundField DataField="CuitInstitucion" HeaderText="CUIT" />
                             <asp:BoundField DataField="Administrador" HeaderText="Administrador" />
-                            <asp:BoundField DataField="Email" HeaderText="Correo electrónico" />
-                            <asp:BoundField DataField="Estado" HeaderText="Estado" />
+                            <asp:BoundField DataField="EmailAdministrador" HeaderText="Correo electrónico" />
+                            <asp:BoundField DataField="EstadoVisible" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnVerSolicitud" runat="server" CommandArgument='<%# Eval("IdPostulacion") %>' CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" OnClick="btnVerSolicitud_Click">
@@ -102,7 +100,6 @@
             </div>
             <div class="card-body bg-white rounded-bottom-9">
 
-                <!-- API: todos los datos de este detalle salen de la solicitud elegida en Ver Detalle-->
 
                 <!-- Institución seleccionada -->
                 <div class="p-4 bg-fondo rounded-9 border border-neutro mb-4">
@@ -110,19 +107,19 @@
                     <div class="row">
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Nombre</span>
-                            <span class="text-indigo fw-bold fs-lg">Instituto Nuevo Horizonte</span>
+                            <span class="text-indigo fw-bold fs-lg"><asp:Literal ID="litSolInstitucion" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">CUIT</span>
-                            <span class="text-indigo fw-bold fs-lg">30-71000012-0</span>
+                            <span class="text-indigo fw-bold fs-lg"><asp:Literal ID="litSolCuit" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Fecha de la solicitud</span>
-                            <span class="text-indigo fw-bold">29/10/2026</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litSolFecha" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Código de seguimiento</span>
-                            <span class="text-indigo fw-bold">PAI-20261029-0012</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litSolCodigo" runat="server" Mode="Encode" /></span>
                         </div>
                     </div>
                 </div>
@@ -133,19 +130,15 @@
                     <div class="row">
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Nombre y apellido</span>
-                            <span class="text-indigo fw-bold">Ramiro Villalba</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litSolAdministrador" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Documento</span>
-                            <span class="text-indigo fw-bold">27318450</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litSolDocumento" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Correo electrónico</span>
-                            <span class="text-indigo fw-bold">rvillalba@mail.test</span>
-                        </div>
-                        <div class="md:col-6 mb-2">
-                            <span class="fg-secondary d-block small">Teléfono</span>
-                            <span class="text-indigo fw-bold">+54 9 11 5555-3001</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litSolEmail" runat="server" Mode="Encode" /></span>
                         </div>
                     </div>
                 </div>
@@ -153,11 +146,10 @@
                 <!-- Documentación (se abre en otra pestaña) -->
                 <div class="p-4 bg-fondo rounded-9 border border-neutro mb-4">
                     <h6 class="text-indigo fw-bold mb-3">Documentación</h6>
-                    <!-- Para abrir la documentacion, al href de cada enlace pasarle la ruta guardada del archivo -->
                     <ul class="list-unstyled mb-0">
-                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><a href="#" target="_blank" class="link-lilaClaro">Constancia fiscal</a></li>
-                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><a href="#" target="_blank" class="link-lilaClaro">Habilitación</a></li>
-                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><a href="#" target="_blank" class="link-lilaClaro">Constancia laboral</a></li>
+                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><asp:HyperLink ID="lnkConstanciaFiscal" runat="server" Target="_blank" CssClass="link-lilaClaro" Text="Constancia fiscal" /></li>
+                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><asp:HyperLink ID="lnkHabilitacion" runat="server" Target="_blank" CssClass="link-lilaClaro" Text="Habilitación" /></li>
+                        <li class="mb-1"><i class="bi bi-file-earmark-text text-lavanda me-2"></i><asp:HyperLink ID="lnkConstanciaLaboral" runat="server" Target="_blank" CssClass="link-lilaClaro" Text="Constancia laboral" /></li>
                     </ul>
                 </div>
 
@@ -166,7 +158,7 @@
                 <asp:Panel ID="pnlAcciones" runat="server">
                     <div class="d-flex justify-content-end gap-5 mt-4">
                         <asp:Button ID="btnDesplegarRechazo" runat="server" Text="Rechazar" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4" OnClick="btnDesplegarRechazo_Click" />
-                        <asp:Button ID="btnAprobar" runat="server" Text="Aprobar institución" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAprobar_Click" />
+                        <asp:Button ID="btnAprobar" runat="server" Text="Aprobar solicitud" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAprobar_Click" />
                     </div>
 
                     <asp:Panel ID="panelRechazo" runat="server" CssClass="mt-4" Visible="false">
@@ -179,15 +171,13 @@
                             </div>
                         </div>
                     </asp:Panel>
-                    <!--  API: bloque para mostrar el estado de una solicitud ya resuelta (Aprobada o Rechazada).
-                         descomentar y completar desde btnVerSolicitud_Click (ver el comentario ahí). -->
-                    <asp:Panel ID="pnlResuelta" runat="server" CssClass="p-4 bg-fondo rounded-9 border border-neutro mb-4" Visible="false">
-                        <span class="fg-secondary d-block small">Estado</span>
-                        <asp:Label ID="lblSolEstado" runat="server" CssClass="fw-bold"></asp:Label>
-                        <asp:Panel ID="pnlMotivoRechazo" runat="server" CssClass="mt-3" Visible="false">
-                            <span class="fg-secondary d-block small">Motivo del rechazo</span>
-                            <asp:Label ID="lblMotivoRechazo" runat="server" CssClass="text-indigo"></asp:Label>
-                        </asp:Panel>
+                </asp:Panel>
+                <asp:Panel ID="pnlResuelta" runat="server" CssClass="p-4 bg-fondo rounded-9 border border-neutro mb-4" Visible="false">
+                    <span class="fg-secondary d-block small">Estado</span>
+                    <asp:Label ID="lblSolEstado" runat="server" CssClass="fw-bold"></asp:Label>
+                    <asp:Panel ID="pnlMotivoRechazo" runat="server" CssClass="mt-3" Visible="false">
+                        <span class="fg-secondary d-block small">Motivo del rechazo</span>
+                        <asp:Label ID="lblMotivoRechazo" runat="server" CssClass="text-indigo"></asp:Label>
                     </asp:Panel>
                 </asp:Panel>
             </div>
@@ -208,9 +198,9 @@
                         <Columns>
                             <asp:BoundField DataField="Nombre" HeaderText="Institución" />
                             <asp:BoundField DataField="Cuit" HeaderText="CUIT" />
-                            <asp:BoundField DataField="Tipo" HeaderText="Tipo" />
+                            <asp:BoundField DataField="TipoInstitucion" HeaderText="Tipo" />
                             <asp:BoundField DataField="Email" HeaderText="Correo electrónico" />
-                            <asp:BoundField DataField="Estado" HeaderText="Estado" />
+                            <asp:BoundField DataField="EstadoVisible" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnVerInstitucion" runat="server" CommandArgument='<%# Eval("IdInstitucion") %>' CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" OnClick="btnVerInstitucion_Click">
@@ -232,28 +222,27 @@
             </div>
             <div class="card-body bg-white rounded-bottom-9">
 
-                <!-- API: los datos de la institución elegida salen de vw_Instituciones -->
                 <div class="p-4 bg-fondo rounded-9 border border-neutro mb-4">
                     <div class="row">
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Institución</span>
-                            <span class="text-indigo fw-bold fs-lg">Instituto de Idiomas Lingua Norte</span>
+                            <span class="text-indigo fw-bold fs-lg"><asp:Literal ID="litInstNombre" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">CUIT</span>
-                            <span class="text-indigo fw-bold fs-lg">30-71000004-9</span>
+                            <span class="text-indigo fw-bold fs-lg"><asp:Literal ID="litInstCuit" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Tipo</span>
-                            <span class="text-indigo fw-bold">Instituto de idiomas</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litInstTipo" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Correo electrónico</span>
-                            <span class="text-indigo fw-bold">info@linguanorte.instired.test</span>
+                            <span class="text-indigo fw-bold"><asp:Literal ID="litInstEmail" runat="server" Mode="Encode" /></span>
                         </div>
                         <div class="md:col-6 mb-2">
                             <span class="fg-secondary d-block small">Estado</span>
-                            <span class="fw-bold fg-success">Activa</span>
+                            <asp:Label ID="lblInstEstado" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -277,24 +266,23 @@
 
                 <!-- Administradores de la institución seleccionada -->
                 <h6 class="text-indigo fw-bold mb-3">Administradores</h6>
-                <!-- API: lista de administradores de la institución elegida con su estado  (falta una vista?) -->
                 <div class="table-responsive">
                     <asp:GridView ID="dgvAdministradores" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <Columns>
                             <asp:BoundField DataField="NombreCompleto" HeaderText="Administrador" />
-                            <asp:BoundField DataField="Documento" HeaderText="Documento" />
-                            <asp:BoundField DataField="Email" HeaderText="Correo electrónico" />
-                            <asp:BoundField DataField="Estado" HeaderText="Estado" />
+                            <asp:BoundField DataField="DocAdministrador" HeaderText="Documento" />
+                            <asp:BoundField DataField="EmailAdministrador" HeaderText="Correo electrónico" />
+                            <asp:BoundField DataField="EstadoVisible" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("Activo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
+                                    <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn-outline theme-danger btn-sm rounded-pill px-3 fw-bold"
                                         OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
                                         Dar de baja
                                     </asp:LinkButton>
-                                    <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("Activo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
+                                    <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
                                         OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
                                         Reactivar
