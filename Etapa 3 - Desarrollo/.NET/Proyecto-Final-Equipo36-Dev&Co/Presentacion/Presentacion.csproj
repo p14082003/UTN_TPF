@@ -77,6 +77,7 @@
     <Content Include="DescargarDocumentoAlumno.ashx" />
     <Content Include="DescargarDocumentoAdmin.ashx" />
     <Content Include="ListadoInstituciones.aspx" />
+    <Content Include="GestionarVacante.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
@@ -125,6 +126,12 @@
     </Compile>
     <Compile Include="ListadoInstituciones.aspx.designer.cs">
       <DependentUpon>ListadoInstituciones.aspx</DependentUpon>
+    <Compile Include="GestionarVacante.aspx.cs">
+      <DependentUpon>GestionarVacante.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GestionarVacante.aspx.designer.cs">
+      <DependentUpon>GestionarVacante.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
