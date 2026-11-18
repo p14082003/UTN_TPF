@@ -12,7 +12,7 @@ CREATE TABLE Roles (
 
 CREATE TABLE TipoInstitucion (
   id TINYINT NOT NULL AUTO_INCREMENT, 
-  tipoInstitucion VARCHAR(20) NOT NULL, 
+  tipoInstitucion VARCHAR(30) NOT NULL, 
   PRIMARY KEY (id)
 );
 
