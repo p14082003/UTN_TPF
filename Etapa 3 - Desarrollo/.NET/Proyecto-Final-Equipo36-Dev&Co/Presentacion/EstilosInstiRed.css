@@ -106,5 +106,10 @@
     border-radius: 15px 15px 0 0 !important;
 }
 
-
+/* Campos de solo lectura (ej: datos del autogestor) */
+input.form-control[readonly] {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
 

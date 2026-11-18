@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="RegistroAlumno.aspx.cs" Inherits="Presentacion.RegistroAlumno" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -72,6 +73,13 @@
                             <div class="col-12">
                                 <asp:Label ID="lblDatosAlumno" runat="server" Text="Datos del alumno:" CssClass="form-label fw-bold"></asp:Label>
                             </div>
+                            <div class="col-12">
+                                <asp:Label ID="lblDocumento" runat="server" Text="Documento" AssociatedControlID="txtDocumento" CssClass="form-label text-indigo"></asp:Label>
+                                <asp:TextBox ID="txtDocumento" runat="server" placeholder="35887625" MaxLength="8" CssClass="form-control"></asp:TextBox>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
                             <div class="col-12 md:col-6">
                                 <asp:Label ID="lblNombre" runat="server" Text="Nombre" AssociatedControlID="txtNombre" CssClass="form-label text-indigo"></asp:Label>
                                 <asp:TextBox ID="txtNombre" runat="server" placeholder="Nombre" MaxLength="50" CssClass="form-control"></asp:TextBox>
@@ -81,19 +89,14 @@
                                 <asp:TextBox ID="txtApellido" runat="server" placeholder="Apellido" MaxLength="50" CssClass="form-control"></asp:TextBox>
                             </div>
                             <div class="col-12 md:col-6">
-                                <asp:Label ID="lblDocumento" runat="server" Text="Documento" AssociatedControlID="txtDocumento" CssClass="form-label text-indigo"></asp:Label>
-                                <asp:TextBox ID="txtDocumento" runat="server" placeholder="35887625" MaxLength="8" CssClass="form-control"></asp:TextBox>
-                            </div>
-                            <div class="col-12 md:col-6">
                                 <asp:Label ID="lblFechaNacimiento" runat="server" Text="Fecha de nacimiento" AssociatedControlID="txtFechaNacimiento" CssClass="form-label text-indigo"></asp:Label>
                                 <asp:TextBox ID="txtFechaNacimiento" runat="server" TextMode="Date" CssClass="form-control"></asp:TextBox>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 md:col-6">
                                 <asp:Label ID="lblDomicilio" runat="server" Text="Domicilio" AssociatedControlID="txtDomicilio" CssClass="form-label text-indigo"></asp:Label>
                                 <asp:TextBox ID="txtDomicilio" runat="server" placeholder="Av. Rivadavia 123, Mza" MaxLength="100" CssClass="form-control"></asp:TextBox>
                             </div>
                         </div>
-
                         <!--Botones-->
                         <div class="row g-2">
                             <div class="col-12">
