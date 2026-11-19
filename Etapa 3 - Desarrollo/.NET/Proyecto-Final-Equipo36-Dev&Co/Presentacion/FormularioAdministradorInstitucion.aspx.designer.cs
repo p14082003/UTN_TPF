@@ -9,10 +9,26 @@
 
 namespace Presentacion
 {
-
-
     public partial class FormularioAdministradorInstitucion
     {
+
+        /// <summary>
+        /// Control Content1.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Content Content1;
+
+        /// <summary>
+        /// Control Content2.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Content Content2;
 
         /// <summary>
         /// Control pnlMensaje.
@@ -96,31 +112,22 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.TextBox txtTelefono;
 
         /// <summary>
-        /// Control txtNombreUsuario.
+        /// Control txtClave.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNombreUsuario;
+        protected global::System.Web.UI.WebControls.TextBox txtClave;
 
         /// <summary>
-        /// Control ddlInstitucion.
+        /// Control txtClaveRepetida.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlInstitucion;
-
-        /// <summary>
-        /// Control pnlNuevaInstitucion.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNuevaInstitucion;
+        protected global::System.Web.UI.WebControls.TextBox txtClaveRepetida;
 
         /// <summary>
         /// Control txtNombreInstitucion.
@@ -141,22 +148,31 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.TextBox txtCuit;
 
         /// <summary>
-        /// Control ddlTipoInstitucion.
+        /// Control fuConstanciaFiscal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInstitucion;
+        protected global::System.Web.UI.WebControls.FileUpload fuConstanciaFiscal;
 
         /// <summary>
-        /// Control fuDocumentos.
+        /// Control fuHabilitacion.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload fuDocumentos;
+        protected global::System.Web.UI.WebControls.FileUpload fuHabilitacion;
+
+        /// <summary>
+        /// Control fuConstanciaLaboral.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuConstanciaLaboral;
 
         /// <summary>
         /// Control btnGuardar.

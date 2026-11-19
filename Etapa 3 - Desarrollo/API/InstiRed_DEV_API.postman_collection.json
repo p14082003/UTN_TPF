@@ -217,6 +217,40 @@
           "name": "Cursos",
           "item": [
             {
+              "name": "Listar por institución",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/ent/Cursos?idInstitucion=1"
+              },
+              "response": []
+            },
+            {
+              "name": "Actualizar vacantes",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/ent/Cursos/1/vacantes",
+                "description": "Usá un administrador activo de la institución del curso. La capacidad se calcula como inscriptos actuales más las vacantes solicitadas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idAdministrador\": 1,\n  \"vacantes\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
               "name": "Listar",
               "request": {
                 "method": "GET",

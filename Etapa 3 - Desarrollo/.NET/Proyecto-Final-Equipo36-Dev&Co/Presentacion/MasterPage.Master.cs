@@ -11,13 +11,23 @@ namespace Presentacion
             lnkIniciarSesion.Visible = usuario == null;
             pnlSesion.Visible = usuario != null;
             pnlMenuAdmin.Visible = usuario != null && usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion;
+            lnkVacantes.Visible = usuario != null &&
+                usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion &&
+                usuario.IdInstitucion.GetValueOrDefault() > 0;
 
             if (usuario != null)
             {
                 Response.Cache.SetNoStore();
-                litSaludo.Text = string.IsNullOrWhiteSpace(usuario.Nombre)
-                    ? "¡Hola!"
-                    : "¡Hola, " + usuario.Nombre + "!";
+                if (usuario.IdTipoUsuario == UsuarioSesion.DevCo)
+                {
+                    litSaludo.Text = "¡Hola, DevCo!";
+                }
+                else
+                {
+                    litSaludo.Text = string.IsNullOrWhiteSpace(usuario.Nombre)
+                        ? "¡Hola!"
+                        : "¡Hola, " + usuario.Nombre + "!";
+                }
             }
         }
 
