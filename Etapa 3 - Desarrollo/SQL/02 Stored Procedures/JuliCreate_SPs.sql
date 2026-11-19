@@ -735,19 +735,27 @@ BEGIN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Debe ingresar un turno válido.';
 	END IF;
     
-    -- valido el ingreso del ciclo lectivo, tiene que ser año corriente igual o mayor
-    IF p_cicloLectivo IS NULL OR p_cicloLectivo < YEAR(CURDATE()) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El ciclo lectivo debe ser igual o mayor al año corriente.';
-	END IF;
+      -- Valido que el ciclo lectivo sea el actual o el siguiente
+		IF p_cicloLectivo IS NULL OR p_cicloLectivo NOT BETWEEN YEAR(CURDATE()) AND YEAR(CURDATE()) + 1 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo se pueden registrar cursos del ciclo lectivo actual o siguiente.';
+		END IF;
     
     -- Comprobamos que nivel personalizado no venga vacío, si viene, lo seteamos null. Sino se normaliza con la limpieza  
     SET p_nivelPersonalizado = NULLIF(TRIM(p_nivelPersonalizado), '');
     
+    -- Nivel normalizado solo permite hasta el 1ro de febrero antes de que arranque el ciclo lectivo de ese año
+		IF p_nivelPersonalizado IS NULL THEN
+			-- Solo se permite el ciclo actual hasta el 1 de febrero
+			IF p_cicloLectivo = YEAR(CURDATE()) AND CURDATE() > DATE(CONCAT(YEAR(CURDATE()), '-02-01')) THEN
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo para registrar cursos del ciclo lectivo actual.';
+			END IF;
+		END IF;
+        
     -- validamos el ingreso de nivel personalizado o nivel normalizado
     -- si recibimos nivel personalizado, anio y idNivel van NULL
     IF p_nivelPersonalizado IS NOT NULL THEN
 		IF p_idNivel IS NOT NULL OR p_anio IS NOT NULL THEN
-			SIGNAL SQLSTATE '45000'	SET MESSAGE_TEXT = 'Si ingresa un nivel personalizado, el nivel y el año deben ser NULL.';
+			SIGNAL SQLSTATE '45000'	SET MESSAGE_TEXT = 'Si ingresa un nivel personalizado, el nivel y el año deben quedar vacíos.';
 		END IF;
 	ELSE
 		-- Si es nivel normalizado, idNivel y anio son obligatorios y personalizado NULL
@@ -854,20 +862,19 @@ BEGIN
 			END IF;
         END IF;
         
-        -- valido que no haya un curso con las mismas características en la institución
-        IF p_nivelPersonalizado IS NULL AND p_anio IS NOT NULL AND p_idNivel IS NOT NULL THEN 
-			IF EXISTS (SELECT 1 FROM Cursos WHERE anio = p_anio AND idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND idNivel = p_idNivel AND division = p_division AND idInstitucion =v_idInstitucion) THEN 
-				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso ya se encuentra registrado.';
-			END IF;
+        -- valido que no haya un curso con las mismas características en la institución        
+        IF p_nivelPersonalizado IS NULL AND p_anio IS NOT NULL AND p_idNivel IS NOT NULL THEN 			
+			IF EXISTS (SELECT 1 FROM Cursos WHERE anio = p_anio AND idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND idNivel = p_idNivel AND TRIM(division) COLLATE utf8mb4_0900_ai_ci = TRIM(p_division) COLLATE utf8mb4_0900_ai_ci AND idInstitucion =v_idInstitucion) THEN 				
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso ya se encuentra registrado.';			
+			END IF;        
+        END IF;                
+        -- valido que no haya un curso con las mismas características en la institución        
+        IF p_nivelPersonalizado IS NOT NULL AND p_anio IS NULL AND p_idNivel IS NULL THEN 			
+			IF EXISTS (SELECT 1 FROM Cursos WHERE idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND TRIM(division) COLLATE utf8mb4_0900_ai_ci = TRIM(p_division) COLLATE utf8mb4_0900_ai_ci AND TRIM(nivelPersonalizado) COLLATE utf8mb4_0900_ai_ci = TRIM(p_nivelPersonalizado) COLLATE utf8mb4_0900_ai_ci AND idInstitucion =v_idInstitucion) THEN 				
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso personalizado ya se encuentra registrado.';			
+			END IF;        
         END IF;
-        
-        -- valido que no haya un curso con las mismas características en la institución
-        IF p_nivelPersonalizado IS NOT NULL AND p_anio IS NULL AND p_idNivel IS NULL THEN 
-			IF EXISTS (SELECT 1 FROM Cursos WHERE idTurno = p_idTurno AND cicloLectivo = p_cicloLectivo AND division = p_division AND nivelPersonalizado = p_nivelPersonalizado AND idInstitucion =v_idInstitucion) THEN 
-				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso personalizado ya se encuentra registrado.';
-			END IF;
-        END IF;
-        
+
         -- valido que el tipo de institucion permite el nivel personalizado 
         IF v_idTipoInstitucion = 4 AND p_idNivel IS NOT NULL THEN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los institutos de idiomas deben registrar cursos con nivel personalizado.';
