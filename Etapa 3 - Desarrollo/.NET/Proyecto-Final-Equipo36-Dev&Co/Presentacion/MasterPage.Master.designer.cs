@@ -13,6 +13,11 @@ namespace Presentacion
 
     public partial class Site1
     {
+        /// <summary>
+        /// Control lnkVacantes.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
+
 
         /// <summary>
         /// Control head.

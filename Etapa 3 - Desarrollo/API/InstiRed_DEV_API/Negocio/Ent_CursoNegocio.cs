@@ -1,19 +1,25 @@
 using Negocio.Helpers;
 using System.Data;
 using Dominio;
+using Dominio.DTOs;
 using MySqlConnector;
 
 namespace Negocio
 {
     public class Ent_CursoNegocio
     {
-        public List<Ent_Curso> listar()
+        public List<Ent_Curso> listar(int? idInstitucion = null)
         {
+            if (idInstitucion != null && idInstitucion <= 0)
+            {
+                throw new ArgumentException("El ID de la institución debe ser mayor que cero.");
+            }
             List<Ent_Curso> lista = new List<Ent_Curso>();
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearConsulta("SELECT id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos FROM Cursos ORDER BY id");
+                datos.setearConsulta("SELECT id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos FROM Cursos WHERE (@idInstitucion IS NULL OR idInstitucion = @idInstitucion) ORDER BY id");
+                datos.setearParametro("@idInstitucion", idInstitucion);
                 datos.ejecutarLectura();
                 MySqlDataReader? lector = datos.Lector;
                 if (lector == null)
@@ -116,6 +122,43 @@ namespace Negocio
                     throw new ConstraintException("La institución, el turno o el nivel escolar indicado no existe.", ex);
                 }
                 throw;
+            }
+            finally
+            {
+                datos.cerrarConexion();
+            }
+        }
+
+        public void actualizarVacantes(int id, Ent_CursoVacantes_in registro)
+        {
+            if (id <= 0 || registro == null || registro.IdAdministrador <= 0)
+            {
+                throw new ArgumentException("Debe indicar un curso y un administrador válidos.");
+            }
+            if (registro.Vacantes < 0 || registro.Vacantes > short.MaxValue)
+            {
+                throw new ArgumentException("Las vacantes deben estar entre 0 y 32767.");
+            }
+
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                // La capacidad se calcula con los inscriptos actuales en la misma escritura.
+                datos.setearConsulta(@"UPDATE Cursos c
+                    JOIN Instituciones i ON i.id = c.idInstitucion
+                    JOIN AdministradoresInstitucion a ON a.idInstitucion = i.id
+                    JOIN Usuarios u ON u.id = a.idUsuario
+                    SET c.capacidad = c.inscriptos + @vacantes
+                    WHERE c.id = @id AND a.id = @idAdministrador
+                      AND u.activo = TRUE AND i.estado = TRUE
+                      AND c.inscriptos + @vacantes BETWEEN 0 AND 32767");
+                datos.setearParametro("@id", id);
+                datos.setearParametro("@idAdministrador", registro.IdAdministrador);
+                datos.setearParametro("@vacantes", registro.Vacantes);
+                if (datos.ejecutarAccion() == 0)
+                {
+                    throw new ArgumentException("No se pudo actualizar el curso. Verificá que pertenezca a tu institución activa y que la capacidad total no supere 32767.");
+                }
             }
             finally
             {

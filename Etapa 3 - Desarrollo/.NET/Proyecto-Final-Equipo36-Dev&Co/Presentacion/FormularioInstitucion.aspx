@@ -1,10 +1,16 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="FormularioInstitucion.aspx.cs" Inherits="Presentacion.FormularioInstitucion" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" AsyncTimeout="180" CodeBehind="FormularioInstitucion.aspx.cs" Inherits="Presentacion.FormularioInstitucion" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            color: #5c636a;
+            border-color: #ced4da;
+        }
+
         #mapa {
             width: 100%;
             height: 100%;
@@ -110,7 +116,7 @@
                             <!-- NOMBRE (BD: VARCHAR(100)) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblNombre" runat="server" Text="Nombre de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="100" required="required" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
+                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="100" ReadOnly="true" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
                             </div>
                         </div>
 
@@ -118,12 +124,16 @@
                             <!-- CUIT (BD: VARCHAR(11), se guardan solo los 11 digitos, sin guiones) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblCuit" runat="server" Text="CUIT de la institución" CssClass="form-label fw-semibold"> </asp:Label>
-                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" required="required" pattern="[0-9]{11}" title="El CUIT debe tener 11 dígitos, sin guiones" inputmode="numeric" placeholder="11 dígitos, sin guiones"></asp:TextBox>
+                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" ReadOnly="true" placeholder="11 dígitos, sin guiones"></asp:TextBox>
                             </div>
                         </div>
                     </div>
 
                     <!-- EMAIL (BD: VARCHAR(100)) -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblTipoInstitucion" runat="server" Text="Tipo de institución" AssociatedControlID="ddlTipoInstitucion" CssClass="form-label fw-semibold" />
+                        <asp:DropDownList ID="ddlTipoInstitucion" runat="server" CssClass="form-control" required="required" />
+                    </div>
                     <div class="mb-4">
                         <asp:Label ID="lblEmail" runat="server" Text="Correo electrónico" CssClass="form-label fw-semibold"></asp:Label>
                         <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" required="required" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
@@ -275,6 +285,7 @@
 
                     <!-- CARGA DE IMAGENES -->
                     <asp:Label ID="lblImagenes" runat="server" Text="Imagenes de las instalaciones" CssClass="form-label fw-semibold mb-5"></asp:Label>
+                    <p class="form-text">JPG o PNG, de hasta 5 MB por imagen. Podés subirlas en varias tandas.</p>
                     <div class="d-flex align-items-start gap-4 mb-4">
                         <asp:FileUpload ID="fuImagenes" runat="server" CssClass="form-control" AllowMultiple="true" accept=".jpg,.jpeg,.png"/>
                         <asp:Button ID="btnSubirImagenes" runat="server" CssClass="btn-lilaOscuro flex-shrink-0" Text="Subir imagenes" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btnSubirImagenes_Click"></asp:Button>
@@ -306,7 +317,7 @@
                                                         <asp:Image runat="server" ImageUrl='<%# Eval("Url") %>' AlternateText="Imagen de las instalaciones" CssClass="d-block w-100 rounded-5" style="aspect-ratio: 4 / 3; object-fit: contain; background-color: #F7F5FC" />
                                                         <div class="card-body">
                                                             <div class="d-flex justify-content-between">
-                                                                <p>Imagen <%# Eval("Descripcion") %></p>
+                                                                <p>Imagen <%#: Eval("Descripcion") %></p>
                                                                 <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" formnovalidate="formnovalidate" />
                                                             </div>
                                                         </div>

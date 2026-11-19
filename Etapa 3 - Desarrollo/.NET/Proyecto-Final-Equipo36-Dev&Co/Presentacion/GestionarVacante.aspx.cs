@@ -1,360 +1,369 @@
-﻿using System;
+﻿using Negocio;
+using Presentacion.Auth;
+using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Web;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class GestionarVacante : System.Web.UI.Page
+    public partial class GestionarVacante : Page
     {
-        // Id del curso que se está editando (se conserva entre postbacks).
+        private UsuarioSesion usuario;
+        private InstitucionApi institucion;
+        private List<CatalogoApi> niveles;
+        private List<CatalogoApi> turnos;
+        private bool operacionGuardada;
+        private const int TipoInstitutoIdiomas = 4;
+
         private int IdCursoSeleccionado
         {
-            get { return ViewState["IdCursoSeleccionado"] == null ? 0 : (int)ViewState["IdCursoSeleccionado"]; }
+            get { return (int?)ViewState["IdCursoSeleccionado"] ?? 0; }
             set { ViewState["IdCursoSeleccionado"] = value; }
+        }
+
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            ViewStateUserKey = Session.SessionID;
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            usuario = UsuarioSesion.Obtener(Session);
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion ||
+                usuario.IdAdministradorInstitucion.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+            if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/FormularioInstitucion.aspx");
+                return;
+            }
+
+            Response.Cache.SetNoStore();
             if (!IsPostBack)
             {
-                CargarFiltros();
-                CargarCombosAlta();
-                CargarListado();
+                btnNuevoCurso.Enabled = false;
+                Ejecutar(async () =>
+                {
+                    CargarFiltros();
+                    await CargarListadoAsync();
+                });
+            }
+        }
+
+        private void Ejecutar(Func<Task> accion)
+        {
+            pnlMensaje.Visible = false;
+            RegisterAsyncTask(new PageAsyncTask(async () =>
+            {
+                try
+                {
+                    await CargarContextoAsync();
+                    await accion();
+                }
+                catch (Exception ex)
+                {
+                    Trace.Warn("GestionarVacante", "Error al consultar o guardar cursos en la API.", ex);
+                    string mensaje = ex is ArgumentException ? ex.Message : "No se pudo completar la operación. Intentá nuevamente.";
+                    if (operacionGuardada)
+                    {
+                        mensaje = "El cambio se guardó, pero no se pudo actualizar el listado. Recargá la página para verlo.";
+                    }
+                    MostrarMensaje(mensaje, false);
+                }
+            }));
+        }
+
+        private async Task CargarContextoAsync()
+        {
+            var admin = await InstiRedApi.GetAsync<AdministradorApi>(
+                "ent/AdministradoresInstitucion/" + usuario.IdAdministradorInstitucion.Value);
+            if (admin.IdUsuario != usuario.IdUsuario || admin.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                throw new ArgumentException("Tu cuenta no tiene una institución asociada para gestionar cursos.");
+            }
+
+            usuario.IdInstitucion = admin.IdInstitucion;
+            Session[UsuarioSesion.Clave] = usuario;
+            institucion = await InstiRedApi.GetAsync<InstitucionApi>("ent/Instituciones/" + usuario.IdInstitucion.Value);
+            niveles = await InstiRedApi.GetAsync<List<CatalogoApi>>("ent/NivelesEscolares");
+            turnos = await InstiRedApi.GetAsync<List<CatalogoApi>>("ent/Turnos");
+
+            btnNuevoCurso.Enabled = institucion.Estado;
+            btnGuardar.Enabled = institucion.Estado;
+            btnGuardarCurso.Enabled = institucion.Estado;
+            dgvCursos.Enabled = institucion.Estado;
+            if (!institucion.Estado)
+            {
+                MostrarMensaje("La institución está dada de baja. Podés consultar sus cursos.", false);
             }
         }
 
         private void CargarFiltros()
         {
-            int anioActual = DateTime.Today.Year;
-            for (int anio = anioActual - 1; anio <= anioActual + 1; anio++)
-                ddlCicloLectivo.Items.Add(new ListItem(anio.ToString(), anio.ToString()));
-            ddlCicloLectivo.SelectedValue = anioActual.ToString();
-
-            // TODO: cargar desde la tabla NivelesEscolares.
+            ddlNivel.Items.Clear();
             ddlNivel.Items.Add(new ListItem("Todos", "0"));
-            ddlNivel.Items.Add(new ListItem("Preescolar", "1"));
-            ddlNivel.Items.Add(new ListItem("Primaria", "2"));
-            ddlNivel.Items.Add(new ListItem("Secundaria", "3"));
+            foreach (var nivel in niveles)
+            {
+                ddlNivel.Items.Add(new ListItem(nivel.Descripcion, nivel.Id.ToString()));
+            }
         }
 
-        private void CargarListado()
+        private async Task CargarListadoAsync()
         {
-            DataTable cursos = ObtenerCursos();
+            var cursos = await InstiRedApi.GetAsync<List<CursoApi>>(
+                "ent/Cursos?idInstitucion=" + usuario.IdInstitucion.Value);
+            cursos = cursos.Where(c => c.IdInstitucion == usuario.IdInstitucion).ToList();
+            foreach (var curso in cursos)
+            {
+                curso.Turno = turnos.FirstOrDefault(t => t.Id == curso.IdTurno)?.Descripcion ?? "Sin especificar";
+            }
 
-            string filtro = "CicloLectivo = " + ddlCicloLectivo.SelectedValue;
-            if (ddlNivel.SelectedValue != "0")
-                filtro += " AND IdNivel = " + ddlNivel.SelectedValue;
+            int ciclo = DateTime.Today.Year;
+            if (int.TryParse(ddlCicloLectivo.SelectedValue, out int seleccionado))
+            {
+                ciclo = seleccionado;
+            }
+            var ciclos = cursos.Select(c => c.CicloLectivo)
+                .Concat(new[] { DateTime.Today.Year - 1, DateTime.Today.Year, DateTime.Today.Year + 1, ciclo })
+                .Distinct().OrderBy(c => c);
+            ddlCicloLectivo.Items.Clear();
+            foreach (int anio in ciclos)
+            {
+                ddlCicloLectivo.Items.Add(new ListItem(anio.ToString(), anio.ToString()));
+            }
+            ddlCicloLectivo.SelectedValue = ciclo.ToString();
 
-            DataView vista = new DataView(cursos, filtro, "NombreCurso", DataViewRowState.CurrentRows);
+            int idNivel = int.Parse(ddlNivel.SelectedValue);
+            var vista = cursos.Where(c => c.CicloLectivo == ciclo && (idNivel == 0 || c.IdNivel == idNivel))
+                .OrderBy(c => c.NombreCurso).ToList();
             dgvCursos.DataSource = vista;
             dgvCursos.DataBind();
-
             lblTotalCursos.Text = vista.Count.ToString();
-            lblConVacantes.Text = cursos.Select(filtro + " AND Vacantes > 0").Length.ToString();
-            lblSinVacantes.Text = cursos.Select(filtro + " AND Vacantes = 0").Length.ToString();
+            lblConVacantes.Text = vista.Count(c => c.Vacantes > 0).ToString();
+            lblSinVacantes.Text = vista.Count(c => c.Vacantes == 0).ToString();
         }
 
         protected void Filtro_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarListado();
+            Ejecutar(CargarListadoAsync);
         }
 
         protected void btnEditar_Click(object sender, EventArgs e)
         {
-            LinkButton boton = (LinkButton)sender;
-            IdCursoSeleccionado = int.Parse(boton.CommandArgument);
+            IdCursoSeleccionado = int.Parse(((LinkButton)sender).CommandArgument);
+            Ejecutar(async () =>
+            {
+                var curso = await ObtenerCursoAsync();
+                lblCursoNombre.Text = Server.HtmlEncode(curso.NombreCurso);
+                lblCicloLectivo.Text = curso.CicloLectivo.ToString();
+                lblTurno.Text = Server.HtmlEncode(turnos.FirstOrDefault(t => t.Id == curso.IdTurno)?.Descripcion);
+                lblCapacidad.Text = curso.Capacidad.ToString();
+                lblInscriptos.Text = curso.Inscriptos.ToString();
+                txtVacantes.Text = curso.Vacantes.ToString();
+                txtVacantes.Attributes["min"] = "0";
+                txtVacantes.Attributes["max"] = (short.MaxValue - curso.Inscriptos).ToString();
+                MostrarVista("edicion");
+            });
+        }
 
-            DataRow curso = ObtenerCursos().Rows.Find(IdCursoSeleccionado);
-
-            lblCursoNombre.Text = Server.HtmlEncode(curso["NombreCurso"].ToString());
-            lblCicloLectivo.Text = curso["CicloLectivo"].ToString();
-            lblTurno.Text = Server.HtmlEncode(curso["Turno"].ToString());
-            lblCapacidad.Text = curso["Capacidad"].ToString();
-            lblInscriptos.Text = curso["Inscriptos"].ToString();
-
-            txtVacantes.Text = curso["Vacantes"].ToString();
-            txtVacantes.Attributes["min"] = "0";
-
-            pnlMensaje.Visible = false;
-            pnlDashboard.Visible = false;
-            pnlListado.Visible = false;
-            pnlEdicion.Visible = true;
+        private async Task<CursoApi> ObtenerCursoAsync()
+        {
+            var curso = await InstiRedApi.GetAsync<CursoApi>(
+                "ent/Cursos/" + IdCursoSeleccionado, permitirNoEncontrado: true);
+            if (curso == null || curso.IdInstitucion != usuario.IdInstitucion)
+            {
+                throw new ArgumentException("El curso no está disponible en tu institución.");
+            }
+            return curso;
         }
 
         protected void btnCerrarEdicion_Click(object sender, EventArgs e)
         {
-            VolverAlListado();
+            Ejecutar(VolverAlListadoAsync);
         }
 
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
-            DataRow curso = ObtenerCursos().Rows.Find(IdCursoSeleccionado);
-            int inscriptos = (int)curso["Inscriptos"];
-
-            // capacidad es SMALLINT en la base (máximo 32767).
-            int maximoVacantes = short.MaxValue - inscriptos;
-
-            int vacantes;
-            if (!int.TryParse(txtVacantes.Text, out vacantes) || vacantes < 0 || vacantes > maximoVacantes)
+            if (!int.TryParse(txtVacantes.Text, out int vacantes) || vacantes < 0 || vacantes > short.MaxValue)
             {
-                MostrarMensaje("Ingresá un número de vacantes entre 0 y " + maximoVacantes + ".", false);
+                MostrarMensaje("Ingresá un número de vacantes entre 0 y 32767.", false);
                 return;
             }
 
-            // Los inscriptos son alumnos reales y NO se tocan desde esta pantalla.
-            // Lo que se modifica es la capacidad:  capacidad = inscriptos + vacantes.
-            // Así vacantes (= capacidad - inscriptos) queda con el valor ingresado
-            // y se respeta el CHECK (inscriptos <= capacidad) de la tabla.
-            // TODO: UPDATE Cursos SET capacidad = inscriptos + @vacantes WHERE id = @id AND idInstitucion = @idInstitucion
-            curso["Capacidad"] = inscriptos + vacantes;
-
-            string nombre = curso["NombreCurso"].ToString();
-            VolverAlListado();
-            MostrarMensaje("Vacantes actualizadas: " + nombre + " ahora tiene " + vacantes + " disponibles.", true);
-        }
-
-        // ===== ALTA DE CURSO =====
-
-        private const int TipoInstitutoIdiomas = 4;
-
-        // Pasar a true cuando la base de datos esté conectada: el alta llama a sp_Registrar_Curso.
-        // Con false se usan los datos de ejemplo y las mismas validaciones del procedimiento.
-        private static readonly bool UsarBaseDeDatos = false;
-
-        private int ObtenerTipoInstitucion()
-        {
-            // TODO: leer Instituciones.idTipoInstitucion de la institución del administrador logueado.
-            return 7; // demo: ofrece Preescolar, Primaria y Secundaria
-        }
-
-        private int ObtenerIdAdministradorInstitucion()
-        {
-            // TODO: tomar el id del administrador logueado (por ejemplo, de la sesión).
-            return Session["IdAdministradorInstitucion"] == null ? 0 : (int)Session["IdAdministradorInstitucion"];
-        }
-
-        // Niveles que ofrece cada tipo de institución (mismas reglas que sp_Registrar_Curso).
-        private static int[] NivelesPermitidos(int tipoInstitucion)
-        {
-            switch (tipoInstitucion)
+            Ejecutar(async () =>
             {
-                case 1: return new[] { 1 };
-                case 2: return new[] { 2 };
-                case 3: return new[] { 3 };
-                case 5: return new[] { 1, 2 };
-                case 6: return new[] { 2, 3 };
-                case 7: return new[] { 1, 2, 3 };
-                case 8: return new[] { 1, 3 };
-                default: return new int[0];   // 4 = idiomas: solo nivel personalizado
-            }
-        }
-
-        private static string NombreNivel(int idNivel)
-        {
-            switch (idNivel)
-            {
-                case 1: return "Preescolar";
-                case 2: return "Primaria";
-                default: return "Secundaria";
-            }
-        }
-
-        // Rango de años válido por nivel (mismo que el procedimiento).
-        private static void RangoAnios(int idNivel, out int minimo, out int maximo)
-        {
-            if (idNivel == 1) { minimo = 3; maximo = 5; }
-            else if (idNivel == 2) { minimo = 1; maximo = 7; }
-            else { minimo = 1; maximo = 6; }
+                var curso = await ObtenerCursoAsync();
+                var respuesta = await InstiRedApi.PatchAsync("ent/Cursos/" + curso.Id + "/vacantes", new
+                {
+                    idAdministrador = usuario.IdAdministradorInstitucion.Value,
+                    vacantes
+                });
+                ValidarRespuesta(respuesta, HttpStatusCode.OK);
+                operacionGuardada = true;
+                await VolverAlListadoAsync();
+                MostrarMensaje("Vacantes actualizadas. " + curso.NombreCurso + " tiene " + vacantes + " disponibles.", true);
+            });
         }
 
         private void CargarCombosAlta()
         {
             int anioActual = DateTime.Today.Year;
+            ddlAltaCiclo.Items.Clear();
             ddlAltaCiclo.Items.Add(new ListItem(anioActual.ToString(), anioActual.ToString()));
             ddlAltaCiclo.Items.Add(new ListItem((anioActual + 1).ToString(), (anioActual + 1).ToString()));
+            if (institucion.IdTipoInstitucion != TipoInstitutoIdiomas &&
+                DateTime.Today > new DateTime(anioActual, 2, 1))
+            {
+                ddlAltaCiclo.SelectedIndex = 1;
+            }
 
-            // TODO: cargar desde la tabla Turnos.
+            ddlAltaTurno.Items.Clear();
             ddlAltaTurno.Items.Add(new ListItem("Seleccioná un turno", "0"));
-            ddlAltaTurno.Items.Add(new ListItem("Mañana", "1"));
-            ddlAltaTurno.Items.Add(new ListItem("Tarde", "2"));
-            ddlAltaTurno.Items.Add(new ListItem("Noche", "3"));
+            foreach (var turno in turnos)
+            {
+                ddlAltaTurno.Items.Add(new ListItem(turno.Descripcion, turno.Id.ToString()));
+            }
+            ddlAltaNivel.Items.Clear();
+            ddlAltaNivel.Items.Add(new ListItem("Seleccioná un nivel", "0"));
+            foreach (var nivel in niveles.Where(n => NivelesPermitidos(institucion.IdTipoInstitucion).Contains(n.Id)))
+            {
+                ddlAltaNivel.Items.Add(new ListItem(nivel.Descripcion, nivel.Id.ToString()));
+            }
         }
 
         protected void btnNuevoCurso_Click(object sender, EventArgs e)
         {
-            int tipo = ObtenerTipoInstitucion();
-            bool esIdiomas = tipo == TipoInstitutoIdiomas;
-
-            // Idiomas: solo nombre personalizado. Resto: nivel + año (solo los niveles que ofrece la institución).
-            pnlAltaEstandar.Visible = !esIdiomas;
-            pnlAltaPersonalizado.Visible = esIdiomas;
-
-            ddlAltaNivel.Items.Clear();
-            ddlAltaNivel.Items.Add(new ListItem("Seleccioná un nivel", "0"));
-            foreach (int nivel in NivelesPermitidos(tipo))
-                ddlAltaNivel.Items.Add(new ListItem(NombreNivel(nivel), nivel.ToString()));
-
-            ddlAltaCiclo.SelectedIndex = 0;
-            ddlAltaTurno.SelectedIndex = 0;
-            txtAltaAnio.Text = string.Empty;
-            txtAltaPersonalizado.Text = string.Empty;
-            txtAltaDivision.Text = string.Empty;
-            txtAltaCapacidad.Text = string.Empty;
-            txtAltaInscriptos.Text = "0";
-
-            pnlMensaje.Visible = false;
-            pnlDashboard.Visible = false;
-            pnlListado.Visible = false;
-            pnlAlta.Visible = true;
+            Ejecutar(() =>
+            {
+                CargarCombosAlta();
+                bool esIdiomas = institucion.IdTipoInstitucion == TipoInstitutoIdiomas;
+                pnlAltaEstandar.Visible = !esIdiomas;
+                pnlAltaPersonalizado.Visible = esIdiomas;
+                txtAltaAnio.Text = "";
+                txtAltaPersonalizado.Text = "";
+                txtAltaDivision.Text = "";
+                txtAltaCapacidad.Text = "";
+                txtAltaInscriptos.Text = "0";
+                MostrarVista("alta");
+                return Task.CompletedTask;
+            });
         }
 
         protected void btnCancelarAlta_Click(object sender, EventArgs e)
         {
-            VolverAlListado();
+            Ejecutar(VolverAlListadoAsync);
         }
 
         protected void btnGuardarCurso_Click(object sender, EventArgs e)
         {
-            int tipo = ObtenerTipoInstitucion();
-            bool esIdiomas = tipo == TipoInstitutoIdiomas;
+            Ejecutar(RegistrarCursoAsync);
+        }
+
+        private async Task RegistrarCursoAsync()
+        {
+            if (!institucion.Estado)
+            {
+                throw new ArgumentException("La institución debe estar activa para crear cursos.");
+            }
 
             int ciclo = int.Parse(ddlAltaCiclo.SelectedValue);
             int idTurno = int.Parse(ddlAltaTurno.SelectedValue);
-            string division = txtAltaDivision.Text.Trim();
-
-            if (idTurno == 0)
+            if (idTurno <= 0 || !turnos.Any(t => t.Id == idTurno))
             {
-                MostrarMensaje("Seleccioná un turno.", false);
-                return;
+                throw new ArgumentException("Seleccioná un turno válido.");
             }
 
-            // Curso estándar (nivel + año) o personalizado (solo idiomas): nunca los dos a la vez.
-            int idNivel = 0, anio = 0;
+            bool esIdiomas = institucion.IdTipoInstitucion == TipoInstitutoIdiomas;
+            int? idNivel = null;
+            int? anio = null;
             string personalizado = null;
-
             if (esIdiomas)
             {
                 personalizado = txtAltaPersonalizado.Text.Trim();
-                if (personalizado == string.Empty)
+                if (personalizado == "" || personalizado.Length > 30)
                 {
-                    MostrarMensaje("Ingresá el nombre del curso.", false);
-                    return;
-                }
-                if (personalizado.Length > 30)
-                {
-                    MostrarMensaje("El nombre del curso no puede superar los 30 caracteres.", false);
-                    return;
+                    throw new ArgumentException("Ingresá un nombre de curso de hasta 30 caracteres.");
                 }
             }
             else
             {
                 idNivel = int.Parse(ddlAltaNivel.SelectedValue);
-                if (idNivel == 0 || Array.IndexOf(NivelesPermitidos(tipo), idNivel) < 0)
+                if (!NivelesPermitidos(institucion.IdTipoInstitucion).Contains(idNivel.Value))
                 {
-                    MostrarMensaje("Seleccioná un nivel válido para tu institución.", false);
-                    return;
+                    throw new ArgumentException("Seleccioná un nivel que ofrezca tu institución.");
                 }
 
                 int minimo, maximo;
-                RangoAnios(idNivel, out minimo, out maximo);
-                if (!int.TryParse(txtAltaAnio.Text, out anio) || anio < minimo || anio > maximo)
+                RangoAnios(idNivel.Value, out minimo, out maximo);
+                if (!int.TryParse(txtAltaAnio.Text, out int anioIngresado) || anioIngresado < minimo || anioIngresado > maximo)
                 {
-                    MostrarMensaje("El año para " + NombreNivel(idNivel) + " debe estar entre " + minimo + " y " + maximo + ".", false);
-                    return;
+                    throw new ArgumentException("El año para ese nivel debe estar entre " + minimo + " y " + maximo + ".");
                 }
+                anio = anioIngresado;
             }
 
-            if (division == string.Empty)
+            string division = txtAltaDivision.Text.Trim();
+            if (division == "" || division.Length > 50)
             {
-                MostrarMensaje("Ingresá la división (si hay una sola, completá con 1).", false);
-                return;
+                throw new ArgumentException("Ingresá una división de hasta 50 caracteres.");
             }
-            if (division.Length > 50)
+            if (!int.TryParse(txtAltaCapacidad.Text, out int capacidad) || capacidad < 1 || capacidad > short.MaxValue)
             {
-                MostrarMensaje("La división no puede superar los 50 caracteres.", false);
-                return;
+                throw new ArgumentException("Ingresá una capacidad entre 1 y 32767.");
             }
-
-            int capacidad, inscriptos;
-            if (!int.TryParse(txtAltaCapacidad.Text, out capacidad) || capacidad < 1 || capacidad > short.MaxValue)
+            if (!int.TryParse(txtAltaInscriptos.Text, out int inscriptos) || inscriptos < 0 || inscriptos > capacidad)
             {
-                MostrarMensaje("Ingresá una capacidad válida (mayor a 0).", false);
-                return;
-            }
-            if (!int.TryParse(txtAltaInscriptos.Text, out inscriptos) || inscriptos < 0 || inscriptos > capacidad)
-            {
-                MostrarMensaje("Los inscriptos deben estar entre 0 y la capacidad (" + capacidad + ").", false);
-                return;
-            }
-            /*
-            int? nivelParam = esIdiomas ? (int?)null : idNivel;
-            int? anioParam = esIdiomas ? (int?)null : anio;
-            string nombre = ArmarNombre(nivelParam, anioParam, personalizado, division);
-            string turno = ddlAltaTurno.SelectedItem.Text;
-            DataTable cursos = ObtenerCursos();
-            int nuevoId;
-
-            if (UsarBaseDeDatos)
-            {
-                try
-                {
-                    // El procedimiento vuelve a validar todo y rechaza duplicados.
-                    DataTable creado = new CursoNegocio().Registrar(ObtenerIdAdministradorInstitucion(),
-                        idTurno, ciclo, nivelParam, anioParam, personalizado, division, capacidad, inscriptos);
-                    nuevoId = Convert.ToInt32(creado.Rows[0]["Id"]);
-                }
-                catch (ReglaDeNegocioException ex)
-                {
-                    MostrarMensaje(ex.Message, false);
-                    return;
-                }
-                catch (Exception)
-                {
-                    // TODO: registrar el error en tu sistema de logs.
-                    MostrarMensaje("No se pudo crear el curso. Intentá nuevamente.", false);
-                    return;
-                }
-            }
-            else
-            {
-                // Modo demo: misma regla de duplicados que el procedimiento (año calendario, turno y nombre).
-                foreach (DataRow existente in cursos.Rows)
-                {
-                    if ((int)existente["CicloLectivo"] == ciclo
-                        && existente["Turno"].ToString() == turno
-                        && string.Equals(existente["NombreCurso"].ToString(), nombre, StringComparison.OrdinalIgnoreCase))
-                    {
-                        MostrarMensaje("El curso ya se encuentra registrado.", false);
-                        return;
-                    }
-                }
-                nuevoId = cursos.Rows.Count == 0 ? 1 : ((int)cursos.Compute("MAX(Id)", "") + 1);
+                throw new ArgumentException("Los inscriptos deben estar entre 0 y la capacidad del curso.");
             }
 
-            // El listado todavía es de ejemplo: se agrega la fila para que se vea. Al leer de la base, borrar esta línea.
-            cursos.Rows.Add(nuevoId, nombre, ciclo, turno,
-                esIdiomas ? (object)DBNull.Value : idNivel, capacidad, inscriptos);
-
-            // Deja el filtro en el año del curso nuevo para que se vea en el listado.
+            var respuesta = await InstiRedApi.PostAsync("sp/RegistrarCurso", new
+            {
+                idAdministradorInstitucion = usuario.IdAdministradorInstitucion.Value,
+                idTurno,
+                cicloLectivo = ciclo,
+                idNivel,
+                anio,
+                nivelPersonalizado = personalizado,
+                division,
+                capacidad,
+                inscriptos
+            });
+            ValidarRespuesta(respuesta, HttpStatusCode.Created);
+            operacionGuardada = true;
+            btnGuardarCurso.Enabled = false;
             ddlCicloLectivo.SelectedValue = ciclo.ToString();
-            ddlNivel.SelectedIndex = 0;
-
-            VolverAlListado();
-            MostrarMensaje("Curso creado: " + nombre + " (" + turno + ", " + ciclo + ") con " + (capacidad - inscriptos) + " vacantes.", true);
-        */
+            ddlNivel.SelectedValue = "0";
+            await VolverAlListadoAsync();
+            MostrarMensaje("Curso creado correctamente.", true);
         }
 
-        private void VolverAlListado()
+        private static void ValidarRespuesta(InstiRedApi.Respuesta respuesta, HttpStatusCode esperado)
         {
-            pnlEdicion.Visible = false;
-            pnlAlta.Visible = false;
-            pnlDashboard.Visible = true;
-            pnlListado.Visible = true;
-            CargarListado();
+            if (respuesta.Estado != esperado)
+            {
+                throw new ArgumentException(respuesta.Mensaje ?? "La API no pudo guardar el cambio. Intentá nuevamente.");
+            }
+        }
+
+        private async Task VolverAlListadoAsync()
+        {
+            await CargarListadoAsync();
+            MostrarVista("listado");
+        }
+
+        private void MostrarVista(string vista)
+        {
+            pnlEdicion.Visible = vista == "edicion";
+            pnlAlta.Visible = vista == "alta";
+            pnlDashboard.Visible = vista == "listado";
+            pnlListado.Visible = vista == "listado";
         }
 
         private void MostrarMensaje(string texto, bool exito)
@@ -364,55 +373,107 @@ namespace Presentacion
             litMensaje.Text = Server.HtmlEncode(texto);
         }
 
-        // ===== DATOS DE EJEMPLO (TEMPORAL: reemplazar por la consulta a la base) =====
-
-        private DataTable ObtenerCursos()
+        private static int[] NivelesPermitidos(int tipo)
         {
-            DataTable cursos = Session["CursosDemo"] as DataTable;
-            if (cursos != null)
-                return cursos;
-
-            cursos = new DataTable();
-            cursos.Columns.Add("Id", typeof(int));
-            cursos.Columns.Add("NombreCurso", typeof(string));
-            cursos.Columns.Add("CicloLectivo", typeof(int));
-            cursos.Columns.Add("Turno", typeof(string));
-            cursos.Columns.Add("IdNivel", typeof(int));
-            cursos.Columns.Add("Capacidad", typeof(int));
-            cursos.Columns.Add("Inscriptos", typeof(int));
-            cursos.Columns.Add("Vacantes", typeof(int), "Capacidad - Inscriptos");
-            cursos.PrimaryKey = new[] { cursos.Columns["Id"] };
-
-            int ciclo = DateTime.Today.Year;
-            cursos.Rows.Add(1, ArmarNombre(1, 4, null, "Azul"), ciclo, "Mañana", 1, 25, 22);
-            cursos.Rows.Add(2, ArmarNombre(2, 1, null, "A"), ciclo, "Mañana", 2, 30, 30);
-            cursos.Rows.Add(3, ArmarNombre(2, 1, null, "B"), ciclo, "Tarde", 2, 30, 24);
-            cursos.Rows.Add(4, ArmarNombre(3, 3, null, "2da división"), ciclo, "Mañana", 3, 35, 31);
-            cursos.Rows.Add(5, ArmarNombre(3, null, "2nd Children", "Lunes y miércoles"), ciclo, "Tarde", 3, 20, 12);
-            cursos.Rows.Add(6, ArmarNombre(2, 2, null, "A"), ciclo - 1, "Mañana", 2, 30, 28);
-
-            Session["CursosDemo"] = cursos;
-            return cursos;
+            if (tipo >= 1 && tipo <= 3)
+            {
+                return new[] { tipo };
+            }
+            if (tipo == 5)
+            {
+                return new[] { 1, 2 };
+            }
+            if (tipo == 6)
+            {
+                return new[] { 2, 3 };
+            }
+            if (tipo == 7)
+            {
+                return new[] { 1, 2, 3 };
+            }
+            if (tipo == 8)
+            {
+                return new[] { 1, 3 };
+            }
+            return new int[0];
         }
 
-        // Preescolar -> "Salita de 4 - Azul" | Primaria -> "1° grado - A" | Secundaria -> "3° año - 2da división".
-        // Si hay nivelPersonalizado se usa ese texto.
-        private static string ArmarNombre(int? idNivel, int? anio, string nivelPersonalizado, string division)
+        private static void RangoAnios(int nivel, out int minimo, out int maximo)
         {
-            string nivel;
-
-            if (!string.IsNullOrWhiteSpace(nivelPersonalizado))
-                nivel = nivelPersonalizado;
-            else if (idNivel == 1)
-                nivel = "Salita de " + anio;
-            else if (idNivel == 2)
-                nivel = anio + "° grado";
-            else if (idNivel == 3)
-                nivel = anio + "° año";
+            minimo = nivel == 1 ? 3 : 1;
+            if (nivel == 1)
+            {
+                maximo = 5;
+            }
+            else if (nivel == 2)
+            {
+                maximo = 7;
+            }
             else
-                nivel = "Curso";
+            {
+                maximo = 6;
+            }
+        }
 
-            return nivel + " - " + division;
+        private static string ArmarNombre(int? idNivel, int? anio, string personalizado, string division)
+        {
+            string nombre;
+            if (!string.IsNullOrWhiteSpace(personalizado))
+            {
+                nombre = personalizado;
+            }
+            else if (idNivel == 1)
+            {
+                nombre = "Salita de " + anio;
+            }
+            else if (idNivel == 2)
+            {
+                nombre = anio + "° grado";
+            }
+            else if (idNivel == 3)
+            {
+                nombre = anio + "° año";
+            }
+            else
+            {
+                nombre = "Curso";
+            }
+            return nombre + " - " + division;
+        }
+
+        private class AdministradorApi
+        {
+            public int IdUsuario { get; set; }
+            public int? IdInstitucion { get; set; }
+        }
+
+        private class InstitucionApi
+        {
+            public int IdTipoInstitucion { get; set; }
+            public bool Estado { get; set; }
+        }
+
+        private class CatalogoApi
+        {
+            public int Id { get; set; }
+            public string Descripcion { get; set; }
+        }
+
+        private class CursoApi
+        {
+            public int Id { get; set; }
+            public int IdInstitucion { get; set; }
+            public int IdTurno { get; set; }
+            public int CicloLectivo { get; set; }
+            public int? IdNivel { get; set; }
+            public int? Anio { get; set; }
+            public string NivelPersonalizado { get; set; }
+            public string Division { get; set; }
+            public int Capacidad { get; set; }
+            public int Inscriptos { get; set; }
+            public string Turno { get; set; }
+            public int Vacantes => Capacidad - Inscriptos;
+            public string NombreCurso => ArmarNombre(IdNivel, Anio, NivelPersonalizado, Division);
         }
     }
 }

@@ -42,7 +42,9 @@
                                  <asp:TextBox runat="server" ID="txtPassword" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password" TextMode="Password" MaxLength="255" EnableViewState="false" ValidateRequestMode="Disabled" />
                              </div>
 
-                             <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger d-block mb-3" role="alert" Visible="false" />
+                             <div class="col-12">
+                                 <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger d-block mb-3" role="alert" Visible="false" />
+                             </div>
 
                              <div class="input-group mb-3">
                                  <asp:Button CssClass="btn-lilaOscuro w-100 fs-6" ID="btnLogin" runat="server" Text="Ingresar" OnClick="btnLogin_Click" />

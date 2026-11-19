@@ -1,6 +1,27 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="AdminDevCo.aspx.cs" Inherits="Presentacion.AdminDevCo" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .encabezado-postulacion {
+            display: grid;
+            grid-template-columns: minmax(4.5rem, 1fr) minmax(0, max-content) minmax(4.5rem, 1fr);
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .encabezado-postulacion h2 {
+            grid-column: 2;
+            margin: 0;
+            font-size: clamp(1.125rem, 2vw, 1.5rem);
+            text-align: center;
+        }
+
+        .volver-postulacion {
+            grid-column: 3;
+            justify-self: end;
+        }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="p-3 bg-fondo rounded-9">
@@ -94,9 +115,9 @@
 
         <!-- DETALLE DE LA SOLICITUD -->
         <asp:Panel ID="pnlDetalleSolicitud" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Revisión de solicitud</h5>
-                <asp:Button ID="btnVolverSolicitud" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 ms-auto" OnClick="btnVolverSolicitud_Click" />
+            <div class="card-header bg-indigo text-white encabezado-postulacion">
+                <h2>Revisión de solicitud</h2>
+                <asp:Button ID="btnVolverSolicitud" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverSolicitud_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-9">
 
@@ -216,9 +237,9 @@
 
         <!-- DETALLE DE LA INSTITUCIÓN -->
         <asp:Panel ID="pnlDetalleInstitucion" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Detalle de la institución</h5>
-                <asp:Button ID="btnVolverInstitucion" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 ms-auto" OnClick="btnVolverInstitucion_Click" />
+            <div class="card-header bg-indigo text-white encabezado-postulacion">
+                <h2>Detalle de la institución</h2>
+                <asp:Button ID="btnVolverInstitucion" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverInstitucion_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-9">
 

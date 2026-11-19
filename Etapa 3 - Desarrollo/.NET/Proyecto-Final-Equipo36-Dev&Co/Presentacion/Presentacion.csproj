@@ -126,6 +126,7 @@
     </Compile>
     <Compile Include="ListadoInstituciones.aspx.designer.cs">
       <DependentUpon>ListadoInstituciones.aspx</DependentUpon>
+    </Compile>
     <Compile Include="GestionarVacante.aspx.cs">
       <DependentUpon>GestionarVacante.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

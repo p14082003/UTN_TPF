@@ -20,13 +20,29 @@ namespace Negocio
             Timeout = TimeSpan.FromSeconds(15)
         };
 
-        public static async Task<Respuesta> PostAsync(string ruta, object datos, bool leerCuerpo = false)
+        public static Task<Respuesta> PostAsync(string ruta, object datos, bool leerCuerpo = false)
         {
             var json = new JavaScriptSerializer();
+            return PostAsync(ruta, new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json"), leerCuerpo);
+        }
 
-            using (var request = CrearRequest(HttpMethod.Post, ruta))
+        public static Task<Respuesta> PostAsync(string ruta, HttpContent contenido, bool leerCuerpo = false)
+        {
+            return EnviarAsync(HttpMethod.Post, ruta, contenido, leerCuerpo);
+        }
+
+        public static Task<Respuesta> PatchAsync(string ruta, object datos)
+        {
+            var json = new JavaScriptSerializer();
+            return EnviarAsync(new HttpMethod("PATCH"), ruta,
+                new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json"), false);
+        }
+
+        private static async Task<Respuesta> EnviarAsync(HttpMethod metodo, string ruta, HttpContent contenido, bool leerCuerpo)
+        {
+            using (var request = CrearRequest(metodo, ruta))
             {
-                request.Content = new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json");
+                request.Content = contenido;
 
                 using (HttpResponseMessage respuesta = await cliente.SendAsync(request))
                 {
@@ -39,7 +55,7 @@ namespace Negocio
                     string mensaje = null;
                     if (respuesta.StatusCode == HttpStatusCode.BadRequest)
                     {
-                        mensaje = LeerMensajeApi(json, cuerpo);
+                        mensaje = LeerMensajeApi(new JavaScriptSerializer(), cuerpo);
                     }
 
                     return new Respuesta { Estado = respuesta.StatusCode, Mensaje = mensaje, Cuerpo = cuerpo };
