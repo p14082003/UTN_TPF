@@ -81,6 +81,7 @@
     <Content Include="ListadoInstituciones.aspx" />
     <Content Include="GestionarVacante.aspx" />
     <Content Include="Login.aspx" />
+    <Content Include="RecuperarContrasenia.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
     <Content Include="Web.config" />
@@ -172,6 +173,13 @@
     </Compile>
     <Compile Include="AdminDevCo.aspx.designer.cs">
       <DependentUpon>AdminDevCo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RecuperarContrasenia.aspx.cs">
+      <DependentUpon>RecuperarContrasenia.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RecuperarContrasenia.aspx.designer.cs">
+      <DependentUpon>RecuperarContrasenia.aspx</DependentUpon>
     </Compile>
     <Compile Include="RegistroIntermedia.aspx.cs">
       <DependentUpon>RegistroIntermedia.aspx</DependentUpon>

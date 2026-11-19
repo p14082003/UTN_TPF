@@ -55,7 +55,7 @@
                              </div>
 
                              <div class="text-end mb-3">
-                                <asp:HyperLink ID="lnkOlvidePassword" runat="server" CssClass="link-lilaClaro" Text="¿Olvidaste tu contraseña?" />
+                                <asp:HyperLink ID="lnkOlvidePassword" NavigateUrl="~/RecuperarContrasenia.aspx" runat="server" CssClass="link-lilaClaro" Text="¿Olvidaste tu contraseña?" />
                              </div>
                          </div>
                      </div>
