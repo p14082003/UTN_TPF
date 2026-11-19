@@ -23,35 +23,20 @@
 
     <form id="form1" runat="server">
 
-            <div class="d-flex flex-column bg-fondo vh-100">
-            
-                <!-- Navbar -->
-                <nav class="bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 pe-3">
-                    <a href="Login.aspx" class="d-flex align-items-center text-decoration-none">
-                        <img src="Imagenes/Logo.png" alt="InstiRed" height="60"/>
-                    </a>
-                    <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
-                        CssClass="btn btn-lilaClaro px-3 py-2" Text="Iniciar sesión" />
-                    <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2">
-                        <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx"
-                            CssClass="btn btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" Visible="false" />
-                        <span class="fw-semibold text-indigo"><asp:Literal ID="litSaludo" runat="server" Mode="Encode" /></span>
-                        <asp:Button ID="btnCerrarSesion" runat="server" Text="Cerrar sesión"
-                            CssClass="btn btn-lilaClaro px-3 py-2" CausesValidation="false" UseSubmitBehavior="false"
-                            OnClick="btnCerrarSesion_Click" />
-                    </asp:Panel>
-                </nav>
-
+        <div class="d-flex flex-column bg-fondo vh-100">
             <!-- Navbar -->
             <nav class="bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 pe-3">
                 <a href="Login.aspx" class="d-flex align-items-center text-decoration-none">
                     <img src="Imagenes/Logo.png" alt="InstiRed" height="60" />
                 </a>
+
                 <!-- Menú del administrador de institución -->
                 <asp:Panel ID="pnlMenuAdmin" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2 me-auto ms-3">
                     <asp:HyperLink ID="lnkPostulaciones" runat="server" NavigateUrl="~/GestionarPostulacionAlumno.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Postulaciones" />
                     <asp:HyperLink ID="lnkAdministradores" runat="server" NavigateUrl="~/GestionarAdministradores.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Administradores" />
+                    <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" />
                 </asp:Panel>
+
                 <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
                     CssClass="btn btn-lilaClaro px-3 py-2" Text="Iniciar sesión" />
                 <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2">

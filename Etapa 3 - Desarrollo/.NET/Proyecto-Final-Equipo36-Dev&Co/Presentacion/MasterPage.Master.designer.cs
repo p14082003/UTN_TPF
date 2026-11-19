@@ -13,11 +13,6 @@ namespace Presentacion
 
     public partial class Site1
     {
-        /// <summary>
-        /// Control lnkVacantes.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
-
 
         /// <summary>
         /// Control head.
@@ -63,6 +58,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkAdministradores;
+
+        /// <summary>
+        /// Control lnkVacantes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
 
         /// <summary>
         /// Control lnkIniciarSesion.
