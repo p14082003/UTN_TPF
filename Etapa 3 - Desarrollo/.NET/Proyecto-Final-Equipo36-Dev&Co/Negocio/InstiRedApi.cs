@@ -20,13 +20,29 @@ namespace Negocio
             Timeout = TimeSpan.FromSeconds(15)
         };
 
-        public static async Task<Respuesta> PostAsync(string ruta, object datos, bool leerCuerpo = false)
+        public static Task<Respuesta> PostAsync(string ruta, object datos, bool leerCuerpo = false)
         {
             var json = new JavaScriptSerializer();
+            return PostAsync(ruta, new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json"), leerCuerpo);
+        }
 
-            using (var request = CrearRequest(HttpMethod.Post, ruta))
+        public static Task<Respuesta> PostAsync(string ruta, HttpContent contenido, bool leerCuerpo = false)
+        {
+            return EnviarAsync(HttpMethod.Post, ruta, contenido, leerCuerpo);
+        }
+
+        public static Task<Respuesta> PatchAsync(string ruta, object datos)
+        {
+            var json = new JavaScriptSerializer();
+            return EnviarAsync(new HttpMethod("PATCH"), ruta,
+                new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json"), false);
+        }
+
+        private static async Task<Respuesta> EnviarAsync(HttpMethod metodo, string ruta, HttpContent contenido, bool leerCuerpo)
+        {
+            using (var request = CrearRequest(metodo, ruta))
             {
-                request.Content = new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json");
+                request.Content = contenido;
 
                 using (HttpResponseMessage respuesta = await cliente.SendAsync(request))
                 {
@@ -39,7 +55,7 @@ namespace Negocio
                     string mensaje = null;
                     if (respuesta.StatusCode == HttpStatusCode.BadRequest)
                     {
-                        mensaje = LeerMensajeApi(json, cuerpo);
+                        mensaje = LeerMensajeApi(new JavaScriptSerializer(), cuerpo);
                     }
 
                     return new Respuesta { Estado = respuesta.StatusCode, Mensaje = mensaje, Cuerpo = cuerpo };
@@ -69,9 +85,19 @@ namespace Negocio
             }
         }
 
-        public static async Task<HttpResponseMessage> DescargarDocumentoPostulacionAsync(int id)
+        public static Task<HttpResponseMessage> DescargarDocumentoPostulacionAsync(int id)
         {
-            using (var request = CrearRequest(HttpMethod.Get, "archivos/PostulacionesAlumnos/documento/" + id))
+            return DescargarArchivoAsync("archivos/PostulacionesAlumnos/documento/" + id);
+        }
+
+        public static Task<HttpResponseMessage> DescargarDocumentoAdminAsync(int id, string tipo)
+        {
+            return DescargarArchivoAsync("archivos/PostulacionesAdminInstitucion/" + tipo + "/" + id);
+        }
+
+        private static async Task<HttpResponseMessage> DescargarArchivoAsync(string ruta)
+        {
+            using (var request = CrearRequest(HttpMethod.Get, ruta))
             {
                 return await cliente.SendAsync(request);
             }

@@ -13,6 +13,16 @@ namespace Presentacion
 
     public partial class FormularioInstitucion
     {
+        /// <summary>
+        /// Control lblTipoInstitucion.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblTipoInstitucion;
+
+        /// <summary>
+        /// Control ddlTipoInstitucion.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInstitucion;
+
 
         /// <summary>
         /// Control scriptManager.

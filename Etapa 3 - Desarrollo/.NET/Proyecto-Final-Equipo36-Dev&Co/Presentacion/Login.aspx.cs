@@ -69,7 +69,9 @@ namespace Presentacion
                     destino = "~/ListadoInstituciones.aspx";
                     break;
                 case UsuarioSesion.AdministradorInstitucion:
-                    destino = "~/GestionarPostulacionAlumno.aspx";
+                    destino = usuario.IdInstitucion.GetValueOrDefault() > 0
+                        ? "~/GestionarPostulacionAlumno.aspx"
+                        : "~/FormularioInstitucion.aspx";
                     break;
                 case UsuarioSesion.DevCo:
                     destino = "~/AdminDevCo.aspx";

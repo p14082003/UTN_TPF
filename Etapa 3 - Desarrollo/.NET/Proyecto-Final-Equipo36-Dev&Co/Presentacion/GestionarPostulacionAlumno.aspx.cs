@@ -40,10 +40,7 @@ namespace Presentacion
             Response.Cache.SetNoStore();
             if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
             {
-                pnlDashboard.Visible = false;
-                pnlListado.Visible = false;
-                pnlDetalle.Visible = false;
-                MostrarMensaje("Tu sesión no tiene una institución asociada. Volvé a iniciar sesión.", false);
+                Response.Redirect("~/FormularioInstitucion.aspx");
                 return;
             }
 
