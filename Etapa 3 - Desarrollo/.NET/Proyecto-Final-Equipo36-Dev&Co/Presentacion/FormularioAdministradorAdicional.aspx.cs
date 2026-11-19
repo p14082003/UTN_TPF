@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Presentacion.Auth;
+using System;
 using System.Linq;
 using System.Net.Mail;
 
@@ -8,8 +9,14 @@ namespace Presentacion
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Acceso: solo debe poder entrar un administrador de institución logueado.
-            //   Si no hay sesión o el rol no corresponde, redirigir a Login.aspx:
+            // Acceso: permitir solo administrador de institución
+            if (!UsuarioSesion.TieneRol(Session, UsuarioSesion.AdministradorInstitucion))
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+            Response.Cache.SetNoStore();
         }
 
         protected void btnAgregar_Click(object sender, EventArgs e)
