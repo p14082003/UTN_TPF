@@ -260,6 +260,11 @@ BEGIN
 	DECLARE v_codigoSeguimiento VARCHAR(30);
 	DECLARE v_capacidad         INT DEFAULT NULL;
 	DECLARE v_inscriptos        INT DEFAULT NULL;
+    DECLARE v_cicloLectivo      INT DEFAULT NULL;
+    DECLARE v_idNivel           INT DEFAULT NULL;
+    DECLARE v_anio              INT DEFAULT NULL;
+	DECLARE v_nivelPersonalizado VARCHAR(255) DEFAULT NULL;
+	DECLARE v_esNormalizado     TINYINT DEFAULT NULL;
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		ROLLBACK;
@@ -301,12 +306,32 @@ BEGIN
 	-- inicio la transacción 
 	START TRANSACTION; 
 
-	SELECT capacidad, inscriptos INTO v_capacidad, v_inscriptos FROM Cursos WHERE id = p_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de postular, paralelamente otro usuario este confirmando el último cupo y cuando esta postulación se acepte lo haga sin vacante disponible. 
+	SELECT capacidad, inscriptos, cicloLectivo, idNivel, anio,NULLIF(TRIM(nivelPersonalizado), '') INTO v_capacidad, v_inscriptos, v_cicloLectivo, v_idNivel, v_anio, v_nivelPersonalizado FROM Cursos WHERE id = p_idCurso FOR UPDATE; -- bloqueamos fila para que al momento de postular, paralelamente otro usuario este confirmando el último cupo y cuando esta postulación se acepte lo haga sin vacante disponible. 
 
 	-- Validaciones                                                                                          -- el bloqueo se mantiene hasta terminar transaccion (commit o rollback)
 	-- Curso existente 
 	IF v_capacidad IS NULL THEN 
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Curso inexistente';
+	END IF;
+    
+     -- Validación del ciclo lectivo -- primero detectamos tipo de curso
+	IF v_idNivel IS NOT NULL AND v_anio IS NOT NULL AND v_nivelPersonalizado IS NULL THEN
+		SET v_esNormalizado = 1;
+	ELSEIF v_idNivel IS NULL AND v_anio IS NULL AND v_nivelPersonalizado IS NOT NULL THEN
+		SET v_esNormalizado = 0;
+	ELSE
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El curso tiene una configuración inválida (ni normalizado ni personalizado).';
+	END IF;
+
+	-- No permitir ciclos anteriores al año actual (ambos cursos)
+	IF v_cicloLectivo < YEAR(CURDATE()) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se permiten postulaciones a cursos de ciclos lectivos anteriores.';
+	-- No permitir año actual + 2 o posterior (ambos cursos)
+	ELSEIF v_cicloLectivo > YEAR(CURDATE()) + 1 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se permiten postulaciones a cursos posteriores al próximo ciclo lectivo.';
+	-- Única diferencia: los normalizados del año actual tienen plazo hasta el 15/02 inclusive
+	ELSEIF v_esNormalizado = 1 AND v_cicloLectivo = YEAR(CURDATE()) AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-02-15'), '%Y-%m-%d') THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo de inscripción para los cursos normalizados del ciclo lectivo actual.';
 	END IF;
 
 	-- Verificar cupo
@@ -334,6 +359,7 @@ BEGIN
 										  WHERE i.estado = TRUE AND c.id = p_idCurso) THEN 
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La institucion se encuentra inactiva';
 	END IF;
+  
 	-- Postulacion duplicada 
 	IF EXISTS(SELECT 1 FROM Alumnos a INNER JOIN PostulacionesAlumnos p ON a.id = p.idAlumno WHERE a.id = p_idAlumno AND p.idCurso = p_idCurso AND p.idEstado IN(1,2,3)) THEN -- no permite duplicados cuando fue confirmado el estado de postulacion pero si fue rechazado si se puede volver a postular
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya generó una postulación al curso.';
@@ -392,6 +418,7 @@ BEGIN
 	DECLARE v_inscriptos    INT DEFAULT NULL;
 	DECLARE v_capacidad     INT DEFAULT NULL;
 	DECLARE v_idPostulacion INT DEFAULT NULL;
+    DECLARE v_cicloLectivo INT DEFAULT NULL;
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION 
 	BEGIN
 		ROLLBACK;
@@ -399,7 +426,7 @@ BEGIN
 	END;
 	-- iniciamos transacción 
 	START TRANSACTION;
-	SELECT c.capacidad, c.inscriptos,p.id INTO v_capacidad, v_inscriptos,v_idPostulacion FROM Cursos c INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id WHERE p.id = p_idPostulacion FOR UPDATE;
+	SELECT c.capacidad, c.inscriptos,p.id, c.cicloLectivo INTO v_capacidad, v_inscriptos,v_idPostulacion, v_cicloLectivo FROM Cursos c INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id WHERE p.id = p_idPostulacion FOR UPDATE;
 
 	-- validamos que la postulacion exista 
 	IF v_idPostulacion IS NULL THEN
@@ -445,6 +472,11 @@ BEGIN
 													    INNER JOIN Responsables re ON re.idPersona = a.idPersona
                                                         INNER JOIN Usuarios u ON u.id = re.idUsuario WHERE p.id = p_idPostulacion AND u.activo = TRUE)) THEN 
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno pertenece a una cuenta inactiva ';  
+	END IF;
+    
+    -- validamos que el ciclo lectivo no sea antiguo 
+    IF v_cicloLectivo < YEAR(CURDATE()) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede aceptar una postulación a un curso de un ciclo lectivo anterior.';
 	END IF;
 
 	-- validar que el estado actual sea pendiente 
@@ -521,9 +553,10 @@ BEGIN
 		END IF;
 		
 		-- validamos que el motivo de rechazo no tenga longitud mas larga de la posible
-		IF (char_length(p_motivoRechazo) > 255) THEN
+		IF  (CHAR_LENGTH(TRIM(p_motivoRechazo)) > 255) THEN
 			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'El motivo de rechazo supera los 255 caracteres disponibles.';
 		END IF;
+        
 		-- si no se pasa de cantidad de caracteres lo guardo para llevarlo limpio a la bd
 		SET v_motivoRechazo = TRIM(p_motivoRechazo); 
 		
@@ -671,6 +704,12 @@ BEGIN
                                                                                                       (v_anioCurso IS NULL AND v_idNivelCurso IS NULL AND c.idNivel IS NULL AND c.anio IS NULL AND v_nivelPersonalizadoCurso IS NOT NULL AND c.nivelPersonalizado IS NOT NULL AND TRIM(c.nivelPersonalizado) <>''AND TRIM(v_nivelPersonalizadoCurso) <> '' AND LOWER(TRIM(c.nivelPersonalizado)) = LOWER(TRIM(v_nivelPersonalizadoCurso))))) THEN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno ya tiene confirmada una postulación para un curso de las mismas características.';
         END IF;
+        
+		-- validamos que el ciclo lectivo no sea antiguo 
+		IF v_cicloLectivoCurso < YEAR(CURDATE()) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede confirmar una postulación a un curso de un ciclo lectivo anterior.';
+		END IF;
+        
 	  
 		-- que haya cupo
 		IF (v_capacidad - v_inscriptos) <= 0 THEN
@@ -691,7 +730,6 @@ END$$
 
 DELIMITER ;
 
--- Falta evaluar el caso en el que nivel o nivel personalizado no esta detallado (hasta ahora quedo MODO NORMALIZADO: idNivel 'primaria' + anio '2do' y nivelPersonalizado NULL O MODO PERSONALIZADO: idNivel NULL + anio NULL y nivelPersonalizado 'Kids Starter' )  o ver de que manera lo hacemos
 -- sp_Registrar_Curso-----------------------------
 -- recibe por parametro: 
 -- p_idAministradorInstitucion, p_idTurno, p_cicloLectivo, p_idNivel, p_anio, p_nivelPersonalizado, p_division, p_capacidad, p_inscriptos
@@ -943,5 +981,116 @@ BEGIN
         
 END$$
 
+DELIMITER ;
+
+-- sp_Cancelar_Postulacion_Alumno
+-- Lo hace el responsable (o autogestor) desde su cuenta.
+-- Se puede cancelar en cualquier estado salvo Rechazada  y Cancelada 
+-- Solo si estaba CONFIRMADA  devuelve la vacante: inscriptos - 1,
+-- y solo si el curso no es de un ciclo lectivo anterior (para no alterar datos)
+-- Parametros necesarios: p_idPostulacion, p_idResponsable
+-- ---------------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_Cancelar_Postulacion_Alumno$$
+
+CREATE PROCEDURE sp_Cancelar_Postulacion_Alumno(
+IN p_idPostulacion    INT,
+IN p_idResponsable    INT
+)
+BEGIN
+	DECLARE v_idCurso       INT DEFAULT NULL;
+	DECLARE v_idEstado      INT DEFAULT NULL;
+	DECLARE v_cicloLectivo  INT DEFAULT NULL;
+
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+		RESIGNAL;
+	END;
+	
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+	START TRANSACTION;
+
+		-- valido que exista la postulacion
+		SELECT idCurso INTO v_idCurso FROM PostulacionesAlumnos WHERE id = p_idPostulacion;
+
+		IF v_idCurso IS NULL THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
+		END IF;
+
+		SELECT id, cicloLectivo INTO v_idCurso, v_cicloLectivo FROM Cursos WHERE id = v_idCurso FOR UPDATE;-- bloqueamos la fila del curso para que la devolución de la vacante no pise a otra confirmación concurrente
+
+		-- leemos el estado luego del bloqueo, para tener el valor vigente
+		SELECT idEstado INTO v_idEstado FROM PostulacionesAlumnos WHERE id = p_idPostulacion;
+
+		-- valido que el responsable exista
+		IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El responsable indicado no existe.';
+		END IF;
+
+		-- valido que el usuario responsable este activo
+		IF NOT EXISTS (SELECT 1 FROM Responsables r INNER JOIN Usuarios u ON u.id = r.idUsuario
+							   WHERE r.id = p_idResponsable AND u.activo = TRUE) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no tiene cuenta activa.';
+		END IF;
+
+		-- valido que el alumno sea del responsable o que sea autogestor
+		IF NOT (EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN ResponsablesPorAlumno ra ON ra.idAlumno = p.idAlumno
+								WHERE p.id = p_idPostulacion AND ra.idResponsable = p_idResponsable) OR
+				EXISTS (SELECT 1 FROM PostulacionesAlumnos p INNER JOIN Alumnos al ON al.id = p.idAlumno
+														  INNER JOIN Responsables r ON r.idPersona = al.idPersona
+								WHERE p.id = p_idPostulacion AND r.id = p_idResponsable)) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no pertenece a un alumno de la cuenta del responsable.';
+		END IF;
+
+		-- valido estados que no se pueden cancelar
+		IF v_idEstado = 4 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede cancelar una postulación rechazada.';
+		END IF;
+
+		IF v_idEstado = 5 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación ya se encuentra cancelada.';
+		END IF;
+
+		UPDATE PostulacionesAlumnos SET idEstado = 5 WHERE id = p_idPostulacion AND idEstado IN (1,2,3); -- cancelamos (1 Pendiente, 2 Aceptado, 3 Confirmado)
+
+		IF ROW_COUNT() <> 1 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se pudo cancelar la postulación.';
+		END IF;
+
+		-- solo si estaba confirmada ocupaba vacante: la devolvemos,
+		-- salvo que el curso sea de un ciclo lectivo anterior (dato histórico, no se modifica)
+		IF v_idEstado = 3 AND v_cicloLectivo >= YEAR(CURDATE()) THEN
+			UPDATE Cursos SET inscriptos = inscriptos - 1 WHERE id = v_idCurso AND inscriptos > 0;
+
+			IF ROW_COUNT() <> 1 THEN
+				SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se pudo devolver la vacante del curso.';
+			END IF;
+		END IF;
+
+	COMMIT;
+
+	-- Retornamos valores que puedan sernos utiles
+	SELECT
+	p.id AS IdPostulacion,
+	p.fecha AS FechaPostulacion,
+	p.codigoSeguimiento AS CodigoSeguimiento,
+	p.idCurso AS IdCurso,
+	p.idAlumno AS IdAlumno,
+	p.idEstado AS IdEstado,
+	i.id AS IdInstitucion,
+	pe.nombre AS Nombre,
+	pe.apellido AS Apellido,
+	pe.documento AS Documento,
+	e.descripcion AS Descripcion
+	FROM PostulacionesAlumnos p INNER JOIN Alumnos a ON a.id = p.idAlumno
+								INNER JOIN Personas pe ON pe.id = a.idPersona
+								INNER JOIN Cursos c ON c.id = p.idCurso
+								INNER JOIN Instituciones i ON c.idInstitucion = i.id
+								INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
+	WHERE p.id = p_idPostulacion;
+
+END$$
 DELIMITER ;
  
