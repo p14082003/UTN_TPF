@@ -13,6 +13,15 @@ namespace Presentacion
 
     public partial class Site1
     {
+        /// <summary>
+        /// Control lnkRegistrarAlumno.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkRegistrarAlumno;
+
+        /// <summary>
+        /// Control lnkAgregarAdministrador.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkAgregarAdministrador;
 
         /// <summary>
         /// Control head.
@@ -69,6 +78,11 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
 
         /// <summary>
+        /// Control lnkResenias.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkResenias;
+
+        /// <summary>
         /// Control lnkIniciarSesion.
         /// </summary>
         /// <remarks>
@@ -96,14 +110,22 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Literal litSaludo;
 
         /// <summary>
+        /// Control lnkMiPerfil.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkMiPerfil;
+
+        /// <summary>
         /// Control btnCerrarSesion.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCerrarSesion;
-
+        protected global::System.Web.UI.WebControls.LinkButton btnCerrarSesion;
         /// <summary>
         /// Control ContentPlaceHolder1.
         /// </summary>

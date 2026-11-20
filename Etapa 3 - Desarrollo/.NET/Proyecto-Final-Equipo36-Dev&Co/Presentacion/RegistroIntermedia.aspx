@@ -3,7 +3,7 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     
-  <div class="container-fluid bg-fondo min-vh-100 py-3">
+    <div class="container-fluid bg-fondo min-vh-100 py-3">
 
         <div class="row justify-content-center">
             <div class="col-12 md:col-9 lg:col-6">
@@ -11,7 +11,7 @@
                 <!-- Titulo -->
                 <header class="text-center mb-4">
                     <img src="Imagenes/Logo.png" alt="InstiRed" class="w-25 img-fluid mb-1" />
-                    <h2 class="h3 fw-bold mb-2">Creá tu cuenta </h2>
+                    <h2 class="h3 fw-bold text-indigo mb-2">Creá tu cuenta </h2>
                 </header>
 
                 <!-- Registro para responsable -->
@@ -62,6 +62,11 @@
                             <p class="text-secondary mb-4">Registrá tu institución, publicá vacantes y gestioná las solicitudes de admisión de nuevos estudiantes de manera centralizada.</p>
                             <asp:Button ID="btnRegistroInstitucion" runat="server" Text="Registrar institución" CssClass="btn btn-lilaClaro w-100 py-2" PostBackUrl="~/FormularioAdministradorInstitucion.aspx" />
                         </div>
+                    <p class="text-center small text-secondary px-3 pb-3 mb-0">
+                        <asp:HyperLink ID="hlCodigoSeguimiento" runat="server" NavigateUrl="~/ConsultarPostulacionAdministrador.aspx" CssClass="link-lilaClaro fw-semibold">
+                            Tengo código de seguimiento
+                        </asp:HyperLink>
+                    </p>
                  </div>
 
                 <!-- Volver al login -->

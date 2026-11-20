@@ -38,11 +38,20 @@ namespace Negocio
                 {
                     Ok = true,
                     IdUsuario = Convert.ToInt32(lector["IdUsuario"]),
+                    Email = (string)lector["Email"],
                     IdTipoUsuario = Convert.ToInt32(lector["IdTipoUsuario"])
                 };
+                if (lector["IdPersona"] != DBNull.Value)
+                {
+                    respuesta.IdPersona = Convert.ToInt32(lector["IdPersona"]);
+                }
                 if (lector["IdResponsable"] != DBNull.Value)
                 {
                     respuesta.IdResponsable = Convert.ToInt32(lector["IdResponsable"]);
+                }
+                if (lector["IdAlumno"] != DBNull.Value)
+                {
+                    respuesta.IdAlumno = Convert.ToInt32(lector["IdAlumno"]);
                 }
                 if (lector["IdInstitucion"] != DBNull.Value)
                 {
@@ -55,6 +64,10 @@ namespace Negocio
                 if (lector["Nombre"] != DBNull.Value)
                 {
                     respuesta.Nombre = (string)lector["Nombre"];
+                }
+                if (lector["Apellido"] != DBNull.Value)
+                {
+                    respuesta.Apellido = (string)lector["Apellido"];
                 }
                 return respuesta;
             }

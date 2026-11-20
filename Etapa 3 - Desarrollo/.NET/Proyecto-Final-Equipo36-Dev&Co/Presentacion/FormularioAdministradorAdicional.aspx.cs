@@ -1,18 +1,35 @@
-﻿using Presentacion.Auth;
-using System;
+﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
+using System.Web.UI;
+using Negocio;
+using Presentacion.Auth;
 
 namespace Presentacion
 {
     public partial class FormularioAdministradorAdicional : System.Web.UI.Page
     {
+        private UsuarioSesion usuario;
+
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            ViewStateUserKey = Session.SessionID;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Acceso: permitir solo administrador de institución
-            if (!UsuarioSesion.TieneRol(Session, UsuarioSesion.AdministradorInstitucion))
+            usuario = UsuarioSesion.Obtener(Session);
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion)
             {
                 Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+            if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/FormularioInstitucion.aspx");
                 return;
             }
 
@@ -52,6 +69,21 @@ namespace Presentacion
                 return;
             }
 
+            if (!DateTime.TryParse(txtFechaNacimiento.Text, out DateTime fecha) ||
+                fecha.Year < 1000 || fecha.Date > DateTime.Today)
+            {
+                MostrarMensaje("Ingresá una fecha de nacimiento válida.", false);
+                return;
+            }
+
+            if (txtNombre.Text.Trim().Length > 50 || txtApellido.Text.Trim().Length > 50 ||
+                txtEmail.Text.Trim().Length > 100 || txtDomicilio.Text.Trim().Length > 100 ||
+                txtTelefono.Text.Trim().Length > 30)
+            {
+                MostrarMensaje("Revisá la longitud de los datos ingresados.", false);
+                return;
+            }
+
             string clave = txtClave.Text;
             if (clave.Length < 8 || clave.Length > 20 ||
                 !clave.Any(char.IsUpper) || !clave.Any(char.IsLower) ||
@@ -67,12 +99,41 @@ namespace Presentacion
                 return;
             }
 
-            // API: POST a sp CrearAdministradorInstitucionAdicional (idUsuarioActor, nombre, apellido, documento, domicilio, fechaNacimiento, clave, email, telefono)
-            //   idUsuarioActor: el administrador logueado, debe salir de la sesión. El SP lo usa para saber a qué institución se vincula el nuevo administrador y para verificar que quien lo crea sea administrador activo.
-            //   Respuesta ok: debe devolver el idAdministrador generado
+            RegisterAsyncTask(new PageAsyncTask(AgregarAdministradorAsync));
+        }
 
-            MostrarMensaje("Administrador agregado correctamente.", true);
-            LimpiarCampos();
+        private async Task AgregarAdministradorAsync()
+        {
+            var registro = new
+            {
+                idUsuarioActor = usuario.IdUsuario,
+                nombre = txtNombre.Text.Trim(),
+                apellido = txtApellido.Text.Trim(),
+                documento = txtDocumento.Text.Trim(),
+                domicilio = txtDomicilio.Text.Trim(),
+                fechaNacimiento = txtFechaNacimiento.Text,
+                clave = txtClave.Text,
+                email = txtEmail.Text.Trim(),
+                telefono = txtTelefono.Text.Trim()
+            };
+
+            try
+            {
+                var respuesta = await InstiRedApi.PostAsync("sp/CrearAdministradorInstitucionAdicional", registro);
+                if (respuesta.Estado == HttpStatusCode.Created)
+                {
+                    LimpiarCampos();
+                    MostrarMensaje("Administrador agregado correctamente. Ya puede iniciar sesión con su correo y contraseña.", true);
+                    return;
+                }
+
+                MostrarMensaje(respuesta.Mensaje ?? "No se pudo completar el alta. Intentá nuevamente más tarde.", false);
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("FormularioAdministradorAdicional", "Error al registrar el administrador en la API.", ex);
+                MostrarMensaje("No se pudo confirmar el alta del administrador. Intentá nuevamente más tarde.", false);
+            }
         }
 
         protected void btnCancelar_Click(object sender, EventArgs e)
@@ -108,7 +169,7 @@ namespace Presentacion
 
         private void MostrarMensaje(string texto, bool ok)
         {
-            lblMensaje.Text = texto;
+            lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
         }

@@ -107,9 +107,12 @@
 }
 
 /* Campos de solo lectura (ej: datos del autogestor) */
-input.form-control[readonly] {
+input.form-control[readonly],
+input.form-control[readonly]:focus {
     background-color: #e9ecef;
     color: #6c757d;
+    border-color: #ced4da;
+    box-shadow: none;
     cursor: not-allowed;
 }
 
