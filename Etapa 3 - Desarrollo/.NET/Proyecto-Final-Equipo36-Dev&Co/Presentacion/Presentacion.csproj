@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ConsultarPostulacionAdministrador.aspx" />
     <Content Include="DetalleInstitucion.aspx" />
     <Content Include="EstilosInstiRed.css" />
     <Content Include="FormularioAdministradorAdicional.aspx" />
@@ -90,6 +91,13 @@
     <Content Include="RegistroAlumno.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsultarPostulacionAdministrador.aspx.cs">
+      <DependentUpon>ConsultarPostulacionAdministrador.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConsultarPostulacionAdministrador.aspx.designer.cs">
+      <DependentUpon>ConsultarPostulacionAdministrador.aspx</DependentUpon>
+    </Compile>
     <Compile Include="DetalleInstitucion.aspx.cs">
       <DependentUpon>DetalleInstitucion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
