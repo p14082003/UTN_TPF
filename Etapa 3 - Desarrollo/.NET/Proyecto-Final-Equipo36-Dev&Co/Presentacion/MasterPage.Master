@@ -32,20 +32,33 @@
 
                 <!-- Menú del administrador de institución -->
                 <asp:Panel ID="pnlMenuAdmin" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2 me-auto ms-3">
-                    <asp:HyperLink ID="lnkPostulaciones" runat="server" NavigateUrl="~/GestionarPostulacionAlumno.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Postulaciones" />
-                    <asp:HyperLink ID="lnkAdministradores" runat="server" NavigateUrl="~/GestionarAdministradores.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Administradores" />
-                    <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx" CssClass="btn btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" />
+                    <asp:HyperLink ID="lnkPostulaciones" runat="server" NavigateUrl="~/GestionarPostulacionAlumno.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Postulaciones" />
+                    <asp:HyperLink ID="lnkAdministradores" runat="server" NavigateUrl="~/GestionarAdministradores.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Administradores" />
+                    <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" />
                 </asp:Panel>
 
                 <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
                     CssClass="btn btn-lilaClaro px-3 py-2" Text="Iniciar sesión" />
-                <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2">
-                    <span class="fw-semibold text-indigo">
-                        <asp:Literal ID="litSaludo" runat="server" Mode="Encode" /></span>
-                    <asp:Button ID="btnCerrarSesion" runat="server" Text="Cerrar sesión"
-                        CssClass="btn btn-lilaClaro px-3 py-2" CausesValidation="false" UseSubmitBehavior="false"
-                        OnClick="btnCerrarSesion_Click" />
+                <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="position-relative">
+                    <details>
+                        <summary class="btn btn-sm btn-lilaClaro px-3 py-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-person-circle fs-4" aria-hidden="true"></i>
+                            <asp:Literal ID="litSaludo" runat="server" Mode="Encode" />
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                        </summary>
+                        <div class="card position-absolute end-0 mt-1 shadow z-3 text-nowrap">
+                            <div class="d-grid gap-1 p-1">
+                                <asp:HyperLink ID="lnkMiPerfil" runat="server" NavigateUrl="~/MiPerfil.aspx" CssClass="btn btn-sm btn-lilaClaro justify-content-start px-2 py-1">
+                                    <i class="bi bi-person me-1" aria-hidden="true"></i><span class="small">Mi perfil</span>
+                                </asp:HyperLink>
+                                <asp:LinkButton ID="btnCerrarSesion" runat="server" CssClass="btn btn-sm btn-lilaClaro justify-content-start px-2 py-1" CausesValidation="false" OnClick="btnCerrarSesion_Click">
+                                    <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i><span class="small">Cerrar sesión</span>
+                                </asp:LinkButton>
+                            </div>
+                        </div>
+                    </details>
                 </asp:Panel>
+
             </nav>
 
             <!-- Formularios -->

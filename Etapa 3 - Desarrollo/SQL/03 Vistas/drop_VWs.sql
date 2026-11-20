@@ -7,3 +7,5 @@ DROP VIEW IF EXISTS vw_Postulaciones_Alumnos;
 DROP VIEW IF EXISTS vw_Postulaciones_Por_Responsable;
 DROP VIEW IF EXISTS vw_Instituciones;
 DROP VIEW IF EXISTS vw_Administradores_Por_Institucion;
+DROP VIEW IF EXISTS vw_Perfil_Usuario;
+DROP VIEW IF EXISTS vw_Telefonos_Por_Usuario;

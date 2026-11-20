@@ -96,14 +96,22 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Literal litSaludo;
 
         /// <summary>
+        /// Control lnkMiPerfil.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkMiPerfil;
+
+        /// <summary>
         /// Control btnCerrarSesion.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCerrarSesion;
-
+        protected global::System.Web.UI.WebControls.LinkButton btnCerrarSesion;
         /// <summary>
         /// Control ContentPlaceHolder1.
         /// </summary>

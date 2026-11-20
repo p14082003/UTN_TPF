@@ -35,7 +35,7 @@ namespace Presentacion
         {
             Session.Clear();
             Session.Abandon();
-            Response.Redirect("~/ListadoInstituciones.aspx");
+            Response.Redirect("~/login.aspx");
         }
     }
 }
