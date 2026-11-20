@@ -71,6 +71,7 @@
   <ItemGroup>
     <Content Include="DetalleInstitucion.aspx" />
     <Content Include="EstilosInstiRed.css" />
+    <Content Include="Imagenes\*.png" />
     <Content Include="FormularioAdministradorAdicional.aspx" />
     <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="FormularioInstitucion.aspx" />

@@ -14,9 +14,19 @@ namespace Presentacion
     public partial class Site1
     {
         /// <summary>
+        /// Control lnkRegistrarAlumno.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkRegistrarAlumno;
+
+        /// <summary>
         /// Control lnkVacantes.
         /// </summary>
         protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
+
+        /// <summary>
+        /// Control lnkAgregarAdministrador.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkAgregarAdministrador;
 
 
         /// <summary>

@@ -1,109 +1,201 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Dominio;
+using Negocio;
+using Presentacion.Auth;
+using System;
 using System.Linq;
-using System.Web;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class RegistroAlumno : System.Web.UI.Page
+    public partial class RegistroAlumno : Page
     {
-        protected void Page_Load(object sender, EventArgs e)
+        private UsuarioSesion usuario;
+
+        protected void Page_Init(object sender, EventArgs e)
         {
+            ViewStateUserKey = Session.SessionID;
         }
 
-        // Si el alumno es el propio responsable (autogestor) no hace falta el vínculo
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            usuario = UsuarioSesion.Obtener(Session);
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.Responsable ||
+                usuario.IdResponsable.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+            Response.Cache.SetNoStore();
+        }
+
         protected void chkAutogestor_CheckedChanged(object sender, EventArgs e)
         {
             lblMensaje.Visible = false;
             pnlRol.Visible = !chkAutogestor.Checked;
-            // PRUEBA provisoria: borrar cuando se conecte la API (GET ent/Personas/{idPersona})
-            if (chkAutogestor.Checked)
-            {
-                txtNombre.Text = "prueba bloqueo";
-                txtApellido.Text = "Apellido bloqueado";
-                txtDocumento.Text = "40111222";
-                txtDomicilio.Text = "Calle bloqueada 123";
-                txtFechaNacimiento.Text = "1992-03-15";
-                BloquearDatos(true);
-            }
-
-            // API: si es autogestor, completar los datos con los de la persona logueada.
-            //   GET ent/Personas/{idPersona}  (idPersona sale de la sesión del login, Session["IdPersona"])
-            //   Respuesta: { id, nombre, apellido, documento, domicilio, fechaNacimiento }
-            //   Completar txtNombre, txtApellido, txtDocumento, txtDomicilio y txtFechaNacimiento
-            //   (la fecha en formato yyyy-MM-dd) y luego llamar a BloquearDatos(true) para dejarlos en solo lectura.
-            //   Al destildar, LimpiarCampos() los vuelve a dejar editables y vacíos.
             if (!chkAutogestor.Checked)
             {
                 LimpiarCampos();
+                return;
             }
+
+            BloquearDatos(true);
+            btnRegistrar.Enabled = false;
+            Ejecutar(async () =>
+            {
+                var persona = await ObtenerPersonaResponsableAsync();
+                txtNombre.Text = persona.Nombre;
+                txtApellido.Text = persona.Apellido;
+                txtDocumento.Text = persona.Documento;
+                txtDomicilio.Text = persona.Domicilio;
+                txtFechaNacimiento.Text = persona.FechaNacimiento.ToString("yyyy-MM-dd");
+                btnRegistrar.Enabled = true;
+            });
+        }
+
+        private async Task<Persona> ObtenerPersonaResponsableAsync()
+        {
+            var responsable = await InstiRedApi.GetAsync<ResponsableApi>(
+                "ent/Responsables/" + usuario.IdResponsable.Value);
+            if (responsable.IdUsuario != usuario.IdUsuario || responsable.IdPersona <= 0)
+            {
+                throw new ArgumentException("La cuenta no corresponde al responsable de la sesión.");
+            }
+
+            return await InstiRedApi.GetAsync<Persona>("ent/Personas/" + responsable.IdPersona);
+        }
+
+        private void Ejecutar(Func<Task> accion)
+        {
+            lblMensaje.Visible = false;
+            RegisterAsyncTask(new PageAsyncTask(async () =>
+            {
+                try
+                {
+                    await accion();
+                }
+                catch (ArgumentException ex)
+                {
+                    MostrarMensaje(ex.Message, false);
+                }
+                catch (Exception ex)
+                {
+                    Trace.Warn("RegistroAlumno", "Error al comunicarse con la API de InstiRed.", ex);
+                    MostrarMensaje("No se pudo completar la operación. Intentá nuevamente más tarde.", false);
+                }
+            }));
         }
 
         protected void btnRegistrar_Click(object sender, EventArgs e)
         {
-            lblMensaje.Visible = false;
-            // Validaciones básicas 
-            if (string.IsNullOrWhiteSpace(txtDocumento.Text))
+            Ejecutar(RegistrarAsync);
+        }
+
+        private async Task RegistrarAsync()
+        {
+            object registro;
+            if (chkAutogestor.Checked)
             {
-                MostrarMensaje("El documento es obligatorio.", false);
-                return;
+                // El SP reutiliza a la persona del responsable cuando coincide su documento.
+                var persona = await ObtenerPersonaResponsableAsync();
+                registro = new
+                {
+                    idResponsable = usuario.IdResponsable.Value,
+                    idRol = (int?)null,
+                    documento = persona.Documento
+                };
             }
-            if (txtDocumento.Text.Trim().StartsWith("0"))
+            else
             {
-                MostrarMensaje("El documento no puede empezar con 0.", false);
-                return;
+                ValidarDatos();
+                registro = new
+                {
+                    idResponsable = usuario.IdResponsable.Value,
+                    idRol = ObtenerRol(),
+                    nombre = txtNombre.Text.Trim(),
+                    apellido = txtApellido.Text.Trim(),
+                    documento = txtDocumento.Text.Trim(),
+                    domicilio = txtDomicilio.Text.Trim(),
+                    fechaNacimiento = txtFechaNacimiento.Text
+                };
             }
-            if (string.IsNullOrWhiteSpace(txtFechaNacimiento.Text))
+
+            var respuesta = await InstiRedApi.PostAsync("sp/RegistrarAlumno", registro);
+            if (respuesta.Estado == HttpStatusCode.Created)
             {
-                MostrarMensaje("La fecha de nacimiento es obligatoria.", false);
-                return;
-            }
-            if (!chkAutogestor.Checked && ObtenerRol() == 0)
-            {
-                MostrarMensaje("Elegí tu vínculo con el alumno.", false);
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(txtNombre.Text) || string.IsNullOrWhiteSpace(txtApellido.Text) || string.IsNullOrWhiteSpace(txtDomicilio.Text))
-            {
-                MostrarMensaje("Nombre, apellido y domicilio son obligatorios.", false);
+                LimpiarCampos();
+                MostrarMensaje("Alumno registrado correctamente.", true);
                 return;
             }
 
-            // API: POST al sp_RegistrarAlumno (idResponsable, idRol, nombre, apellido documento, domicilio, fechaNacimiento)
-            //   idResponsable: deberia salir de la sesión del login (Session["IdResponsable"])
-            //   idRol: ObtenerRol() -> 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo (igual que en archivo de Inserts)
-            //          Si chkAutogestor está tildado se deben autocompletar los datos, idRol se debería mandar null (el SP creo que lo ignora).           
-            //   Respuesta: { idAlumno, idPersona }
-            //   Si da error, mostrar el mensaje que devuelve con MostrarMensaje(mensaje, false)
-            //   Si da ok, MostrarMensaje("Alumno registrado correctamente.", true) y LimpiarCampos()
+            MostrarMensaje(respuesta.Mensaje ?? "No se pudo completar el registro. Intentá nuevamente más tarde.", false);
+        }
 
-            MostrarMensaje("Alumno registrado correctamente.", true);
-            LimpiarCampos();
+        private void ValidarDatos()
+        {
+            if (string.IsNullOrWhiteSpace(txtDocumento.Text) ||
+                string.IsNullOrWhiteSpace(txtNombre.Text) ||
+                string.IsNullOrWhiteSpace(txtApellido.Text) ||
+                string.IsNullOrWhiteSpace(txtDomicilio.Text) ||
+                string.IsNullOrWhiteSpace(txtFechaNacimiento.Text))
+            {
+                throw new ArgumentException("Completá todos los datos del alumno.");
+            }
+
+            string documento = txtDocumento.Text.Trim();
+            if (documento.Length > 8 || documento.StartsWith("0") ||
+                documento.Any(c => c < '0' || c > '9'))
+            {
+                throw new ArgumentException("Ingresá un DNI de hasta 8 dígitos, sin puntos y sin empezar con cero.");
+            }
+            if (txtNombre.Text.Trim().Length > 50 || txtApellido.Text.Trim().Length > 50 ||
+                txtDomicilio.Text.Trim().Length > 100)
+            {
+                throw new ArgumentException("Revisá la longitud del nombre, apellido y domicilio.");
+            }
+            if (!DateTime.TryParse(txtFechaNacimiento.Text, out DateTime fecha) ||
+                fecha.Year < 1000 || fecha.Date > DateTime.Today)
+            {
+                throw new ArgumentException("Ingresá una fecha de nacimiento válida.");
+            }
+            if (ObtenerRol() == 0)
+            {
+                throw new ArgumentException("Elegí tu vínculo con el alumno.");
+            }
         }
 
         protected void btnCancelar_Click(object sender, EventArgs e)
         {
-            // Ajustar el destino cuando exista la pantalla principal del responsable
-            Response.Redirect("~/Login.aspx");
+            Response.Redirect("~/ListadoInstituciones.aspx");
         }
 
-        // Devuelve el id del rol elegido (0 si no eligió ninguno)
         private int ObtenerRol()
         {
-            if (rbPadre.Checked) return 1;
-            if (rbMadre.Checked) return 2;
-            if (rbTutor.Checked) return 3;
-            if (rbFamiliar.Checked) return 4;
+            if (rbPadre.Checked)
+            {
+                return 1;
+            }
+            if (rbMadre.Checked)
+            {
+                return 2;
+            }
+            if (rbTutor.Checked)
+            {
+                return 3;
+            }
+            if (rbFamiliar.Checked)
+            {
+                return 4;
+            }
             return 0;
         }
 
-        // Deja el formulario como recién abierto (se mantiene el mensaje de resultado)
         private void LimpiarCampos()
         {
             chkAutogestor.Checked = false;
             BloquearDatos(false);
+            btnRegistrar.Enabled = true;
             pnlRol.Visible = true;
             rbPadre.Checked = false;
             rbMadre.Checked = false;
@@ -116,8 +208,6 @@ namespace Presentacion
             txtDomicilio.Text = "";
         }
 
-        // Deja los campos de datos en solo lectura (true) o editables (false).
-        // Se usa con el autogestor: sus datos vienen de la API y no se pueden cambiar.
         private void BloquearDatos(bool bloquear)
         {
             txtNombre.ReadOnly = bloquear;
@@ -126,11 +216,18 @@ namespace Presentacion
             txtFechaNacimiento.ReadOnly = bloquear;
             txtDomicilio.ReadOnly = bloquear;
         }
+
         private void MostrarMensaje(string texto, bool ok)
         {
-            lblMensaje.Text = texto;
+            lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
+        }
+
+        private class ResponsableApi
+        {
+            public int IdPersona { get; set; }
+            public int IdUsuario { get; set; }
         }
     }
 }

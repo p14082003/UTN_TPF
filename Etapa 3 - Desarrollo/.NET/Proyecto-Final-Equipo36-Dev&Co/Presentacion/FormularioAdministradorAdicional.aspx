@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="FormularioAdministradorAdicional.aspx.cs" Inherits="Presentacion.FormularioAdministradorAdicional" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="FormularioAdministradorAdicional.aspx.cs" Inherits="Presentacion.FormularioAdministradorAdicional" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -33,7 +33,7 @@
                             </div>
                             <div class="col-12 md:col-6">
                                 <asp:Label ID="lblDocumento" runat="server" Text="Documento" AssociatedControlID="txtDocumento" CssClass="form-label text-indigo"></asp:Label>
-                                <asp:TextBox ID="txtDocumento" runat="server" placeholder="35887625" MaxLength="8" CssClass="form-control"></asp:TextBox>
+                                <asp:TextBox ID="txtDocumento" runat="server" placeholder="35887625" MaxLength="8" inputmode="numeric" CssClass="form-control"></asp:TextBox>
                             </div>
                             <div class="col-12 md:col-6">
                                 <asp:Label ID="lblFechaNacimiento" runat="server" Text="Fecha de nacimiento" AssociatedControlID="txtFechaNacimiento" CssClass="form-label text-indigo"></asp:Label>
