@@ -62,7 +62,7 @@
                             <p class="text-secondary mb-4">Registrá tu institución, publicá vacantes y gestioná las solicitudes de admisión de nuevos estudiantes de manera centralizada.</p>
                             <asp:Button ID="btnRegistroInstitucion" runat="server" Text="Registrar institución" CssClass="btn btn-lilaClaro w-100 py-2" PostBackUrl="~/FormularioAdministradorInstitucion.aspx" />
                         </div>
-                    <p class="text-center small text-secondary mb-0">
+                    <p class="text-center small text-secondary px-3 pb-3 mb-0">
                         <asp:HyperLink ID="hlCodigoSeguimiento" runat="server" NavigateUrl="~/ConsultarPostulacionAdministrador.aspx" CssClass="link-lilaClaro fw-semibold">
                             Tengo código de seguimiento
                         </asp:HyperLink>

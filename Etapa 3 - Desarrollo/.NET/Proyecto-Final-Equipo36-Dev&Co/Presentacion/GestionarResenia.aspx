@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="GestionarResenia.aspx.cs" Inherits="Presentacion.GestionarResenia" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarResenia.aspx.cs" Inherits="Presentacion.GestionarResenia" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -22,7 +22,6 @@
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center px-2 py-4">
                         <h5 class="card-title text-indigo"><i class="bi bi-chat-left-text text-lavanda fs-4 d-block d-sm-inline me-sm-2"></i>Reseñas</h5>
-                        <!-- Valores de ejemplo -->
                         <h2 class="display-4 fw-bold text-indigo mt-3"><asp:Label ID="lblTotal" runat="server" Text="-" /></h2>
                     </div>
                 </div>
@@ -75,13 +74,13 @@
 
                 <div class="table-responsive">
                     <asp:GridView ID="dgvResenias" runat="server" CssClass="table table-hover align-middle border-neutro"
-                        AutoGenerateColumns="False" GridLines="None" DataKeyNames="Id"
+                        AutoGenerateColumns="False" GridLines="None" DataKeyNames="IdResenia"
                         EmptyDataText="No hay reseñas para mostrar con este filtro.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
                         <Columns>
                             <asp:BoundField DataField="Fecha" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
-                            <asp:BoundField DataField="NombreResponsable" HeaderText="Responsable" />
+                            <asp:BoundField DataField="NombreCompleto" HeaderText="Responsable" />
                             <asp:TemplateField HeaderText="Calificación">
                                 <ItemTemplate>
                                     <span class="text-lavanda text-nowrap" role="img" aria-label="<%# Eval("Calificacion") %> de 5 estrellas">
@@ -92,16 +91,16 @@
                             <asp:BoundField DataField="Comentario" HeaderText="Comentario" />
                             <asp:TemplateField HeaderText="Estado">
                                 <ItemTemplate>
-                                    <span class="badge rounded-pill px-3 py-2 <%# string.IsNullOrEmpty(Convert.ToString(Eval("RespuestaInstitucion"))) ? "bg-lavanda" : "bg-indigo" %>">
-                                        <%# string.IsNullOrEmpty(Convert.ToString(Eval("RespuestaInstitucion"))) ? "Sin responder" : "Respondida" %>
+                                    <span class="badge rounded-pill px-3 py-2 <%# Eval("RespuestaInstitucion") == null ? "bg-lavanda" : "bg-indigo" %>">
+                                        <%# Eval("RespuestaInstitucion") == null ? "Sin responder" : "Respondida" %>
                                     </span>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnVerDetalle" runat="server" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
-                                        CommandArgument='<%# Eval("Id") %>' OnClick="btnVerDetalle_Click">
-                                        <%# string.IsNullOrEmpty(Convert.ToString(Eval("RespuestaInstitucion"))) ? "Responder" : "Ver" %>
+                                        CommandArgument='<%# Eval("IdResenia") %>' OnClick="btnVerDetalle_Click">
+                                        <%# Eval("RespuestaInstitucion") == null ? "Responder" : "Ver" %>
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
@@ -119,25 +118,24 @@
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
-                <!-- La reseña (valores de ejemplo) -->
+                <!-- La reseña -->
                 <div class="p-4 bg-fondo rounded-4 border border-neutro mb-4">
                     <div class="row mb-3">
                         <div class="col-md-5 mb-2">
                             <span class="text-muted d-block small">Responsable</span>
-                            <asp:Label ID="lblDetalleResponsable" runat="server" CssClass="text-indigo fw-bold fs-5" Text="Laura Gómez" />
+                            <asp:Label ID="lblDetalleResponsable" runat="server" CssClass="text-indigo fw-bold fs-5" />
                         </div>
                         <div class="col-md-3 mb-2">
                             <span class="text-muted d-block small">Fecha</span>
-                            <asp:Label ID="lblDetalleFecha" runat="server" CssClass="text-indigo fw-bold fs-5" Text="12/11/2026" />
+                            <asp:Label ID="lblDetalleFecha" runat="server" CssClass="text-indigo fw-bold fs-5" />
                         </div>
                         <div class="col-md-4 mb-2">
                             <span class="text-muted d-block small">Calificación</span>
-                            <asp:Label ID="lblDetalleEstrellas" runat="server" CssClass="text-lavanda fs-5 text-nowrap" Text="★★★★☆" />
+                            <asp:Label ID="lblDetalleEstrellas" runat="server" CssClass="text-lavanda fs-5 text-nowrap" />
                         </div>
                     </div>
                     <span class="text-muted d-block small">Comentario</span>
-                    <asp:Label ID="lblDetalleComentario" runat="server" CssClass="text-indigo d-block"
-                        Text="Excelente atención del equipo directivo y muy buena comunicación con las familias." />
+                    <asp:Label ID="lblDetalleComentario" runat="server" CssClass="text-indigo d-block" />
                 </div>
 
                 <!-- Reseña sin responder: formulario de respuesta (una sola vez) -->

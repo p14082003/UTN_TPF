@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="ConsultarPostulacionAdministrador.aspx.cs" Inherits="Presentacion.ConsultarPostulacionAdministrador" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ConsultarPostulacionAdministrador.aspx.cs" Inherits="Presentacion.ConsultarPostulacionAdministrador" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -13,7 +13,7 @@
                     <img src="Imagenes/Logo.png" alt="InstiRed" class="w-25 img-fluid mb-1" />
                     <h2 class="h3 fw-bold text-indigo mb-2">Consultá el estado de tu postulación</h2>
                     <p class="text-secondary mb-0">
-                        Ingresá el código de seguimiento que recibiste al registrar tu institución y el correo con el que te registraste.
+                        Ingresá el código de seguimiento que recibiste al postularte como administrador y el correo con el que te registraste.
                     </p>
                 </header>
 
@@ -41,29 +41,28 @@
                     </div>
                 </asp:Panel>
 
-                <!-- RESULTADO (valores de ejemplo) -->
+                <!-- RESULTADO -->
                 <asp:Panel ID="pnlResultado" runat="server" Visible="false" CssClass="card mb-4">
                     <div class="card-body p-3 p-md-4">
 
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                             <h3 class="h5 text-indigo fw-bold mb-0">Estado de tu postulación</h3>
-                            <%-- Sugerencia de clases según el estado: Pendiente = bg-lavanda, Aprobada = bg-indigo, Rechazada = bg-secondary --%>
-                            <asp:Label ID="lblEstado" runat="server" Text="Pendiente" CssClass="badge rounded-pill bg-lavanda px-3 py-2" />
+                            <asp:Label ID="lblEstado" runat="server" CssClass="badge rounded-pill bg-lavanda px-3 py-2" />
                         </div>
 
                         <div class="p-4 bg-fondo rounded-4 border border-neutro mb-3">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <span class="text-muted d-block small">Institución</span>
-                                    <asp:Label ID="lblInstitucion" runat="server" CssClass="text-indigo fw-bold fs-5" Text="Colegio San Martín" />
+                                    <asp:Label ID="lblInstitucion" runat="server" CssClass="text-indigo fw-bold fs-5" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <span class="text-muted d-block small">CUIT</span>
-                                    <asp:Label ID="lblCuit" runat="server" CssClass="text-indigo fw-bold fs-5" Text="30-12345678-9" />
+                                    <asp:Label ID="lblCuit" runat="server" CssClass="text-indigo fw-bold fs-5" />
                                 </div>
                                 <div class="col-md-6">
                                     <span class="text-muted d-block small">Fecha de postulación</span>
-                                    <asp:Label ID="lblFecha" runat="server" CssClass="text-indigo fw-bold fs-5" Text="12/11/2026" />
+                                    <asp:Label ID="lblFecha" runat="server" CssClass="text-indigo fw-bold fs-5" />
                                 </div>
                             </div>
                         </div>

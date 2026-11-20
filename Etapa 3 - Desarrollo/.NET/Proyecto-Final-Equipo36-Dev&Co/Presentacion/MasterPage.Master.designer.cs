@@ -78,6 +78,11 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.HyperLink lnkVacantes;
 
         /// <summary>
+        /// Control lnkResenias.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkResenias;
+
+        /// <summary>
         /// Control lnkIniciarSesion.
         /// </summary>
         /// <remarks>

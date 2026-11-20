@@ -40,6 +40,7 @@
                         CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Agregar administrador" Visible="false" />
                     <asp:HyperLink ID="lnkAdministradores" runat="server" NavigateUrl="~/GestionarAdministradores.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Administradores" />
                     <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" />
+                    <asp:HyperLink ID="lnkResenias" runat="server" NavigateUrl="~/GestionarResenia.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Reseñas" />
                 </asp:Panel>
 
                 <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
