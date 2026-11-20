@@ -81,10 +81,12 @@
     <Content Include="DescargarDocumentoAdmin.ashx" />
     <Content Include="ListadoInstituciones.aspx" />
     <Content Include="GestionarVacante.aspx" />
+    <Content Include="ListadoPostulacionAlumnos.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="RecuperarContrasenia.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
+    <Content Include="ResponsableGestionarPostulacionAlumno.aspx" />
     <Content Include="Web.config" />
     <Content Include="AdminDevCo.aspx" />
     <Content Include="RegistroAlumno.aspx" />
@@ -159,6 +161,13 @@
     <Compile Include="GestionarVacante.aspx.designer.cs">
       <DependentUpon>GestionarVacante.aspx</DependentUpon>
     </Compile>
+    <Compile Include="ListadoPostulacionAlumnos.aspx.cs">
+      <DependentUpon>ListadoPostulacionAlumnos.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ListadoPostulacionAlumnos.aspx.designer.cs">
+      <DependentUpon>ListadoPostulacionAlumnos.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -209,6 +218,13 @@
     </Compile>
     <Compile Include="RegistroAlumno.aspx.designer.cs">
       <DependentUpon>RegistroAlumno.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ResponsableGestionarPostulacionAlumno.aspx.cs">
+      <DependentUpon>ResponsableGestionarPostulacionAlumno.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ResponsableGestionarPostulacionAlumno.aspx.designer.cs">
+      <DependentUpon>ResponsableGestionarPostulacionAlumno.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
