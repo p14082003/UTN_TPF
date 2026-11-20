@@ -2091,7 +2091,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/sp/Login",
-                "description": "POC de registro y login. Usa una cuenta nueva y una contraseña sin hashear; la API se encarga del hash."
+                "description": "Si la contraseña coincide, devuelve ok, idUsuario, email, idTipoUsuario, idPersona, nombre, apellido, idResponsable, idAlumno, idAdministradorInstitucion e idInstitucion. Los datos que no correspondan al usuario vienen en null. La contraseña y el hash no se incluyen en la respuesta."
               },
               "response": []
             },
@@ -2116,7 +2116,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/sp/Login",
-                "description": "POC de registro y login. Usa una cuenta nueva y una contraseña sin hashear; la API se encarga del hash."
+                "description": "Con credenciales incorrectas devuelve HTTP 400 y únicamente {\"ok\": false}."
               },
               "response": []
             }
