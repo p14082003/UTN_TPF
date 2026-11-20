@@ -115,6 +115,13 @@ SET @documentos_validos = JSON_ARRAY(
 );
 
 CALL sp_Registrar_Postulacion_Alumno(6, 8, 8, @documentos_validos);
+-- probamos nuevas validaciones con postulacion con estado cancelado que si deberia dejar postular 
+UPDATE Cursos SET cicloLectivo = 2027 WHERE id = 18;
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 18, @documentos_validos); -- normalizado 2025 no dejo 
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 18, @documentos_validos); -- normalizado 2028 no dejo 
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 18, @documentos_validos); -- normalizado 2026 actual con ciclo lectivo comenzado no deja
+CALL sp_Registrar_Postulacion_Alumno(1, 1, 18, @documentos_validos); -- normalizado 2027 actual si deja 
+ UPDATE Cursos SET cicloLectivo = 2027 WHERE id = 18;
 select * from PostulacionesAlumnos;
 select * from DocumentosPostulacion;
 
@@ -434,3 +441,30 @@ CALL sp_Registrar_Curso(16, 1, YEAR(CURDATE())+1,3, 1, NULL, 'TEST_OK_T8_SECUNDA
 
 CALL sp_Registrar_Curso(4, 1, YEAR(CURDATE())+1,NULL, NULL, 'Inglés Inicial','TEST_OK_IDIOMAS', 20, 0); -- ok curso en institutto de idiomas
 
+-- cancelar postulacion 
+ -- sp cancelar postulacion
+ update PostulacionesAlumnos set idEstado = 4 where id = 27;
+CALL sp_Cancelar_Postulacion_Alumno(27, 6); -- tiene estado rechazado falla
+update PostulacionesAlumnos set idEstado = 5 where id = 27;
+CALL sp_Cancelar_Postulacion_Alumno(27, 6); -- tiene estado cancelado falla
+ update PostulacionesAlumnos set idEstado = 1 where id = 27;
+select * from PostulacionesAlumnos where id = 27;
+select * from Cursos Where id = 20;
+
+CALL sp_Aceptar_Postulacion_Alumno(14, 27);
+CALL sp_Confirmar_Postulacion_Alumno(27, 6);
+
+
+UPDATE Cursos
+SET cicloLectivo = 2025
+WHERE id = 18;
+UPDATE PostulacionesAlumnos
+SET idEstado = 1
+WHERE id = 26;
+CALL sp_Aceptar_Postulacion_Alumno(13, 26);
+CALL sp_Confirmar_Postulacion_Alumno(26, 1);
+CALL sp_Cancelar_Postulacion_Alumno(26, 1);
+
+UPDATE PostulacionesAlumnos
+SET idEstado = 2
+WHERE id = 26;

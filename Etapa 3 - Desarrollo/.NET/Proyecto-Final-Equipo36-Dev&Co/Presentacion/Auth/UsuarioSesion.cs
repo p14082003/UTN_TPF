@@ -18,6 +18,9 @@ namespace Presentacion.Auth
         public int? IdInstitucion { get; set; }
         public int? IdAdministradorInstitucion { get; set; }
         public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Email { get; set; }
+        public int? IdPersona { get; set; }
 
         public static UsuarioSesion Obtener(HttpSessionState sesion)
         {

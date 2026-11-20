@@ -13,10 +13,11 @@ namespace Presentacion
             lnkRegistrarAlumno.Visible = usuario != null &&
                 usuario.IdTipoUsuario == UsuarioSesion.Responsable &&
                 usuario.IdResponsable.GetValueOrDefault() > 0;
-            lnkVacantes.Visible = usuario != null &&
+            pnlMenuAdmin.Visible = usuario != null &&
                 usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion &&
                 usuario.IdInstitucion.GetValueOrDefault() > 0;
-            lnkAgregarAdministrador.Visible = lnkVacantes.Visible;
+            lnkVacantes.Visible = pnlMenuAdmin.Visible;
+            lnkAgregarAdministrador.Visible = pnlMenuAdmin.Visible;
 
             if (usuario != null)
             {

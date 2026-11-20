@@ -235,7 +235,54 @@ JOIN Usuarios u ON u.id = a.idUsuario
 WHERE a.idInstitucion IS NOT NULL;
 
 
+-- ==============================================================================
+-- Datos de la cuenta y de la persona de un usuario, para la pantalla Mi perfil.
+-- Una fila por usuario:
+--   * Responsable:   trae los datos personales; idAdministrador e institucion quedan NULL.
+--   * Administrador: trae los datos personales y su institucion (NULL si aun no tiene).
+--   * Dev&Co:        no tiene persona, asi que nombre, apellido, documento, etc. quedan NULL.
+CREATE OR REPLACE VIEW vw_Perfil_Usuario AS
+SELECT u.id                AS idUsuario,
+       u.email,
+       u.idTipoUsuario,
+       tu.descripcion      AS tipoUsuario,
+       p.nombre,
+       p.apellido,
+       p.documento,
+       p.fechaNacimiento,
+       p.domicilio,
+       r.id                AS idResponsable,
+       a.id                AS idAdministrador,
+       a.idInstitucion,
+       i.nombre            AS nombreInstitucion
+FROM Usuarios u
+JOIN TipoUsuario tu                        ON tu.id = u.idTipoUsuario
+LEFT JOIN Responsables r                   ON r.idUsuario = u.id
+LEFT JOIN AdministradoresInstitucion a     ON a.idUsuario = u.id
+LEFT JOIN Personas p                       ON p.id = COALESCE(r.idPersona, a.idPersona)
+LEFT JOIN Instituciones i                  ON i.id = a.idInstitucion;
 
+
+-- ==============================================================================
+-- Telefonos propios de cada usuario (responsable o administrador), para la lista de Mi perfil.
+-- tipoDueno e idDueno son los valores que hay que mandar a sp_Telefono_Agregar / sp_Telefono_Eliminar.
+-- Los telefonos de la institucion no aparecen: se gestionan en la pantalla de la institucion.
+CREATE OR REPLACE VIEW vw_Telefonos_Por_Usuario AS
+SELECT r.idUsuario,
+       t.id           AS idTelefono,
+       t.telefono,
+       'Responsable'  AS tipoDueno,
+       r.id           AS idDueno
+FROM Telefonos t
+JOIN Responsables r ON r.id = t.idResponsable
+UNION ALL
+SELECT a.idUsuario,
+       t.id,
+       t.telefono,
+       'Administrador',
+       a.id
+FROM Telefonos t
+JOIN AdministradoresInstitucion a ON a.id = t.idAdministrador;
 
 
 

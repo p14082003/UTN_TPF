@@ -414,6 +414,63 @@ SET @idAdminOtraInst = (SELECT id FROM AdministradoresInstitucion WHERE idUsuari
 /* CALL sp_AdministradorInstitucion_Reactivar(@idUsuario2, @idAdminOtraInst); */     -- ERROR SIN PERMISO (idem)
 SELECT activo FROM Usuarios WHERE id = @idUsuarioOtraInst;                           -- 1: el administrador de la otra institucion sigue activo
 
+
+-- ---------------------------------------------------------------------
+-- VISTAS
+-- ---------------------------------------------------------------------
+SELECT * FROM vw_Perfil_Usuario WHERE idUsuario IN (1, 11, 23);
+-- usuario 1: responsable (idResponsable = 1, sin institucion)
+-- usuario 11: administrador (idAdministrador = 1, con nombreInstitucion)
+-- usuario 23: Dev&Co (nombre, apellido, documento, domicilio en NULL)
+
+SELECT * FROM vw_Telefonos_Por_Usuario WHERE idUsuario IN (1, 7, 11);
+-- usuario 1: 1 telefono | usuario 7: 2 telefonos | usuario 11: 1 telefono
+
+-- ---------------------------------------------------------------------
+-- sp_Usuario_ObtenerClave / sp_Usuario_CambiarClave
+-- ---------------------------------------------------------------------
+CALL sp_Usuario_ObtenerClave(1);                                          -- 1 fila: 'test1234'
+CALL sp_Usuario_ObtenerClave(8);                                          -- 0 filas (inactivo)
+CALL sp_Usuario_ObtenerClave(999999);                                     -- 0 filas (no existe)
+/* CALL sp_Usuario_ObtenerClave(NULL); */                                 -- ERROR FALTAN DATOS
+
+CALL sp_Usuario_CambiarClave(1, 'hash-de-prueba-nuevo');
+SELECT clave FROM Usuarios WHERE id = 1;                                  -- 'hash-de-prueba-nuevo'
+
+CALL sp_Usuario_CambiarClave(23, 'hash-de-prueba-devco');                 -- Dev&Co tambien puede cambiar su clave
+SELECT clave FROM Usuarios WHERE id = 23;
+
+/* CALL sp_Usuario_CambiarClave(1, ''); */                              -- ERROR FALTAN DATOS
+/* CALL sp_Usuario_CambiarClave(NULL, 'x'); */                          -- ERROR FALTAN DATOS
+/* CALL sp_Usuario_CambiarClave(8, 'x'); */                             -- ERROR SIN PERMISO (inactivo)
+/* CALL sp_Usuario_CambiarClave(999999, 'x'); */                        -- ERROR SIN PERMISO (no existe)
+
+-- Dejar las claves como estaban:
+CALL sp_Usuario_CambiarClave(1,  'test1234');
+CALL sp_Usuario_CambiarClave(23, 'test1234');
+
+-- ---------------------------------------------------------------------
+-- REGLA "MINIMO 1 TELEFONO" en sp_Telefono_Eliminar (solo Administrador y Responsable)
+-- ---------------------------------------------------------------------
+SET @idResp1 = (SELECT id FROM Responsables WHERE idUsuario = 1);         -- responsable con 1 solo telefono
+SET @idTel1  = (SELECT id FROM Telefonos WHERE idResponsable = @idResp1 LIMIT 1);
+/* CALL sp_Telefono_Eliminar(1, 'Responsable', @idResp1, @idTel1); */    -- ERROR tiene que dejar al menos un telefono
+
+SET @idAdm1    = (SELECT id FROM AdministradoresInstitucion WHERE idUsuario = 11);
+SET @idTelAdm1 = (SELECT id FROM Telefonos WHERE idAdministrador = @idAdm1 LIMIT 1);
+/* CALL sp_Telefono_Eliminar(11, 'Administrador', @idAdm1, @idTelAdm1); */  -- ERROR tiene que dejar al menos un telefono
+
+-- Con 2 telefonos si se puede quitar uno (queda 1). Se vuelve a agregar para dejar los datos como estaban.
+SET @idResp7 = (SELECT id FROM Responsables WHERE idUsuario = 7);
+SET @idTel7  = (SELECT id FROM Telefonos WHERE idResponsable = @idResp7 AND telefono = '+54 9 11 5555-1008');
+CALL sp_Telefono_Eliminar(7, 'Responsable', @idResp7, @idTel7);
+SELECT * FROM vw_Telefonos_Por_Usuario WHERE idUsuario = 7;               -- queda 1 telefono
+SET @idTel7b = (SELECT id FROM Telefonos WHERE idResponsable = @idResp7 LIMIT 1);
+/* CALL sp_Telefono_Eliminar(7, 'Responsable', @idResp7, @idTel7b); */   -- ERROR tiene que dejar al menos un telefono (ahora le queda 1)
+CALL sp_Telefono_Agregar(7, 'Responsable', @idResp7, '+54 9 11 5555-1008');  -- se restaura
+SELECT * FROM vw_Telefonos_Por_Usuario WHERE idUsuario = 7;               -- vuelve a tener 2
+
+
 -- Limpieza (el modo seguro de Workbench se apaga solo para esta sesion).
 -- El orden importa: primero lo que depende de la institucion, despues el resto.
 /* SET SQL_SAFE_UPDATES = 0;

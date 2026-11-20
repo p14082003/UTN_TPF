@@ -86,6 +86,7 @@ namespace Presentacion
                 {
                     MostrarResultado("Responsable registrado correctamente.", true);
                     btnRegistrar.Enabled = false;
+                    ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='Login.aspx',3000);", true);
                     return;
                 }
 

@@ -69,18 +69,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ConsultarPostulacionAdministrador.aspx" />
     <Content Include="DetalleInstitucion.aspx" />
     <Content Include="EstilosInstiRed.css" />
     <Content Include="Imagenes\*.png" />
     <Content Include="FormularioAdministradorAdicional.aspx" />
     <Content Include="FormularioAdministradorInstitucion.aspx" />
     <Content Include="FormularioInstitucion.aspx" />
+    <Content Include="GestionarAdministradores.aspx" />
     <Content Include="GestionarPostulacionAlumno.aspx" />
     <Content Include="DescargarDocumentoAlumno.ashx" />
     <Content Include="DescargarDocumentoAdmin.ashx" />
+    <Content Include="GestionarResenia.aspx" />
     <Content Include="ListadoInstituciones.aspx" />
     <Content Include="GestionarVacante.aspx" />
     <Content Include="Login.aspx" />
+    <Content Include="MiPerfil.aspx" />
+    <Content Include="RecuperarContrasenia.aspx" />
     <Content Include="RegistroIntermedia.aspx" />
     <Content Include="RegistroResponsable.aspx" />
     <Content Include="Web.config" />
@@ -88,6 +93,13 @@
     <Content Include="RegistroAlumno.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsultarPostulacionAdministrador.aspx.cs">
+      <DependentUpon>ConsultarPostulacionAdministrador.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConsultarPostulacionAdministrador.aspx.designer.cs">
+      <DependentUpon>ConsultarPostulacionAdministrador.aspx</DependentUpon>
+    </Compile>
     <Compile Include="DetalleInstitucion.aspx.cs">
       <DependentUpon>DetalleInstitucion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -116,6 +128,13 @@
     <Compile Include="FormularioInstitucion.aspx.designer.cs">
       <DependentUpon>FormularioInstitucion.aspx</DependentUpon>
     </Compile>
+    <Compile Include="GestionarAdministradores.aspx.cs">
+      <DependentUpon>GestionarAdministradores.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GestionarAdministradores.aspx.designer.cs">
+      <DependentUpon>GestionarAdministradores.aspx</DependentUpon>
+    </Compile>
     <Compile Include="GestionarPostulacionAlumno.aspx.cs">
       <DependentUpon>GestionarPostulacionAlumno.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -128,6 +147,13 @@
     </Compile>
     <Compile Include="DescargarDocumentoAdmin.ashx.cs">
       <DependentUpon>DescargarDocumentoAdmin.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="GestionarResenia.aspx.cs">
+      <DependentUpon>GestionarResenia.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GestionarResenia.aspx.designer.cs">
+      <DependentUpon>GestionarResenia.aspx</DependentUpon>
     </Compile>
     <Compile Include="ListadoInstituciones.aspx.cs">
       <DependentUpon>ListadoInstituciones.aspx</DependentUpon>
@@ -150,6 +176,13 @@
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
     </Compile>
+    <Compile Include="MiPerfil.aspx.cs">
+      <DependentUpon>MiPerfil.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MiPerfil.aspx.designer.cs">
+      <DependentUpon>MiPerfil.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Auth\UsuarioSesion.cs" />
     <Compile Include="MasterPage.Master.cs">
@@ -165,6 +198,13 @@
     </Compile>
     <Compile Include="AdminDevCo.aspx.designer.cs">
       <DependentUpon>AdminDevCo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RecuperarContrasenia.aspx.cs">
+      <DependentUpon>RecuperarContrasenia.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RecuperarContrasenia.aspx.designer.cs">
+      <DependentUpon>RecuperarContrasenia.aspx</DependentUpon>
     </Compile>
     <Compile Include="RegistroIntermedia.aspx.cs">
       <DependentUpon>RegistroIntermedia.aspx</DependentUpon>
