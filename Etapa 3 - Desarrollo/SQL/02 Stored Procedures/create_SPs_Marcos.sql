@@ -683,6 +683,7 @@ DELIMITER ;
 -- ---------------------------------------------------------------------
 -- sp_Telefono_Eliminar
 -- Quita un telefono de una institucion, de un administrador o de un responsable
+-- Administrador y Responsable: no se puede quitar el unico telefono (minimo 1).
 -- (se identifica por el id de la fila de Telefonos). Mismos tipos y permisos que
 -- sp_Telefono_Agregar. Sin transaccion ni handler.
 -- Si el telefono tambien es de otro dueño no se borra: solo se le saca este dueño.
@@ -747,6 +748,11 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idAdministrador = p_idDueno) THEN
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No tiene ese teléfono.';
     END IF;
+    
+        -- Minimo 1 telefono: no se puede quitar el unico que tiene
+    IF (SELECT COUNT(*) FROM Telefonos WHERE idAdministrador = p_idDueno) <= 1 THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tiene que dejar al menos un teléfono. Agregue otro antes de quitar este.';
+    END IF;
 
     IF EXISTS (SELECT 1 FROM Telefonos
                WHERE id = p_idTelefono AND (idInstitucion IS NOT NULL OR idResponsable IS NOT NULL)) THEN
@@ -768,6 +774,11 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Telefonos WHERE id = p_idTelefono AND idResponsable = p_idDueno) THEN
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No tiene ese teléfono.';
+    END IF;
+    
+        -- Minimo 1 telefono: no se puede quitar el unico que tiene
+    IF (SELECT COUNT(*) FROM Telefonos WHERE idResponsable = p_idDueno) <= 1 THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tiene que dejar al menos un teléfono. Agregue otro antes de quitar este.';
     END IF;
 
     IF EXISTS (SELECT 1 FROM Telefonos
@@ -1630,3 +1641,61 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Usuario_ObtenerClave
+-- Devuelve la clave (hash) del usuario logueado, para que la API verifique la contraseña
+-- ACTUAL antes de llamar a sp_Usuario_CambiarClave (la comparacion del hash la hace la API).
+-- Si el usuario no existe o esta inactivo devuelve 0 filas.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Usuario_ObtenerClave;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Usuario_ObtenerClave(
+  IN p_idUsuarioActor INT
+)
+BEGIN
+  IF p_idUsuarioActor IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  SELECT clave AS Clave
+  FROM Usuarios
+  WHERE id = p_idUsuarioActor
+    AND activo = TRUE;
+END$$
+
+DELIMITER ;
+
+
+-- ---------------------------------------------------------------------
+-- sp_Usuario_CambiarClave
+-- Cambia la contraseña del usuario logueado (cualquier rol, incluido Dev&Co).
+-- La API ya verifico la contraseña actual (con sp_Usuario_ObtenerClave) y ya genero el hash
+-- de la nueva: el SP guarda p_clave
+-- El usuario tiene que estar activo. Un solo UPDATE: sin transaccion ni handler.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Usuario_CambiarClave;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Usuario_CambiarClave(
+  IN p_idUsuarioActor INT,           -- usuario logueado (lo toma C# de la sesion)
+  IN p_clave          VARCHAR(255)   -- ya llega hasheada desde la API
+)
+BEGIN
+  IF p_idUsuarioActor IS NULL OR COALESCE(p_clave,'') = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE id = p_idUsuarioActor AND activo = TRUE) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para cambiar la contraseña.';
+  END IF;
+
+  UPDATE Usuarios SET clave = p_clave WHERE id = p_idUsuarioActor;
+END$$
+
+DELIMITER ;
+
