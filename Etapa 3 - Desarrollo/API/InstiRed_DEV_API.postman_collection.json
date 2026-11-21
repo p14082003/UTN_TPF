@@ -2123,6 +2123,61 @@
           ]
         },
         {
+          "name": "CambiarClave",
+          "item": [
+            {
+              "name": "Cambiar contraseña",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"claveActual\": \"test1234\",\n  \"claveNueva\": \"NuevaClave123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/CambiarClave",
+                "description": "Verifica la contraseña actual en la API y guarda el hash de la nueva. La nueva debe tener entre 8 y 20 caracteres, mayúscula, minúscula, número y símbolo. Reemplazá los datos por los de una cuenta de prueba. El cambio afecta su próximo login."
+              },
+              "response": []
+            },
+            {
+              "name": "Contraseña actual incorrecta",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"claveActual\": \"clave-incorrecta\",\n  \"claveNueva\": \"NuevaClave123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/CambiarClave",
+                "description": "Debe devolver HTTP 400 y conservar la contraseña guardada si la actual no coincide."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "RegistrarAlumno",
           "item": [
             {
@@ -3015,6 +3070,34 @@
     {
       "name": "vistas",
       "item": [
+        {
+          "name": "PerfilUsuario",
+          "item": [
+            {
+              "name": "Obtener perfil por idUsuario",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/PerfilUsuario/1"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "TelefonosPorUsuario",
+          "item": [
+            {
+              "name": "Listar teléfonos por idUsuario",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/TelefonosPorUsuario?idUsuario=1"
+              },
+              "response": []
+            }
+          ]
+        },
         {
           "name": "AdministradoresPorInstitucion",
           "item": [

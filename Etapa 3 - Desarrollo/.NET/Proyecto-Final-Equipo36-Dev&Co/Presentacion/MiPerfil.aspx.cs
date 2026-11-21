@@ -1,17 +1,27 @@
-﻿using Presentacion.Auth;
+﻿using Negocio;
+using Presentacion.Auth;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class MiPerfil : System.Web.UI.Page
+    public partial class MiPerfil : Page
     {
         private UsuarioSesion usuario;
+        private bool cambioGuardado;
+
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            ViewStateUserKey = Session.SessionID;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Acceso: cualquier usuario logueado (responsable, administrador de institución o Dev&Co)
             usuario = UsuarioSesion.Obtener(Session);
             if (usuario == null)
             {
@@ -20,81 +30,127 @@ namespace Presentacion
             }
 
             Response.Cache.SetNoStore();
-            lblMensaje.Visible = false;
-
             if (!IsPostBack)
             {
-                CargarPerfil();
+                Ejecutar(CargarPerfilAsync);
             }
         }
 
-        // ---------- CARGA ----------
-
-        private void CargarPerfil()
+        private void Ejecutar(Func<Task> accion)
         {
+            lblMensaje.Visible = false;
+            RegisterAsyncTask(new PageAsyncTask(async () =>
+            {
+                try
+                {
+                    await accion();
+                }
+                catch (Exception ex)
+                {
+                    string mensaje = "No se pudo completar la operación. Recargá la página antes de intentarlo nuevamente.";
+                    if (ex is ArgumentException)
+                    {
+                        mensaje = ex.Message;
+                    }
+                    else
+                    {
+                        Trace.Warn("MiPerfil", "Error al consultar o guardar datos del perfil en la API.", ex);
+                    }
+                    if (cambioGuardado)
+                    {
+                        mensaje = "El cambio se guardó, pero no se pudo actualizar la pantalla. Recargá la página para verlo.";
+                    }
+                    MostrarMensaje(mensaje, false);
+                }
+            }));
+        }
+
+        private async Task CargarPerfilAsync()
+        {
+            var perfil = await InstiRedApi.GetAsync<PerfilApi>(
+                "vw/PerfilUsuario/" + usuario.IdUsuario, permitirNoEncontrado: true);
+            if (perfil == null || perfil.IdUsuario != usuario.IdUsuario)
+            {
+                throw new ArgumentException("No se encontró tu perfil. Volvé a iniciar sesión.");
+            }
+
+            usuario.Nombre = perfil.Nombre;
+            usuario.Apellido = perfil.Apellido;
+            usuario.Email = perfil.Email;
+            usuario.IdTipoUsuario = perfil.IdTipoUsuario;
+            usuario.IdResponsable = perfil.IdResponsable;
+            usuario.IdAdministradorInstitucion = perfil.IdAdministrador;
+            usuario.IdInstitucion = perfil.IdInstitucion;
+            Session[UsuarioSesion.Clave] = usuario;
+
             bool esDevCo = usuario.IdTipoUsuario == UsuarioSesion.DevCo;
             bool esAdmin = usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion;
-
-            // Dev&Co no tiene datos personales ni teléfonos (solo cuenta y contraseña)
             pnlDatosPersonales.Visible = !esDevCo;
             pnlTelefonos.Visible = !esDevCo;
             pnlInstitucion.Visible = esAdmin;
+            litNombreCompleto.Text = esDevCo ? "Equipo Dev&Co" : ValorOGuion((perfil.Nombre + " " + perfil.Apellido).Trim());
+            litRol.Text = esDevCo ? "Equipo Dev&Co" : esAdmin ? "Administrador de institución" : "Responsable";
+            litEmail.Text = ValorOGuion(perfil.Email);
+            litInstitucion.Text = string.IsNullOrWhiteSpace(perfil.NombreInstitucion) ? "Sin institución asociada" : perfil.NombreInstitucion;
+            litNombre.Text = ValorOGuion(perfil.Nombre);
+            litApellido.Text = ValorOGuion(perfil.Apellido);
+            litDocumento.Text = ValorOGuion(perfil.Documento);
+            litFechaNacimiento.Text = perfil.FechaNacimiento.HasValue ? perfil.FechaNacimiento.Value.ToString("dd/MM/yyyy") : "—";
+            litDomicilio.Text = ValorOGuion(perfil.Domicilio);
+            btnEditarClave.Enabled = true;
 
-            string nombreCompleto = esDevCo ? "Equipo Dev&Co"
-                                  : ((usuario.Nombre ?? "") + " " + (usuario.Apellido ?? "")).Trim();
-            litNombreCompleto.Text = nombreCompleto;
-            litRol.Text = esDevCo ? "Equipo Dev&Co"
-                        : esAdmin ? "Administrador de institución"
-                        : "Padre, madre o tutor";
-            litEmail.Text = ValorOGuion(usuario.Email);
-
-            if (esDevCo) return;
-
-            // API: GET del perfil del usuario logueado (vista o SP de perfil por idUsuario)
-            //   Debe devolver: nombre, apellido, documento, fechaNacimiento, domicilio, teléfonos (id + número)
-            //   y, si es administrador, el nombre de la institución. NUNCA la clave.
-
-            // Datos de prueba mientras no esté conectado a la API:
-            litNombre.Text = ValorOGuion(usuario.Nombre);
-            litApellido.Text = ValorOGuion(usuario.Apellido);
-            litDocumento.Text = "35887625";
-            litFechaNacimiento.Text = "14/05/1990";
-            litDomicilio.Text = "San Martín 1234, Godoy Cruz";
-            litInstitucion.Text = "Colegio San Martín";
-
-            CargarTelefonos();
+            if (!esDevCo)
+            {
+                await CargarTelefonosAsync();
+            }
         }
 
-        private void CargarTelefonos()
+        private async Task CargarTelefonosAsync()
         {
-            // API: teléfonos del dueño (tipoDueno Administrador o Responsable, según el rol)
-            // Datos de prueba:
-            var telefonos = new[]
-            {
-                new { Id = 1, Numero = "2613333333" }
-            };
-
-            rptTelefonos.DataSource = telefonos;
+            ValidarDuenoTelefonos();
+            var telefonos = await InstiRedApi.GetAsync<List<TelefonoApi>>(
+                "vw/TelefonosPorUsuario?idUsuario=" + usuario.IdUsuario);
+            rptTelefonos.DataSource = telefonos.Select(t => new { Id = t.IdTelefono, Numero = t.Telefono }).ToList();
             rptTelefonos.DataBind();
 
-            // Los botones "Quitar" solo se ven en modo edición
             foreach (RepeaterItem item in rptTelefonos.Items)
             {
-                item.FindControl("btnQuitarTelefono").Visible = pnlTelefonosEditar.Visible;
+                item.FindControl("btnQuitarTelefono").Visible = pnlTelefonosEditar.Visible && telefonos.Count > 1;
             }
-
-            // Máximo 2 teléfonos: con 2 no se muestra el campo para agregar
-            pnlAgregarTelefono.Visible = rptTelefonos.Items.Count < 2;
+            pnlAgregarTelefono.Visible = telefonos.Count < 2;
+            btnAgregarTelefono.Visible = telefonos.Count < 2;
+            btnEditarTelefonos.Enabled = true;
         }
 
+        private string TipoDueno
+        {
+            get { return usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion ? "Administrador" : "Responsable"; }
+        }
 
-        // ---------- TELÉFONOS ----------
+        private int IdDueno
+        {
+            get
+            {
+                return usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion
+                    ? usuario.IdAdministradorInstitucion.GetValueOrDefault()
+                    : usuario.IdResponsable.GetValueOrDefault();
+            }
+        }
+
+        private void ValidarDuenoTelefonos()
+        {
+            if ((usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion &&
+                usuario.IdTipoUsuario != UsuarioSesion.Responsable) || IdDueno <= 0)
+            {
+                throw new ArgumentException("Tu cuenta no tiene un responsable o administrador asociado para gestionar teléfonos.");
+            }
+        }
 
         protected void btnEditarTelefonos_Click(object sender, EventArgs e)
         {
             pnlTelefonosEditar.Visible = true;
             btnEditarTelefonos.Visible = false;
-            CargarTelefonos();
+            Ejecutar(CargarTelefonosAsync);
         }
 
         protected void btnListoTelefonos_Click(object sender, EventArgs e)
@@ -102,62 +158,70 @@ namespace Presentacion
             pnlTelefonosEditar.Visible = false;
             btnEditarTelefonos.Visible = true;
             txtTelefono.Text = "";
-            CargarTelefonos();
+            Ejecutar(CargarTelefonosAsync);
         }
 
         protected void btnAgregarTelefono_Click(object sender, EventArgs e)
         {
+            Ejecutar(AgregarTelefonoAsync);
+        }
+
+        private async Task AgregarTelefonoAsync()
+        {
+            ValidarDuenoTelefonos();
             string telefono = txtTelefono.Text.Trim();
-
-            if (telefono.Length == 0)
+            if (telefono == "" || telefono.Length > 30 || !telefono.Any(char.IsDigit))
             {
-                MostrarMensaje("Ingresá el teléfono que querés agregar.", false);
-                return;
+                throw new ArgumentException("Ingresá un teléfono de hasta 30 caracteres que incluya números.");
             }
 
-            if (rptTelefonos.Items.Count >= 2)
+            var resultado = await InstiRedApi.PostAsync("sp/AgregarTelefono", new
             {
-                MostrarMensaje("Ya tenés 2 teléfonos. Quitá uno para agregar otro.", false);
-                return;
-            }
-
-            if (!telefono.Any(char.IsDigit))
-            {
-                MostrarMensaje("El teléfono debe tener números.", false);
-                return;
-            }
-
-            // API: POST sp/AgregarTelefono con { idUsuarioActor = usuario.IdUsuario, tipoDueno = "Administrador" o "Responsable",
-            //   idDueno = usuario.IdAdministradorInstitucion o usuario.IdResponsable, telefono }
-            //   Si da error, mostrar el mensaje con MostrarMensaje(mensaje, false)
-            // Después recargar la lista con CargarTelefonos()
-
+                idUsuarioActor = usuario.IdUsuario,
+                tipoDueno = TipoDueno,
+                idDueno = IdDueno,
+                telefono
+            });
+            ValidarRespuesta(resultado);
+            cambioGuardado = true;
             txtTelefono.Text = "";
+            await CargarTelefonosAsync();
             MostrarMensaje("Teléfono agregado correctamente.", true);
         }
 
         protected void rptTelefonos_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName != "Quitar") return;
-
-            // Mínimo 1 teléfono
-            if (rptTelefonos.Items.Count <= 1)
+            if (e.CommandName != "Quitar")
             {
-                MostrarMensaje("Tenés que dejar al menos un teléfono. Agregá otro antes de quitar este.", false);
                 return;
             }
+            if (!int.TryParse(Convert.ToString(e.CommandArgument), out int idTelefono) || idTelefono <= 0)
+            {
+                MostrarMensaje("Seleccioná un teléfono válido.", false);
+                return;
+            }
+            Ejecutar(() => QuitarTelefonoAsync(idTelefono));
+        }
 
-            // int idTelefono = int.Parse((string)e.CommandArgument);
-            // API: POST sp/EliminarTelefono con { idUsuarioActor = usuario.IdUsuario, tipoDueno, idDueno, idTelefono }
-            // Después recargar la lista con CargarTelefonos()
-
+        private async Task QuitarTelefonoAsync(int idTelefono)
+        {
+            ValidarDuenoTelefonos();
+            var resultado = await InstiRedApi.PostAsync("sp/EliminarTelefono", new
+            {
+                idUsuarioActor = usuario.IdUsuario,
+                tipoDueno = TipoDueno,
+                idDueno = IdDueno,
+                idTelefono
+            });
+            ValidarRespuesta(resultado);
+            cambioGuardado = true;
+            await CargarTelefonosAsync();
             MostrarMensaje("Teléfono quitado correctamente.", true);
         }
 
-        // ---------- CONTRASEÑA ----------
-
         protected void btnEditarClave_Click(object sender, EventArgs e)
         {
+            lblMensaje.Visible = false;
             pnlClaveVer.Visible = false;
             pnlClaveEditar.Visible = true;
             btnEditarClave.Visible = false;
@@ -165,12 +229,16 @@ namespace Presentacion
 
         protected void btnGuardarClave_Click(object sender, EventArgs e)
         {
+            Ejecutar(CambiarClaveAsync);
+        }
+
+        private async Task CambiarClaveAsync()
+        {
             if (string.IsNullOrWhiteSpace(txtClaveActual.Text) ||
                 string.IsNullOrWhiteSpace(txtClaveNueva.Text) ||
                 string.IsNullOrWhiteSpace(txtClaveRepetida.Text))
             {
-                MostrarMensaje("Completá la contraseña actual y la nueva.", false);
-                return;
+                throw new ArgumentException("Completá la contraseña actual y la nueva.");
             }
 
             string clave = txtClaveNueva.Text;
@@ -178,33 +246,31 @@ namespace Presentacion
                 !clave.Any(char.IsUpper) || !clave.Any(char.IsLower) ||
                 !clave.Any(char.IsDigit) || !clave.Any(c => char.IsPunctuation(c) || char.IsSymbol(c)))
             {
-                MostrarMensaje("La contraseña nueva debe tener entre 8 y 20 caracteres e incluir una mayúscula, una minúscula, un número y un símbolo.", false);
-                return;
+                throw new ArgumentException("La contraseña nueva debe tener entre 8 y 20 caracteres e incluir una mayúscula, una minúscula, un número y un símbolo.");
             }
-
             if (clave != txtClaveRepetida.Text)
             {
-                MostrarMensaje("Las contraseñas nuevas no coinciden.", false);
-                return;
+                throw new ArgumentException("Las contraseñas nuevas no coinciden.");
             }
-
             if (clave == txtClaveActual.Text)
             {
-                MostrarMensaje("La contraseña nueva tiene que ser distinta de la actual.", false);
-                return;
+                throw new ArgumentException("La contraseña nueva tiene que ser distinta de la actual.");
             }
 
-            // API: POST sp/CambiarClave con { idUsuarioActor = usuario.IdUsuario, claveActual, claveNueva }
-            //   La API verifica que claveActual sea correcta (compara el hash), genera el hash de claveNueva
-            //   y llama a sp_Usuario_CambiarClave. Si la actual es incorrecta, mostrar el mensaje con MostrarMensaje(mensaje, false)
-            //   y no salir del modo edición
-
+            var resultado = await InstiRedApi.PostAsync("sp/CambiarClave", new
+            {
+                idUsuarioActor = usuario.IdUsuario,
+                claveActual = txtClaveActual.Text,
+                claveNueva = clave
+            });
+            ValidarRespuesta(resultado);
             SalirEdicionClave();
             MostrarMensaje("Contraseña actualizada correctamente.", true);
         }
 
         protected void btnCancelarClave_Click(object sender, EventArgs e)
         {
+            lblMensaje.Visible = false;
             SalirEdicionClave();
         }
 
@@ -218,7 +284,13 @@ namespace Presentacion
             btnEditarClave.Visible = true;
         }
 
-        // ---------- AUXILIARES ----------
+        private static void ValidarRespuesta(InstiRedApi.Respuesta respuesta)
+        {
+            if (respuesta.Estado != HttpStatusCode.OK)
+            {
+                throw new ArgumentException(respuesta.Mensaje ?? "No se pudo confirmar el cambio. Recargá la página antes de intentarlo nuevamente.");
+            }
+        }
 
         private static string ValorOGuion(string valor)
         {
@@ -227,9 +299,31 @@ namespace Presentacion
 
         private void MostrarMensaje(string texto, bool ok)
         {
-            lblMensaje.Text = texto;
+            lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
+        }
+
+        private class PerfilApi
+        {
+            public int IdUsuario { get; set; }
+            public int IdTipoUsuario { get; set; }
+            public string Nombre { get; set; }
+            public string Apellido { get; set; }
+            public string Email { get; set; }
+            public string Documento { get; set; }
+            public DateTime? FechaNacimiento { get; set; }
+            public string Domicilio { get; set; }
+            public int? IdResponsable { get; set; }
+            public int? IdAdministrador { get; set; }
+            public int? IdInstitucion { get; set; }
+            public string NombreInstitucion { get; set; }
+        }
+
+        private class TelefonoApi
+        {
+            public int IdTelefono { get; set; }
+            public string Telefono { get; set; }
         }
     }
 }
