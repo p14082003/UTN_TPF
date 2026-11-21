@@ -284,6 +284,30 @@ SELECT a.idUsuario,
 FROM Telefonos t
 JOIN AdministradoresInstitucion a ON a.id = t.idAdministrador;
 
+-- ==============================================================================
+-- Vista para consultar todos los cursos
+-- Aprovecho la vista para obtener el calculo de vacantes disponibles de un curso
+CREATE OR REPLACE VIEW vw_Cursos AS
+SELECT
+    c.id AS idCurso,
+    c.idInstitucion,
+    c.cicloLectivo,
+    c.idNivel,
+    ne.descripcion AS nivel,
+    c.anio,
+    c.nivelPersonalizado,
+    c.division,
+    c.idTurno,
+    tu.descripcion AS turno,
+    c.capacidad,
+    c.inscriptos,
+    (c.capacidad - c.inscriptos) AS vacantesDisponibles
+FROM Cursos c
+JOIN Turnos tu
+    ON tu.id = c.idTurno
+LEFT JOIN NivelesEscolares ne
+    ON ne.id = c.idNivel;
+
 
 
 
