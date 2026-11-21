@@ -364,6 +364,7 @@ namespace Presentacion
             pnlAlta.Visible = vista == "alta";
             pnlDashboard.Visible = vista == "listado";
             pnlListado.Visible = vista == "listado";
+            btnNuevoCurso.Visible = vista == "listado";
         }
 
         private void MostrarMensaje(string texto, bool exito)

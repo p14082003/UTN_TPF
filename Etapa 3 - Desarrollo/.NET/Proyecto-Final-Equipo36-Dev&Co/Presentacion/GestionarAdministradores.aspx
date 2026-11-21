@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="GestionarAdministradores.aspx.cs" Inherits="Presentacion.GestionarAdministradores" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarAdministradores.aspx.cs" Inherits="Presentacion.GestionarAdministradores" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -22,7 +22,6 @@
                 <h5 class="mb-0"><i class="bi bi-people me-2"></i>Administradores de la institución</h5>
             </div>
             <div class="card-body">
-                <!-- API: GET vw/AdministradoresPorInstitucion, filtrando por la institución de la sesión (usuario.IdInstitucion) -->
                 <div class="table-responsive">
                     <asp:GridView ID="dgvAdministradores" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores.">

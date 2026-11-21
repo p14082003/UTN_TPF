@@ -985,9 +985,9 @@ DELIMITER ;
 
 -- sp_Cancelar_Postulacion_Alumno
 -- Lo hace el responsable (o autogestor) desde su cuenta.
--- Se puede cancelar en cualquier estado salvo Rechazada  y Cancelada 
--- Solo si estaba CONFIRMADA  devuelve la vacante: inscriptos - 1,
--- y solo si el curso no es de un ciclo lectivo anterior (para no alterar datos)
+-- Se puede cancelar en cualquier estado salvo Rechazada y Cancelada.
+-- Solo se permiten postulaciones del ciclo lectivo actual o siguiente.
+-- Solo si estaba CONFIRMADA devuelve la vacante: inscriptos - 1.
 -- Parametros necesarios: p_idPostulacion, p_idResponsable
 -- ---------------------------------------------------------
 DELIMITER $$
@@ -1053,14 +1053,19 @@ BEGIN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación ya se encuentra cancelada.';
 		END IF;
 
+		-- valido que el ciclo lectivo sea el actual o el siguiente
+		IF v_cicloLectivo < YEAR(CURDATE()) OR v_cicloLectivo > YEAR(CURDATE()) + 1 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = 'Solo se pueden cancelar postulaciones del ciclo lectivo actual o del siguiente.';
+		END IF;
+
 		UPDATE PostulacionesAlumnos SET idEstado = 5 WHERE id = p_idPostulacion AND idEstado IN (1,2,3); -- cancelamos (1 Pendiente, 2 Aceptado, 3 Confirmado)
 
 		IF ROW_COUNT() <> 1 THEN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se pudo cancelar la postulación.';
 		END IF;
 
-		-- solo si estaba confirmada ocupaba vacante: la devolvemos,
-		-- salvo que el curso sea de un ciclo lectivo anterior (dato histórico, no se modifica)
+		-- solo si estaba confirmada ocupaba vacante: la devolvemos
 		IF v_idEstado = 3 AND v_cicloLectivo >= YEAR(CURDATE()) THEN
 			UPDATE Cursos SET inscriptos = inscriptos - 1 WHERE id = v_idCurso AND inscriptos > 0;
 

@@ -1,13 +1,35 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarVacante.aspx.cs" Inherits="Presentacion.GestionarVacante" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .encabezado-curso {
+            display: grid;
+            grid-template-columns: minmax(4.5rem, 1fr) minmax(0, max-content) minmax(4.5rem, 1fr);
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .encabezado-curso h5 {
+            grid-column: 2;
+            text-align: center;
+        }
+
+        .encabezado-curso .btn {
+            grid-column: 3;
+            justify-self: end;
+        }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="p-3 bg-fondo rounded-4">
 
         <!-- TÍTULO -->
-        <header class="mb-4 ps-2">
-            <h1 tabindex="0" class="text-indigo fw-bold">Gestión de vacantes</h1>
-            <p class="text-muted">Actualizá las vacantes disponibles de cada curso. Los padres, madres y tutores ven esta disponibilidad al buscar instituciones.</p>
+        <header class="mb-4 ps-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h1 tabindex="0" class="text-indigo fw-bold">Gestión de vacantes</h1>
+                <p class="text-muted mb-0">Actualizá las vacantes disponibles de cada curso. Los padres, madres y tutores ven esta disponibilidad al buscar instituciones.</p>
+            </div>
+            <asp:Button ID="btnNuevoCurso" runat="server" Text="Nuevo curso" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnNuevoCurso_Click" />
         </header>
 
         <!-- MENSAJE DE RESULTADO -->
@@ -45,9 +67,8 @@
 
         <!-- VISTA 2: LISTADO DE CURSOS -->
         <asp:Panel ID="pnlListado" runat="server" CssClass="card shadow-sm mb-5 border-0">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-indigo text-white">
                 <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Cursos de la institución</h5>
-                <asp:Button ID="btnNuevoCurso" runat="server" Text="Nuevo curso" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnNuevoCurso_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
@@ -100,7 +121,7 @@
 
         <!-- VISTA 3: ACTUALIZAR VACANTES DE UN CURSO -->
         <asp:Panel ID="pnlEdicion" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-indigo text-white encabezado-curso">
                 <h5 class="mb-0">Actualizar vacantes</h5>
                 <asp:Button ID="btnCerrarEdicion" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCerrarEdicion_Click" />
             </div>
@@ -148,9 +169,8 @@
 
         <!-- VISTA 4: ALTA DE CURSO -->
         <asp:Panel ID="pnlAlta" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-indigo text-white text-center">
                 <h5 class="mb-0">Alta de curso</h5>
-                <asp:Button ID="btnCerrarAlta" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCancelarAlta_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 

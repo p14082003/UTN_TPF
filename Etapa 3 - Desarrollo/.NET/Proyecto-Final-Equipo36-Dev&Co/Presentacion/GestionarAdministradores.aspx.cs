@@ -1,50 +1,91 @@
-﻿using Presentacion.Auth;
+﻿using Negocio;
+using Presentacion.Auth;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Presentacion
 {
-    public partial class GestionarAdministradores : System.Web.UI.Page
+    public partial class GestionarAdministradores : Page
     {
         private UsuarioSesion usuario;
+        private bool cambioGuardado;
+
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            ViewStateUserKey = Session.SessionID;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Acceso: permitir solo administrador de institución
-            if (!UsuarioSesion.TieneRol(Session, UsuarioSesion.AdministradorInstitucion))
+            usuario = UsuarioSesion.Obtener(Session);
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion ||
+                usuario.IdAdministradorInstitucion.GetValueOrDefault() <= 0)
             {
                 Response.Redirect("~/Login.aspx");
                 return;
             }
+            if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/FormularioInstitucion.aspx");
+                return;
+            }
 
             Response.Cache.SetNoStore();
-
-            lblMensaje.Visible = false;
-
             if (!IsPostBack)
             {
-                CargarAdministradores();
+                Ejecutar(CargarAdministradoresAsync);
             }
         }
 
-        private void CargarAdministradores()
+        private void Ejecutar(Func<Task> accion)
         {
-            // API: GET a vw/AdministradoresPorInstitucion y quedarse con los de la institución del usuario logueado
-            //   Campos de la vista: idAdministrador, idInstitucion, nombreAdministrador, apellidoAdministrador, docAdministrador, emailAdministrador, usuarioActivo
-            //   Estado = usuarioActivo ? "Activo" : "Dado de baja"
-            //   EsPropio = true si es el administrador logueado (para no mostrarle el botón "Dar de baja" en su propia fila)
-
-            // Datos de prueba mientras no esté conectado a la API:
-            var lista = new[]
+            lblMensaje.Visible = false;
+            RegisterAsyncTask(new PageAsyncTask(async () =>
             {
-                new { IdAdministrador = 4, NombreCompleto = "Gabriela Torres", Documento = "34087532", Email = "gtorres.adm@mail.test", Estado = "Activo", Activo = true, EsPropio = false },
-                new { IdAdministrador = 9, NombreCompleto = "Natalia Ocampo", Documento = "30441275", Email = "nocampo@mail.test", Estado = "Dado de baja", Activo = false, EsPropio = false }
-            };
+                try
+                {
+                    await accion();
+                }
+                catch (ArgumentException ex)
+                {
+                    MostrarMensaje(ex.Message, false);
+                }
+                catch (Exception ex)
+                {
+                    Trace.Warn("GestionarAdministradores", "Error al consultar o gestionar administradores en la API.", ex);
+                    string mensaje = "No se pudo completar la operación. Recargá el listado antes de intentarlo nuevamente.";
+                    if (cambioGuardado)
+                    {
+                        mensaje = "El cambio se guardó, pero no se pudo actualizar el listado. Recargá la página para verlo.";
+                    }
+                    MostrarMensaje(mensaje, false);
+                }
+            }));
+        }
 
-            dgvAdministradores.DataSource = lista;
+        private async Task CargarAdministradoresAsync()
+        {
+            var administradores = await InstiRedApi.GetAsync<List<AdministradorApi>>(
+                "vw/AdministradoresPorInstitucion?idInstitucion=" + usuario.IdInstitucion.Value);
+
+            dgvAdministradores.DataSource = administradores.Select(a => new
+            {
+                a.IdAdministrador,
+                NombreCompleto = (a.NombreAdministrador + " " + a.ApellidoAdministrador).Trim(),
+                Documento = a.DocAdministrador,
+                Email = a.EmailAdministrador,
+                Estado = a.UsuarioActivo ? "Activo" : "Dado de baja",
+                Activo = a.UsuarioActivo,
+                EsPropio = a.IdAdministrador == usuario.IdAdministradorInstitucion.Value
+            }).ToList();
             dgvAdministradores.DataBind();
         }
+
         protected void btnAgregarAdministrador_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/FormularioAdministradorAdicional.aspx");
@@ -52,29 +93,71 @@ namespace Presentacion
 
         protected void btnBajaAdministrador_Click(object sender, EventArgs e)
         {
-            // int idAdministrador = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: POST sp/DarDeBajaAdministradorInstitucion con { idUsuarioActor = usuario.IdUsuario, idAdministrador }
-
-            // Después recargar la lista con CargarAdministradores()
-
-            MostrarMensaje("Administrador dado de baja.", true);
+            CambiarEstado(sender, false);
         }
 
         protected void btnReactivarAdministrador_Click(object sender, EventArgs e)
         {
-            // int idAdministrador = int.Parse(((LinkButton)sender).CommandArgument);
-            // API: POST sp/ReactivarAdministradorInstitucion con { idUsuarioActor = usuario.IdUsuario, idAdministrador }
+            CambiarEstado(sender, true);
+        }
 
-            // Después recargar la lista con CargarAdministradores()
+        private void CambiarEstado(object sender, bool reactivar)
+        {
+            var boton = (LinkButton)sender;
+            if (!int.TryParse(boton.CommandArgument, out int id) || id <= 0)
+            {
+                MostrarMensaje("Seleccioná un administrador válido.", false);
+                return;
+            }
+            Ejecutar(() => CambiarEstadoAsync(id, reactivar));
+        }
 
-            MostrarMensaje("Administrador reactivado.", true);
+        private async Task CambiarEstadoAsync(int idAdministrador, bool reactivar)
+        {
+            var administrador = await InstiRedApi.GetAsync<AdministradorApi>(
+                "vw/AdministradoresPorInstitucion/" + idAdministrador, permitirNoEncontrado: true);
+            if (administrador == null || administrador.IdInstitucion != usuario.IdInstitucion.Value)
+            {
+                throw new ArgumentException("El administrador no existe o no pertenece a tu institución.");
+            }
+            if (!reactivar && idAdministrador == usuario.IdAdministradorInstitucion.Value)
+            {
+                throw new ArgumentException("No podés darte de baja a vos mismo.");
+            }
+
+            string ruta = reactivar ? "sp/ReactivarAdministradorInstitucion" : "sp/DarDeBajaAdministradorInstitucion";
+            var resultado = await InstiRedApi.PostAsync(ruta, new
+            {
+                idUsuarioActor = usuario.IdUsuario,
+                idAdministrador
+            });
+            if (resultado.Estado != HttpStatusCode.OK)
+            {
+                MostrarMensaje(resultado.Mensaje ?? "No se pudo confirmar el cambio. Recargá el listado antes de intentarlo nuevamente.", false);
+                return;
+            }
+
+            cambioGuardado = true;
+            await CargarAdministradoresAsync();
+            MostrarMensaje(reactivar ? "Administrador reactivado." : "Administrador dado de baja.", true);
         }
 
         private void MostrarMensaje(string texto, bool ok)
         {
-            lblMensaje.Text = texto;
+            lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
+        }
+
+        private class AdministradorApi
+        {
+            public int IdAdministrador { get; set; }
+            public int IdInstitucion { get; set; }
+            public string NombreAdministrador { get; set; }
+            public string ApellidoAdministrador { get; set; }
+            public string DocAdministrador { get; set; }
+            public string EmailAdministrador { get; set; }
+            public bool UsuarioActivo { get; set; }
         }
     }
 }
