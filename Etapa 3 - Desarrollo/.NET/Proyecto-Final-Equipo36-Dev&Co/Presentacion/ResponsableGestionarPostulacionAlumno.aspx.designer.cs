@@ -213,22 +213,22 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Label lblInstitucion;
 
         /// <summary>
-        /// Control lblModalidadTitulo.
+        /// Control lblTurnoTitulo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblModalidadTitulo;
+        protected global::System.Web.UI.WebControls.Label lblTurnoTitulo;
 
         /// <summary>
-        /// Control lblModalidad.
+        /// Control lblTurno.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblModalidad;
+        protected global::System.Web.UI.WebControls.Label lblTurno;
 
         /// <summary>
         /// Control pnlMotivoRechazo.

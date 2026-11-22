@@ -1098,4 +1098,75 @@ BEGIN
 
 END$$
 DELIMITER ;
- 
+
+ -- ------------------------------------------------------
+ -- SP para completar el GrifView en Form de ListadoPostulacionAlumnos
+ -- ----------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_postulaciones_Por_Responsable$$
+
+CREATE PROCEDURE sp_postulaciones_Por_Responsable(
+IN p_idResponsable    INT
+)
+BEGIN
+	-- validaciones
+	IF p_idResponsable IS NULL OR p_idResponsable < 1 THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable no válido';
+	END IF;
+	-- que el responsable exista 
+	IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable no existente';
+	END IF;
+		
+	SELECT p.id AS IdPostulacion, 
+	CONCAT(pe.nombre,' ',pe.apellido) AS Alumno,
+	pe.documento AS Documento, 
+	i.nombre AS Institucion,
+	c.cicloLectivo AS CicloLectivo, 
+	e.descripcion AS Estado, 
+    p.idEstado AS IdEstado, 
+    p.idAlumno AS IdAlumno
+	FROM PostulacionesAlumnos p 
+	INNER JOIN Alumnos a ON p.idAlumno = a.id
+	INNER JOIN Personas pe ON a.idPersona = pe.id
+	INNER JOIN EstadosPostulacion e ON e.id = p.idEstado
+	INNER JOIN Cursos c ON c.id = p.idCurso
+	INNER JOIN Instituciones i ON i.id = c.idInstitucion
+	WHERE EXISTS(SELECT 1 FROM Responsables r WHERE r.id = p_idResponsable AND (a.idPersona = r.idPersona
+	OR EXISTS (SELECT 1 FROM ResponsablesPorAlumno re WHERE re.idResponsable = p_idResponsable AND re.idAlumno = a.id)))
+	ORDER BY p.fecha DESC;
+	
+END$$
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- sp_Alumnos_Por_Responsable 
+-- ---------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_alumnos_Por_Responsable$$
+
+CREATE PROCEDURE sp_alumnos_Por_Responsable(
+    IN p_idResponsable INT
+)
+BEGIN
+    IF p_idResponsable IS NULL OR p_idResponsable < 1 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable no válido';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM Responsables WHERE id = p_idResponsable) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Responsable no existente';
+    END IF;
+
+    SELECT a.id AS IdAlumno,
+	CONCAT(pe.nombre, ' ', pe.apellido) AS NombreCompleto
+    FROM Alumnos a
+    INNER JOIN Personas pe ON pe.id = a.idPersona
+    WHERE EXISTS (SELECT 1 FROM Responsables r WHERE r.id = p_idResponsable AND (a.idPersona = r.idPersona    -- autogestor
+               OR EXISTS (SELECT 1 FROM ResponsablesPorAlumno rpa WHERE rpa.idResponsable = p_idResponsable AND rpa.idAlumno = a.id)) -- alumno a cargo
+    )
+    ORDER BY pe.apellido, pe.nombre;
+END$$
+
+DELIMITER ;

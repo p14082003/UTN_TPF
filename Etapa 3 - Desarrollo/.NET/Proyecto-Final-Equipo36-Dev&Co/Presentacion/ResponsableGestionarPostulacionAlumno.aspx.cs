@@ -63,7 +63,7 @@ namespace Presentacion
 
         protected void btnVolver_Click(object sender, EventArgs e)
         {
-            Response.Redirect("ListadoPostulacionesAlumnos.aspx");
+            Response.Redirect("ListadoPostulacionAlumnos.aspx");
         }
 
         private void CargarPostulacionAlumno(int id)
@@ -178,7 +178,7 @@ namespace Presentacion
 
         private void RedirigirListadoPostulaciones()
         {
-            ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='ListadoPostulacionesAlumnos.aspx',3000);", true);
+            ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='ListadoPostulacionAlumnos.aspx',3000);", true);
         }
 
         private void MostrarMensaje(string texto, bool ok)

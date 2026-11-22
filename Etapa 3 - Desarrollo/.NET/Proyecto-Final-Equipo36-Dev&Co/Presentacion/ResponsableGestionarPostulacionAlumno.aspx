@@ -11,7 +11,6 @@
             <h1 class="text-indigo fw-bold text-center">Gestión de postulación</h1>
             <h5 class="text-center">Consultá el detalle de la postulación y realizá las acciones disponibles según su estado.</h5>
         </div>
-
         <!-- Tarjeta -->
         <div class="row m-4">
             <div class="col">
@@ -34,7 +33,6 @@
                             <asp:Label ID="lblEstado" runat="server" Text="Pendiente" CssClass="badge bg-lavanda rounded-pill px-4 py-2"></asp:Label>
                         </h3>
                     </div>
-
                     <hr class="border-neutro mb-4" />
 
                     <!-- Datos de la postulación -->
@@ -63,7 +61,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblNivelTitulo" runat="server" Text="Nivel" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblNivel" runat="server" Text="5º" CssClass="d-block mb-3 fg-danger"></asp:Label>
+                                    <asp:Label ID="lblNivel" runat="server" Text="5º" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
@@ -140,8 +138,8 @@
                                     <i class="bi bi-people fs-4"></i>
                                 </div>
                                 <div>
-                                    <asp:Label ID="lblModalidadTitulo" runat="server" Text="Modalidad" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblModalidad" runat="server" Text="Presencial" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblTurnoTitulo" runat="server" Text="Turno" CssClass="d-block text-secondary"></asp:Label>
+                                    <asp:Label ID="lblTurno" runat="server" Text="Mañana" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </div>
@@ -158,16 +156,12 @@
                                 </div>
                             </div>
                         </asp:Panel>
-
                     </div>
-
                     <hr class="border-neutro mb-4" />
-
                     <!-- Botones según estado -->
                     <asp:Button ID="btnConfirmar" runat="server" Text="Confirmar postulación" OnClick="btnConfirmar_Click" CssClass="btn btn-lilaOscuro w-100 mb-3" />
                     <asp:Button ID="btnCancelarPostulacion" runat="server" Text="Cancelar postulación" OnClick="btnCancelarPostulacion_Click" CausesValidation="false" CssClass="btn btn-solid theme-danger w-100 mb-3" style="--bs-btn-padding-y: 14px; --bs-btn-border-radius: 15px;" />
                     <asp:Button ID="btnVolver" runat="server" Text="Volver al listado" OnClick="btnVolver_Click" CausesValidation="false" CssClass="btn btn-lilaClaro w-100" />
-
                 </div>
             </div>
         </div>
