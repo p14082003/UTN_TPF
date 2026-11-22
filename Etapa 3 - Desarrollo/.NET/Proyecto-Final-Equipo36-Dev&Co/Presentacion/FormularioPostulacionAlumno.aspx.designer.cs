@@ -33,6 +33,24 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.TextBox txtInstitucion;
 
         /// <summary>
+        /// Control lblVacantes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblVacantes;
+
+        /// <summary>
+        /// Control txtVacantes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVacantes;
+
+        /// <summary>
         /// Control lblCicloLectivo.
         /// </summary>
         /// <remarks>
@@ -121,24 +139,6 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlTurno;
-
-        /// <summary>
-        /// Control lblVacantes.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblVacantes;
-
-        /// <summary>
-        /// Control txtVacantes.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtVacantes;
 
         /// <summary>
         /// Control lblAlumno.
