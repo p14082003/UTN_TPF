@@ -13,6 +13,12 @@ namespace Presentacion
 
     public partial class GestionarPostulacionAlumno
     {
+        protected global::System.Web.UI.WebControls.Label lblConfirmadas;
+        protected global::System.Web.UI.WebControls.DropDownList ddlEstado;
+        protected global::System.Web.UI.WebControls.Literal litEstadoPostulacion;
+        protected global::System.Web.UI.WebControls.Label lblAvisoEstado;
+        protected global::System.Web.UI.WebControls.Panel pnlMotivoRechazo;
+        protected global::System.Web.UI.WebControls.Literal litMotivoRechazo;
         protected global::System.Web.UI.WebControls.Label lblPendientes;
         protected global::System.Web.UI.WebControls.Label lblAceptadas;
         protected global::System.Web.UI.WebControls.Label lblRechazadas;

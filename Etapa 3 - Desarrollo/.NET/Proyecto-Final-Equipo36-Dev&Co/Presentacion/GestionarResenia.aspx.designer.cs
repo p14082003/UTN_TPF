@@ -13,6 +13,7 @@ namespace Presentacion
 
     public partial class GestionarResenia
     {
+        protected global::System.Web.UI.WebControls.Button btnEliminarRespuesta;
 
         /// <summary>
         /// Control pnlMensaje.

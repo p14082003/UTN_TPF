@@ -100,13 +100,32 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Delete(int id)
+        public IActionResult Delete(int id, [FromQuery] int? idResponsable = null)
         {
             try
             {
                 Ent_ReseniaNegocio negocio = new Ent_ReseniaNegocio();
-                negocio.eliminar(id);
+                negocio.eliminar(id, idResponsable);
                 return Ok(new { Message = "Registro de Resenias eliminado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return responderError(ex);
+            }
+        }
+
+        [HttpDelete("{id:int}/respuesta")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult EliminarRespuesta(int id, [FromQuery] int idAdministradorInstitucion)
+        {
+            try
+            {
+                Ent_ReseniaNegocio negocio = new Ent_ReseniaNegocio();
+                negocio.eliminarRespuesta(id, idAdministradorInstitucion);
+                return Ok(new { Message = "Respuesta de la institución eliminada correctamente." });
             }
             catch (Exception ex)
             {

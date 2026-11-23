@@ -145,17 +145,22 @@ namespace Negocio
             }
         }
 
-        public void eliminar(int id)
+        public void eliminar(int id, int? idResponsable = null)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("El campo Id debe ser mayor que cero.");
             }
+            if (idResponsable != null && idResponsable <= 0)
+            {
+                throw new ArgumentException("El campo IdResponsable debe ser mayor que cero.");
+            }
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearConsulta("DELETE FROM `Resenias` WHERE `id` = @clave0");
+                datos.setearConsulta("DELETE FROM `Resenias` WHERE `id` = @clave0 AND (@idResponsable IS NULL OR `idResponsable` = @idResponsable)");
                 datos.setearParametro("@clave0", id);
+                datos.setearParametro("@idResponsable", idResponsable);
 
                 if (datos.ejecutarAccion() == 0)
                 {
@@ -177,6 +182,35 @@ namespace Negocio
                     throw new ConstraintException("No se puede modificar o eliminar el registro de Resenias porque aparece en otras entidades.", ex);
                 }
                 throw;
+            }
+            finally
+            {
+                datos.cerrarConexion();
+            }
+        }
+
+        public void eliminarRespuesta(int id, int idAdministradorInstitucion)
+        {
+            if (id <= 0 || idAdministradorInstitucion <= 0)
+            {
+                throw new ArgumentException("Debe indicar una reseña y un administrador válidos.");
+            }
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearConsulta("UPDATE Resenias r " +
+                    "INNER JOIN AdministradoresInstitucion a ON a.idInstitucion = r.idInstitucion " +
+                    "INNER JOIN Usuarios u ON u.id = a.idUsuario " +
+                    "INNER JOIN Instituciones i ON i.id = r.idInstitucion " +
+                    "SET r.respuestaInstitucion = NULL " +
+                    "WHERE r.id = @id AND a.id = @idAdministradorInstitucion AND u.activo = TRUE " +
+                    "AND i.estado = TRUE AND r.respuestaInstitucion IS NOT NULL");
+                datos.setearParametro("@id", id);
+                datos.setearParametro("@idAdministradorInstitucion", idAdministradorInstitucion);
+                if (datos.ejecutarAccion() == 0)
+                {
+                    throw new KeyNotFoundException("No se encontró una respuesta para eliminar o el administrador no está habilitado para esa institución.");
+                }
             }
             finally
             {

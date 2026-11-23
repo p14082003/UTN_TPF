@@ -13,6 +13,21 @@ namespace Presentacion
 
     public partial class DetalleInstitucion
     {
+        protected global::System.Web.UI.WebControls.Label lblValoracion;
+
+        protected global::System.Web.UI.WebControls.HyperLink lnkIniciarSesionResenia;
+
+        protected global::System.Web.UI.WebControls.Label lblMensajeResenia;
+
+        protected global::System.Web.UI.WebControls.Panel pnlFormularioResenia;
+
+        protected global::System.Web.UI.WebControls.Label lblErrorResenia;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlCalificacion;
+
+        protected global::System.Web.UI.WebControls.TextBox txtComentarioResenia;
+
+        protected global::System.Web.UI.WebControls.Button btnPublicarResenia;
         protected global::System.Web.UI.WebControls.Panel pnlError;
         protected global::System.Web.UI.WebControls.Label lblError;
         protected global::System.Web.UI.WebControls.Panel pnlDetalle;

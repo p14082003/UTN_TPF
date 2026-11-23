@@ -1349,6 +1349,26 @@
                 "description": "DELETE /ent/Resenias/{id:int}."
               },
               "response": []
+            },
+            {
+              "name": "Eliminar del responsable indicado",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/ent/Resenias/1?idResponsable=1",
+                "description": "Elimina la reseña únicamente si pertenece al idResponsable indicado. La WebApp obtiene ese ID de la sesión y también verifica la institución. Devuelve HTTP 404 si la reseña no existe o pertenece a otro responsable. Se borra la respuesta de la institución junto con la reseña; promedio y cantidad se recalculan al consultar."
+              },
+              "response": []
+            },
+            {
+              "name": "Eliminar respuesta de la institución",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/ent/Resenias/1/respuesta?idAdministradorInstitucion=1",
+                "description": "Elimina únicamente la respuesta de la institución y conserva la reseña, su puntuación y su fecha. El administrador debe estar activo y pertenecer a la institución activa de esa reseña. Devuelve HTTP 200 al eliminar o HTTP 404 si no hay respuesta o el administrador no está habilitado. El promedio y la cantidad de reseñas se conservan. Después se puede responder nuevamente mediante ResponderResenia. No lleva body."
+              },
+              "response": []
             }
           ]
         },

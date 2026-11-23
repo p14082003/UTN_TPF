@@ -38,6 +38,11 @@ namespace Negocio
                 new StringContent(json.Serialize(datos), Encoding.UTF8, "application/json"), false);
         }
 
+        public static Task<Respuesta> DeleteAsync(string ruta)
+        {
+            return EnviarAsync(HttpMethod.Delete, ruta, null, false);
+        }
+
         private static async Task<Respuesta> EnviarAsync(HttpMethod metodo, string ruta, HttpContent contenido, bool leerCuerpo)
         {
             using (var request = CrearRequest(metodo, ruta))

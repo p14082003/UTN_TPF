@@ -1,5 +1,26 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarResenia.aspx.cs" Inherits="Presentacion.GestionarResenia" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .encabezado-resenia {
+            display: grid;
+            grid-template-columns: minmax(4.5rem, 1fr) minmax(0, max-content) minmax(4.5rem, 1fr);
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .encabezado-resenia h2 {
+            grid-column: 2;
+            margin: 0;
+            font-size: clamp(1.125rem, 2vw, 1.5rem);
+            text-align: center;
+        }
+
+        .volver-resenia {
+            grid-column: 3;
+            justify-self: end;
+        }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
@@ -8,7 +29,7 @@
         <!-- TÍTULO -->
         <header class="mb-4 ps-2">
             <h1 tabindex="0" class="text-indigo fw-bold">Reseñas de mi institución</h1>
-            <p class="text-muted">Leé lo que opinan los padres, madres y tutores y respondé cada reseña. Cada reseña admite una sola respuesta.</p>
+            <p class="text-muted">Leé lo que opinan los padres, madres y tutores y respondé cada reseña. Podés eliminar tu respuesta y volver a responder.</p>
         </header>
 
         <!-- MENSAJE DE RESULTADO -->
@@ -112,9 +133,9 @@
 
         <!-- VISTA 3: DETALLE DE LA RESEÑA Y RESPUESTA -->
         <asp:Panel ID="pnlDetalle" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
-            <div class="card-header bg-indigo text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Reseña</h5>
-                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCerrarDetalle_Click" />
+            <div class="card-header bg-indigo text-white encabezado-resenia">
+                <h2>Reseña</h2>
+                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-resenia" OnClick="btnCerrarDetalle_Click" />
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
@@ -138,7 +159,7 @@
                     <asp:Label ID="lblDetalleComentario" runat="server" CssClass="text-indigo d-block" />
                 </div>
 
-                <!-- Reseña sin responder: formulario de respuesta (una sola vez) -->
+                <!-- Reseña sin responder: formulario de respuesta -->
                 <asp:Panel ID="pnlResponder" runat="server">
                     <label for="<%= txtRespuesta.ClientID %>" class="form-label text-indigo fw-bold">Tu respuesta</label>
                     <asp:TextBox ID="txtRespuesta" runat="server" TextMode="MultiLine" Rows="4" maxlength="255"
@@ -146,7 +167,7 @@
                     <div class="d-flex justify-content-between align-items-start mt-1">
                         <div class="form-text">
                             <i class="bi bi-info-circle text-lavanda me-1"></i>
-                            Cada reseña admite una sola respuesta. Una vez enviada, no se puede modificar.
+                            Cada reseña admite una respuesta. Podés eliminarla si necesitás escribir otra.
                         </div>
                         <span id="contadorRespuesta" class="form-text text-nowrap ms-3">0 / 255</span>
                     </div>
@@ -155,11 +176,11 @@
                         <asp:Button ID="btnCancelarRespuesta" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro fw-bold rounded-pill px-4" OnClick="btnCerrarDetalle_Click" />
                         <asp:Button ID="btnEnviarRespuesta" runat="server" Text="Enviar respuesta" CssClass="btn btn-indigo fw-bold rounded-pill px-4"
                             OnClick="btnEnviarRespuesta_Click"
-                            OnClientClick="return confirm('Una vez enviada, la respuesta no se puede modificar. ¿Querés enviarla?');" />
+                            OnClientClick="return confirm('¿Querés enviar esta respuesta?');" />
                     </div>
                 </asp:Panel>
 
-                <!-- Reseña ya respondida: solo lectura -->
+                <!-- Respuesta publicada y opción para eliminarla -->
                 <asp:Panel ID="pnlRespuestaExistente" runat="server" Visible="false">
                     <span class="text-indigo fw-bold d-block mb-2">
                         <i class="bi bi-check-circle-fill text-lavanda me-1"></i>Respuesta de la institución
@@ -167,7 +188,11 @@
                     <div class="p-4 bg-fondo rounded-4 border border-neutro">
                         <asp:Label ID="lblRespuestaExistente" runat="server" CssClass="text-indigo d-block" />
                     </div>
-                    <div class="form-text mt-2">Esta reseña ya fue respondida y la respuesta no puede modificarse.</div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <asp:Button ID="btnEliminarRespuesta" runat="server" Text="Eliminar respuesta" CssClass="btn btn-outline-danger rounded-pill px-4"
+                            OnClick="btnEliminarRespuesta_Click" CausesValidation="false"
+                            OnClientClick="return confirm('¿Querés eliminar la respuesta de tu institución? La reseña y la puntuación del responsable se conservarán.');" />
+                    </div>
                 </asp:Panel>
             </div>
         </asp:Panel>

@@ -151,6 +151,12 @@ namespace Presentacion
             public string Nombre { get; set; }
             public string Direccion { get; set; }
             public string Descripcion { get; set; }
+            public decimal? PromedioCalificacion { get; set; }
+            public long CantidadResenias { get; set; }
+            public string Valoracion => PromedioCalificacion.HasValue && CantidadResenias > 0
+                ? "★ " + PromedioCalificacion.Value.ToString("0.0") + " / 5 · " +
+                    CantidadResenias + (CantidadResenias == 1 ? " reseña" : " reseñas")
+                : "Sin reseñas";
             public string UrlFoto { get; set; } = ImagenGenerica;
             public double Latitud { get; set; }
             public double Longitud { get; set; }

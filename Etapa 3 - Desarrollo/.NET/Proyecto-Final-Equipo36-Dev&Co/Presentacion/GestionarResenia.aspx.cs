@@ -14,6 +14,7 @@ namespace Presentacion
     {
         private UsuarioSesion usuario;
         private bool respuestaGuardada;
+        private bool respuestaEliminada;
 
         private int IdReseniaSeleccionada
         {
@@ -68,6 +69,10 @@ namespace Presentacion
                     if (respuestaGuardada)
                     {
                         mensaje = "La respuesta se guardó, pero no se pudo actualizar el listado. Recargá la página para verla.";
+                    }
+                    else if (respuestaEliminada)
+                    {
+                        mensaje = "La respuesta se eliminó, pero no se pudo actualizar la pantalla. Volvé al listado para consultar el estado.";
                     }
                     MostrarMensaje(mensaje, false);
                 }
@@ -142,6 +147,7 @@ namespace Presentacion
             lblDetalleComentario.Text = Server.HtmlEncode(resenia.Comentario);
 
             bool respondida = resenia.RespuestaInstitucion != null;
+            btnCerrarDetalle.Visible = respondida;
             pnlResponder.Visible = !respondida;
             pnlRespuestaExistente.Visible = respondida;
             txtRespuesta.Text = "";
@@ -198,7 +204,44 @@ namespace Presentacion
             pnlRespuestaExistente.Visible = true;
             lblRespuestaExistente.Text = Server.HtmlEncode(respuesta);
             await VolverAlListadoAsync();
-            MostrarMensaje("Respuesta enviada. La reseña ya no admite más respuestas.", true);
+            MostrarMensaje("Respuesta enviada correctamente.", true);
+        }
+
+        protected void btnEliminarRespuesta_Click(object sender, EventArgs e)
+        {
+            Ejecutar(EliminarRespuestaAsync);
+        }
+
+        private async Task EliminarRespuestaAsync()
+        {
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion ||
+                usuario.IdAdministradorInstitucion.GetValueOrDefault() <= 0 || usuario.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                throw new ArgumentException("Iniciá sesión como administrador de la institución para eliminar su respuesta.");
+            }
+            var resenia = await ObtenerReseniaAsync(IdReseniaSeleccionada);
+            if (resenia.RespuestaInstitucion == null)
+            {
+                await CargarDetalleAsync(resenia.IdResenia);
+                MostrarMensaje("La reseña ya no tiene una respuesta para eliminar.", false);
+                return;
+            }
+            var resultado = await InstiRedApi.DeleteAsync("ent/Resenias/" + resenia.IdResenia +
+                "/respuesta?idAdministradorInstitucion=" + usuario.IdAdministradorInstitucion.Value);
+            if (resultado.Estado == HttpStatusCode.NotFound)
+            {
+                await VolverAlListadoAsync();
+                MostrarMensaje("La respuesta ya no está disponible o tu cuenta no está habilitada para eliminarla.", false);
+                return;
+            }
+            if (resultado.Estado != HttpStatusCode.OK)
+            {
+                MostrarMensaje(resultado.Mensaje ?? "No se pudo eliminar la respuesta. Intentá nuevamente más tarde.", false);
+                return;
+            }
+            respuestaEliminada = true;
+            await CargarDetalleAsync(resenia.IdResenia);
+            MostrarMensaje("Respuesta eliminada. Podés volver a responder esta reseña.", true);
         }
 
         private async Task VolverAlListadoAsync()

@@ -91,6 +91,7 @@
                                     <div class="col-8">
                                         <div class="card-body">
                                             <h5 class="card-title text-indigo"><%#: Eval("Nombre") %></h5>
+                                            <p class="card-text text-indigo mb-1"><%#: Eval("Valoracion") %></p>
                                             <p class="card-text mb-1"><%#: Eval("Direccion") %></p>
                                             <p class="card-text text-lavanda"><%#: Eval("Descripcion") %></p>
                                             <asp:HyperLink ID="lnkDetalle" runat="server" CssClass="btn btn-lilaOscuro-invertido btn-sm w-100" Text="Más información" NavigateUrl='<%# Eval("IdInstitucion", "~/DetalleInstitucion.aspx?id={0}") %>' />

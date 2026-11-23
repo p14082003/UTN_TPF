@@ -36,6 +36,29 @@
             object-fit: contain;
         }
 
+        .dialogo-resenia {
+            width: min(32rem, calc(100% - 2rem));
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+            border: 1px solid #E4E0F0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: #373A72;
+        }
+
+        .dialogo-resenia::backdrop {
+            background: rgb(0 0 0 / 40%);
+        }
+
+        .resenia-propia {
+            background: #F7F5FC;
+            border: 1px solid #E4E0F0;
+            border-left: 3px solid #8D91D5;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
         * {
             scrollbar-color: #373A72 transparent;
         }
@@ -129,6 +152,7 @@
             <div class="col-8">
                 <div class="card h-100 p-5">
                     <asp:Label ID="lblNombreInstitucion" runat="server" CssClass="h2 text-indigo"></asp:Label>
+                    <asp:Label ID="lblValoracion" runat="server" CssClass="d-block text-indigo my-2"></asp:Label>
                     <asp:Label ID="lblDescripcion" runat="server" CssClass="p"></asp:Label>
 
                     <hr />
@@ -198,15 +222,58 @@
                 <div class="card p-5">
                     <div class="d-flex align-items-center">
                         <h4 class="text-indigo fw-bold flex-grow-1">Reseñas de las familias y comunidad</h4>
-                        <asp:Button ID="btnReseña" runat="server" CssClass="btn-lilaOscuro-invertido just" Text="Nueva reseña"></asp:Button>
+                        <asp:Button ID="btnReseña" runat="server" CssClass="btn-lilaOscuro-invertido just" Text="Nueva reseña" OnClick="btnReseña_Click" CausesValidation="false"></asp:Button>
                     </div>
+
+                    <asp:HyperLink ID="lnkIniciarSesionResenia" runat="server" Visible="false" NavigateUrl="~/Login.aspx" CssClass="link-lilaClaro d-inline-block my-3" Text="Iniciá sesión como responsable para dejar una reseña."></asp:HyperLink>
+                    <asp:Label ID="lblMensajeResenia" runat="server" Visible="false" role="status"></asp:Label>
+
+                    <asp:Panel ID="pnlFormularioResenia" runat="server" Visible="false">
+                        <dialog id="dialogResenia" class="dialogo-resenia" aria-labelledby="tituloResenia">
+                            <h3 id="tituloResenia" class="fw-bold mb-3">Nueva reseña</h3>
+                            <p>Contanos tu experiencia con esta institución.</p>
+                            <asp:Label ID="lblErrorResenia" runat="server" Visible="false" CssClass="alert alert-danger d-block mb-3" role="alert"></asp:Label>
+                            <div class="mb-3">
+                                <asp:Label runat="server" AssociatedControlID="ddlCalificacion" Text="Calificación" CssClass="form-label"></asp:Label>
+                                <asp:DropDownList ID="ddlCalificacion" runat="server" CssClass="form-control">
+                                    <asp:ListItem Value="">Seleccioná una puntuación</asp:ListItem>
+                                    <asp:ListItem Value="1">1 estrella</asp:ListItem>
+                                    <asp:ListItem Value="2">2 estrellas</asp:ListItem>
+                                    <asp:ListItem Value="3">3 estrellas</asp:ListItem>
+                                    <asp:ListItem Value="4">4 estrellas</asp:ListItem>
+                                    <asp:ListItem Value="5">5 estrellas</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                            <div class="mb-4">
+                                <asp:Label runat="server" AssociatedControlID="txtComentarioResenia" Text="Comentario" CssClass="form-label"></asp:Label>
+                                <asp:TextBox ID="txtComentarioResenia" runat="server" TextMode="MultiLine" Rows="4" MaxLength="255" ValidateRequestMode="Disabled" CssClass="form-control" aria-describedby="ayudaComentarioResenia"></asp:TextBox>
+                                <small id="ayudaComentarioResenia" class="text-secondary">Hasta 255 caracteres.</small>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dialogResenia').close()">Cancelar</button>
+                                <asp:Button ID="btnPublicarResenia" runat="server" Text="Publicar reseña" OnClick="btnPublicarResenia_Click" CausesValidation="false" CssClass="btn btn-lilaOscuro"></asp:Button>
+                            </div>
+                        </dialog>
+                        <script>
+                            document.getElementById('dialogResenia').showModal();
+                        </script>
+                    </asp:Panel>
 
                     <asp:Repeater ID="rptResenias" runat="server">
                         <ItemTemplate>
-                            <div class="border-bottom border-neutro py-4">
+                            <div class='<%# PuedeEliminarResenia(Convert.ToInt32(Eval("IdResponsable"))) ? "resenia-propia" : "border-bottom border-neutro py-4" %>'>
+                                <asp:Panel runat="server" Visible='<%# PuedeEliminarResenia(Convert.ToInt32(Eval("IdResponsable"))) %>' CssClass="text-indigo fw-bold mb-3">
+                                    Tu reseña
+                                </asp:Panel>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold text-indigo"><%#: Eval("NombreResponsable") %> <%#: Eval("ApellidoResponsable") %></span>
-                                    <small class="text-muted"><%# Eval("Fecha", "{0:dd/MM/yyyy}") %></small>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <small class="text-muted"><%# Eval("Fecha", "{0:dd/MM/yyyy}") %></small>
+                                        <asp:LinkButton ID="btnEliminarResenia" runat="server" Text="Eliminar" CssClass="btn btn-sm btn-outline-danger rounded-pill"
+                                            Visible='<%# PuedeEliminarResenia(Convert.ToInt32(Eval("IdResponsable"))) %>'
+                                            CommandArgument='<%# Eval("IdResenia") %>' OnClick="btnEliminarResenia_Click" CausesValidation="false"
+                                            OnClientClick="return confirm('¿Querés eliminar tu reseña? También se eliminará la respuesta de la institución, si la tiene. Esta acción es definitiva.');"></asp:LinkButton>
+                                    </div>
                                 </div>
 
                                 <div class="text-lavanda mb-2" aria-label="Calificación: <%# Eval("Calificacion") %> de 5">

@@ -14,6 +14,7 @@ namespace Presentacion
     {
         private const int Pendiente = 1;
         private const int Aceptada = 2;
+        private const int Confirmada = 3;
         private const int Rechazada = 4;
         private UsuarioSesion usuario;
 
@@ -64,6 +65,11 @@ namespace Presentacion
             RegisterAsyncTask(new PageAsyncTask(() => CargarListadoAsync()));
         }
 
+        protected void ddlEstado_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RegisterAsyncTask(new PageAsyncTask(() => CargarListadoAsync()));
+        }
+
         protected void btnDesplegarRechazo_Click(object sender, EventArgs e)
         {
             panelRechazo.Visible = true;
@@ -106,17 +112,24 @@ namespace Presentacion
                 var postulaciones = await InstiRedApi.GetAsync<List<PostulacionApi>>(
                     "vw/PostulacionesAlumnos?idInstitucion=" + usuario.IdInstitucion.Value);
                 var propias = postulaciones.Where(p => p.IdInstitucion == usuario.IdInstitucion).ToList();
-                var pendientes = propias.Where(p => p.IdEstado == Pendiente)
+                int estado;
+                if (!int.TryParse(ddlEstado.SelectedValue, out estado) || estado < 0 || estado > 5)
+                {
+                    estado = Pendiente;
+                    ddlEstado.SelectedValue = Pendiente.ToString();
+                }
+                var filtradas = propias.Where(p => estado == 0 || p.IdEstado == estado)
                     .OrderByDescending(p => p.Fecha)
                     .ThenByDescending(p => p.IdPostulacion)
                     .ToList();
 
-                lblPendientes.Text = pendientes.Count.ToString();
+                lblPendientes.Text = propias.Count(p => p.IdEstado == Pendiente).ToString();
                 lblAceptadas.Text = propias.Count(p => p.IdEstado == Aceptada).ToString();
+                lblConfirmadas.Text = propias.Count(p => p.IdEstado == Confirmada).ToString();
                 lblRechazadas.Text = propias.Count(p => p.IdEstado == Rechazada).ToString();
                 pnlDashboard.Visible = true;
                 pnlListado.Visible = true;
-                dgvPostulaciones.DataSource = pendientes;
+                dgvPostulaciones.DataSource = filtradas;
                 dgvPostulaciones.DataBind();
 
                 if (mensajeExito != null)
@@ -143,10 +156,10 @@ namespace Presentacion
             pnlMensaje.Visible = false;
             try
             {
-                var postulacion = await ObtenerPostulacionPendienteAsync(id);
+                var postulacion = await ObtenerPostulacionAsync(id);
                 if (postulacion == null)
                 {
-                    MostrarMensaje("La postulación ya no está disponible para revisar.", false);
+                    MostrarMensaje("La postulación no existe o no pertenece a tu institución.", false);
                     return;
                 }
 
@@ -157,9 +170,11 @@ namespace Presentacion
 
                 int vacantes = Math.Max(0, curso.Capacidad - curso.Inscriptos);
                 bool puedeResolver = usuario.IdAdministradorInstitucion.GetValueOrDefault() > 0;
+                bool pendiente = postulacion.IdEstado == Pendiente;
 
                 IdPostulacionSeleccionada = id;
                 litCodigoSeguimiento.Text = postulacion.CodigoSeguimiento ?? "—";
+                litEstadoPostulacion.Text = postulacion.Estado;
                 litAlumno.Text = postulacion.Alumno;
                 litCurso.Text = postulacion.Curso;
                 litDniAlumno.Text = postulacion.DocAlumno ?? "—";
@@ -175,18 +190,33 @@ namespace Presentacion
                 rptDocumentos.DataBind();
 
                 lblVacantes.Text = vacantes.ToString();
-                pnlConVacantes.Visible = vacantes > 0;
-                pnlSinVacantes.Visible = vacantes == 0;
+                pnlConVacantes.Visible = pendiente && vacantes > 0;
+                pnlSinVacantes.Visible = pendiente && vacantes == 0;
+                btnAceptar.Visible = pendiente;
+                btnDesplegarRechazo.Visible = pendiente;
+                btnConfirmarRechazo.Visible = pendiente;
                 btnAceptar.Enabled = puedeResolver && vacantes > 0;
                 btnDesplegarRechazo.Enabled = puedeResolver;
                 btnConfirmarRechazo.Enabled = puedeResolver;
                 txtMotivoRechazo.Text = "";
                 panelRechazo.Visible = false;
+                lblAvisoEstado.Visible = !pendiente;
+                lblAvisoEstado.Text = "Esta postulación ya fue gestionada. Podés consultar sus datos y documentos.";
+                if (postulacion.IdEstado == Aceptada)
+                {
+                    lblAvisoEstado.Text = "Aceptada por la institución. Falta la confirmación del responsable y todavía no ocupa un cupo.";
+                }
+                else if (postulacion.IdEstado == Confirmada)
+                {
+                    lblAvisoEstado.Text = "Confirmada por el responsable. Esta postulación ya ocupa un cupo del curso.";
+                }
+                pnlMotivoRechazo.Visible = !string.IsNullOrWhiteSpace(postulacion.MotivoRechazo);
+                litMotivoRechazo.Text = postulacion.MotivoRechazo;
 
                 pnlDashboard.Visible = false;
                 pnlListado.Visible = false;
 
-                if (!puedeResolver)
+                if (pendiente && !puedeResolver)
                 {
                     MostrarMensaje("Volvé a iniciar sesión para aceptar o rechazar postulaciones.", false);
                 }
@@ -199,7 +229,7 @@ namespace Presentacion
             }
         }
 
-        private async Task<PostulacionApi> ObtenerPostulacionPendienteAsync(int id)
+        private async Task<PostulacionApi> ObtenerPostulacionAsync(int id)
         {
             if (id <= 0 || usuario.IdInstitucion.GetValueOrDefault() <= 0)
             {
@@ -208,7 +238,7 @@ namespace Presentacion
 
             var postulacion = await InstiRedApi.GetAsync<PostulacionApi>(
                 "vw/PostulacionesAlumnos/" + id, permitirNoEncontrado: true);
-            if (postulacion == null || postulacion.IdInstitucion != usuario.IdInstitucion || postulacion.IdEstado != Pendiente)
+            if (postulacion == null || postulacion.IdInstitucion != usuario.IdInstitucion)
             {
                 return null;
             }
@@ -228,7 +258,8 @@ namespace Presentacion
             try
             {
                 int idPostulacion = IdPostulacionSeleccionada;
-                if (await ObtenerPostulacionPendienteAsync(idPostulacion) == null)
+                var postulacion = await ObtenerPostulacionAsync(idPostulacion);
+                if (postulacion == null || postulacion.IdEstado != Pendiente)
                 {
                     await CargarListadoAsync();
                     MostrarMensaje("La postulación ya no está disponible para revisar.", false);
@@ -279,6 +310,8 @@ namespace Presentacion
             public int IdPostulacion { get; set; }
             public int IdInstitucion { get; set; }
             public int IdEstado { get; set; }
+            public string Estado { get; set; }
+            public string MotivoRechazo { get; set; }
             public int IdCurso { get; set; }
             public DateTime Fecha { get; set; }
             public string CodigoSeguimiento { get; set; }
