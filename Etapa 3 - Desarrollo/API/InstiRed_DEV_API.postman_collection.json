@@ -2972,6 +2972,28 @@
                 "description": "Adjuntá al menos un PDF, JPG, JPEG o PNG de hasta 5 MB. Usá Documentos[0].Descripcion y Documentos[0].Archivo y repetí el par con índices consecutivos. El formulario completo admite hasta 20 MB."
               },
               "response": []
+            },
+            {
+              "name": "Registrar con varios documentos",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
+                "description": "Seleccioná un archivo local en cada campo de tipo File. Los índices deben ser consecutivos desde 0 y cada documento debe tener una descripción de hasta 100 caracteres. Se admite PDF, JPG o PNG de hasta 5 MB por archivo y 20 MB por request completo. No agregues Content-Type manualmente: Postman genera el boundary. Usa un alumno a cargo del responsable (también admite autogestor) y un curso habilitado. Un alta correcta responde HTTP 201 con CodigoSeguimiento; las reglas del SP, como falta de cupo o postulación duplicada, responden HTTP 400 con message. Los IDs de ejemplo se cambian por los de tus datos de prueba.",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "IdResponsable", "value": "1", "type": "text" },
+                    { "key": "IdAlumno", "value": "1", "type": "text" },
+                    { "key": "IdCurso", "value": "1", "type": "text" },
+                    { "key": "Documentos[0].Descripcion", "value": "DNI del alumno", "type": "text" },
+                    { "key": "Documentos[0].Archivo", "type": "file", "src": [] },
+                    { "key": "Documentos[1].Descripcion", "value": "Certificado de estudios", "type": "text" },
+                    { "key": "Documentos[1].Archivo", "type": "file", "src": [] }
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
@@ -3036,6 +3058,58 @@
           ]
         },
         {
+          "name": "PostulacionesPorResponsable",
+          "item": [
+            {
+              "name": "Listar postulaciones del responsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/sp/PostulacionesPorResponsable?idResponsable=1",
+                "description": "Ejecuta sp_postulaciones_Por_Responsable. idResponsable es obligatorio. Incluye alumnos a cargo y autogestor; devuelve alumno, DNI, institución, ciclo lectivo y estado. Sin postulaciones devuelve [] con HTTP 200."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AlumnosPorResponsable",
+          "item": [
+            {
+              "name": "Listar alumnos del responsable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/sp/AlumnosPorResponsable?idResponsable=1",
+                "description": "Ejecuta sp_alumnos_Por_Responsable. idResponsable es obligatorio. Devuelve IdAlumno y NombreCompleto de los alumnos a cargo, incluido el autogestor. Sin alumnos devuelve [] con HTTP 200."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CancelarPostulacionAlumno",
+          "item": [
+            {
+              "name": "Cancelar postulación del alumno",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "url": "{{baseUrl}}/sp/CancelarPostulacionAlumno",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idPostulacion\": 1,\n  \"idResponsable\": 1\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Cancela una postulación pendiente, aceptada o confirmada del responsable indicado, únicamente del ciclo lectivo actual o siguiente. Si estaba confirmada, el SP devuelve el cupo. Responde HTTP 200 al cancelar o HTTP 400 con el mensaje del SP si la operación no corresponde."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "ConfirmarPostulacionAlumno",
           "item": [
             {
@@ -3070,6 +3144,31 @@
     {
       "name": "vistas",
       "item": [
+        {
+          "name": "Cursos",
+          "item": [
+            {
+              "name": "Listar por institución",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Cursos?idInstitucion=1",
+                "description": "idInstitucion es obligatorio y debe ser mayor que cero. Devuelve los cursos de esa institución, con ciclo, nivel, año, división, turno, capacidad, inscriptos y vacantes. Los campos de nivel o año pueden ser null en cursos personalizados. Sin cursos devuelve [] con HTTP 200. La consulta no reserva vacantes; el SP de postulación vuelve a validar disponibilidad y plazos."
+              },
+              "response": []
+            },
+            {
+              "name": "Rechazar institución inválida",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Cursos?idInstitucion=0",
+                "description": "Ejemplo de validación: responde HTTP 400 con el mensaje de que idInstitucion debe ser mayor a cero."
+              },
+              "response": []
+            }
+          ]
+        },
         {
           "name": "PerfilUsuario",
           "item": [

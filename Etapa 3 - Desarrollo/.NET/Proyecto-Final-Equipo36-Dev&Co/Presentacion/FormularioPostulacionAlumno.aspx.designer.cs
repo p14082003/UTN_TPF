@@ -13,6 +13,9 @@ namespace Presentacion
 
     public partial class FormularioPostulacionAlumno
     {
+        protected global::System.Web.UI.WebControls.Label lblMensaje;
+
+        protected global::System.Web.UI.WebControls.Panel pnlFormulario;
 
         /// <summary>
         /// Control lblInstitucion.
@@ -186,22 +189,13 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Button btnSubirDocumentos;
 
         /// <summary>
-        /// Control lnkEliminarDocumento1.
+        /// Control rptDocumentos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lnkEliminarDocumento1;
-
-        /// <summary>
-        /// Control lnkEliminarDocumento2.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lnkEliminarDocumento2;
+        protected global::System.Web.UI.WebControls.Repeater rptDocumentos;
 
         /// <summary>
         /// Control btnGuardar.

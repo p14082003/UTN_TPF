@@ -186,7 +186,7 @@
                         <asp:Label ID="lblDireccion" runat="server" CssClass="d-block"></asp:Label>
                     </div>
 
-                    <asp:Button ID="btnRegistrarAlumno" runat="server" CssClass="btn-lilaOscuro w-100" Text="Matricular"></asp:Button>
+                    <asp:HyperLink ID="btnRegistrarAlumno" runat="server" CssClass="btn btn-lilaOscuro w-100" Text="Matricular"></asp:HyperLink>
 
                 </div>
             </div>

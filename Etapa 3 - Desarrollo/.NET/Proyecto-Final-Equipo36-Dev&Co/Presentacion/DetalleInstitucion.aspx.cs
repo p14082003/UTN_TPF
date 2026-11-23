@@ -41,6 +41,8 @@ namespace Presentacion
                 }
 
                 CargarFicha(institucion);
+                btnRegistrarAlumno.NavigateUrl = "~/FormularioPostulacionAlumno.aspx?id=" + id +
+                    "&nombre=" + HttpUtility.UrlEncode(institucion.Nombre);
                 await Task.WhenAll(CargarReseniasAsync(id), CargarImagenesAsync(id));
                 pnlDetalle.Visible = true;
             }

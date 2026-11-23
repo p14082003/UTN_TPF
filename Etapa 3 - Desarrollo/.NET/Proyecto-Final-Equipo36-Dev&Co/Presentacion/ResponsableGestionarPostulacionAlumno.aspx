@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="ResponsableGestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.ResponsableGestionarPostulacionAlumno" %>
+﻿<%@ Page Title="Gestión de postulación" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ResponsableGestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.ResponsableGestionarPostulacionAlumno" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -18,6 +18,7 @@
 
                     <asp:Label ID="lblMensaje" runat="server" Visible="false" CssClass="d-block mb-4"></asp:Label>
 
+                    <asp:Panel ID="pnlDatos" runat="server" Visible="false">
                     <!-- Datos del alumno -->
                     <div class="d-flex align-items-center gap-4 mb-4">
                         <h2 class="text-indigo mb-0">
@@ -25,18 +26,19 @@
                         </h2>
                         <div class="flex-grow-1">
                             <h3 class="text-indigo fw-bold mb-0">
-                                <asp:Label ID="lblNombreCompleto" runat="server" Text="Martina González"></asp:Label>
+                                <asp:Label ID="lblNombreCompleto" runat="server"></asp:Label>
                             </h3>
-                            <asp:Label ID="lblDocumento" runat="server" Text="DNI: 42.123.456" CssClass="d-block fw-semibold text-secondary"></asp:Label>
+                            <asp:Label ID="lblDocumento" runat="server" CssClass="d-block fw-semibold text-secondary"></asp:Label>
                         </div>
                         <h3 class="mb-0">
-                            <asp:Label ID="lblEstado" runat="server" Text="Pendiente" CssClass="badge bg-lavanda rounded-pill px-4 py-2"></asp:Label>
+                            <asp:Label ID="lblEstado" runat="server" CssClass="badge bg-lavanda rounded-pill px-4 py-2"></asp:Label>
                         </h3>
                     </div>
                     <hr class="border-neutro mb-4" />
 
                     <!-- Datos de la postulación -->
                     <h4 class="text-indigo mb-4">Datos de la postulación</h4>
+                    <p>Código de seguimiento: <strong><asp:Literal ID="litCodigoSeguimiento" runat="server" Mode="Encode"></asp:Literal></strong></p>
 
                     <div class="row mb-4">
 
@@ -48,7 +50,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblAnioTitulo" runat="server" Text="Año" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblAnio" runat="server" Text="5º" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblAnio" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
@@ -61,7 +63,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblNivelTitulo" runat="server" Text="Nivel" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblNivel" runat="server" Text="5º" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblNivel" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
@@ -74,7 +76,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblNivelPersonalizadoTitulo" runat="server" Text="Nivel Personalizado" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblNivelPersonalizado" runat="server" Text="Kids" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblNivelPersonalizado" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
@@ -87,7 +89,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblDivisionTitulo" runat="server" Text="División" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblDivision" runat="server" Text="B" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblDivision" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
@@ -100,7 +102,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblFechaPostulacionTitulo" runat="server" Text="Fecha de postulación" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblFechaPostulacion" runat="server" Text="15/11/2026" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblFechaPostulacion" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +115,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblCicloLectivoTitulo" runat="server" Text="Ciclo Lectivo" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblCicloLectivo" runat="server" Text="2026" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblCicloLectivo" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </div>
@@ -126,7 +128,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblInstitucionTitulo" runat="server" Text="Institución" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblInstitucion" runat="server" Text="Instituto Tecnológico Mendoza" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblInstitucion" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </div>
@@ -139,7 +141,7 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblTurnoTitulo" runat="server" Text="Turno" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblTurno" runat="server" Text="Mañana" CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblTurno" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </div>
@@ -152,15 +154,17 @@
                                 </div>
                                 <div>
                                     <asp:Label ID="lblMotivoRechazoTitulo" runat="server" Text="Motivo de rechazo" CssClass="d-block text-secondary"></asp:Label>
-                                    <asp:Label ID="lblMotivoRechazo" runat="server" Text="El responsable no cargó la documentación completa." CssClass="d-block fw-bold text-indigo"></asp:Label>
+                                    <asp:Label ID="lblMotivoRechazo" runat="server" CssClass="d-block fw-bold text-indigo"></asp:Label>
                                 </div>
                             </div>
                         </asp:Panel>
                     </div>
                     <hr class="border-neutro mb-4" />
                     <!-- Botones según estado -->
-                    <asp:Button ID="btnConfirmar" runat="server" Text="Confirmar postulación" OnClick="btnConfirmar_Click" CssClass="btn btn-lilaOscuro w-100 mb-3" />
-                    <asp:Button ID="btnCancelarPostulacion" runat="server" Text="Cancelar postulación" OnClick="btnCancelarPostulacion_Click" CausesValidation="false" CssClass="btn btn-solid theme-danger w-100 mb-3" style="--bs-btn-padding-y: 14px; --bs-btn-border-radius: 15px;" />
+                    <asp:Label ID="lblVacantesAviso" runat="server" Visible="false" CssClass="alert alert-info d-block mb-3"></asp:Label>
+                    <asp:Button ID="btnConfirmar" runat="server" Visible="false" Text="Confirmar postulación" OnClick="btnConfirmar_Click" CssClass="btn btn-lilaOscuro w-100 mb-3" />
+                    <asp:Button ID="btnCancelarPostulacion" runat="server" Visible="false" Text="Cancelar postulación" OnClick="btnCancelarPostulacion_Click" CausesValidation="false" CssClass="btn btn-solid theme-danger w-100 mb-3" style="--bs-btn-padding-y: 14px; --bs-btn-border-radius: 15px;" />
+                    </asp:Panel>
                     <asp:Button ID="btnVolver" runat="server" Text="Volver al listado" OnClick="btnVolver_Click" CausesValidation="false" CssClass="btn btn-lilaClaro w-100" />
                 </div>
             </div>

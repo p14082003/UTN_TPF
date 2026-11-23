@@ -10,9 +10,10 @@ namespace Presentacion
             var usuario = UsuarioSesion.Obtener(Session);
             lnkIniciarSesion.Visible = usuario == null;
             pnlSesion.Visible = usuario != null;
-            lnkRegistrarAlumno.Visible = usuario != null &&
+            pnlMenuResponsable.Visible = usuario != null &&
                 usuario.IdTipoUsuario == UsuarioSesion.Responsable &&
                 usuario.IdResponsable.GetValueOrDefault() > 0;
+            lnkRegistrarAlumno.Visible = pnlMenuResponsable.Visible;
             pnlMenuAdmin.Visible = usuario != null &&
                 usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion &&
                 usuario.IdInstitucion.GetValueOrDefault() > 0;

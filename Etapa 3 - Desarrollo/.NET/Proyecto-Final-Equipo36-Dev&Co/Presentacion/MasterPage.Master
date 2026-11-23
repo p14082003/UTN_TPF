@@ -30,8 +30,12 @@
                     <img src="Imagenes/Logo.png" alt="InstiRed" height="60" />
                 </a>
 
-                <asp:HyperLink ID="lnkRegistrarAlumno" runat="server" NavigateUrl="~/RegistroAlumno.aspx"
-                    CssClass="btn btn-sm btn-lilaClaro px-3 py-2 me-auto ms-3" Text="Registrar alumno" Visible="false" />
+                <asp:Panel ID="pnlMenuResponsable" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2 me-auto ms-3">
+                    <asp:HyperLink ID="lnkRegistrarAlumno" runat="server" NavigateUrl="~/RegistroAlumno.aspx"
+                        CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Registrar alumno" Visible="false" />
+                    <asp:HyperLink ID="lnkMisPostulaciones" runat="server" NavigateUrl="~/ListadoPostulacionAlumnos.aspx"
+                        CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Mis postulaciones" />
+                </asp:Panel>
 
                 <!-- Menú del administrador de institución -->
                 <asp:Panel ID="pnlMenuAdmin" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2 me-auto ms-3">

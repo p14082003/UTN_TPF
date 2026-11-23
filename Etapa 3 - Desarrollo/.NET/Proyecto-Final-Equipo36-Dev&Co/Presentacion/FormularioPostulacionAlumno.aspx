@@ -39,6 +39,8 @@
             </h5>
         </div>
 
+        <asp:Label ID="lblMensaje" runat="server" Visible="false"></asp:Label>
+        <asp:Panel ID="pnlFormulario" runat="server">
         <!-- CURSO -->
         <div class="row m-4">
             <div class="col">
@@ -129,6 +131,7 @@
                     <div class="mb-4">
                         <asp:Label ID="lblAlumno" runat="server" Text="Alumno a cargo" CssClass="form-label fw-semibold"></asp:Label>
                         <asp:DropDownList ID="ddlAlumnos" runat="server" CssClass="form-control" required="required"></asp:DropDownList>
+                        <a href="RegistroAlumno.aspx" class="link-lilaClaro d-inline-block mt-2">Registrar un alumno</a>
                     </div>
 
                 </div>
@@ -146,24 +149,24 @@
                     </h4>
 
                     <!-- CARGA DE DOCUMENTOS -->
-                    <asp:Label ID="lblDocumentos" runat="server" Text="Documentos de la postulación (PDF, JPG o PNG, hasta 6 MB cada uno)" CssClass="form-label fw-semibold mb-5"></asp:Label>
+                    <asp:Label ID="lblDocumentos" runat="server" Text="Documentos de la postulación (PDF, JPG o PNG, hasta 5 MB cada uno y 19 MB en total)" CssClass="form-label fw-semibold mb-3"></asp:Label>
+                    <p class="text-secondary small">Usá nombres claros, como “DNI del alumno”: el nombre del archivo será su descripción. Presioná “Subir documentos” para conservarlos antes de cambiar el curso.</p>
                     <div class="d-flex align-items-start gap-4 mb-4">
                         <asp:FileUpload ID="fuDocumentos" runat="server" CssClass="form-control" AllowMultiple="true" accept=".pdf,.jpg,.jpeg,.png" />
-                        <asp:Button ID="btnSubirDocumentos" runat="server" CssClass="btn-lilaOscuro flex-shrink-0" Text="Subir documentos" CausesValidation="false"></asp:Button>
+                        <asp:Button ID="btnSubirDocumentos" runat="server" CssClass="btn-lilaOscuro flex-shrink-0" Text="Subir documentos" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btnSubirDocumentos_Click"></asp:Button>
                     </div>
 
                     <!-- DOCUMENTOS CARGADOS -->
                     <div class="d-flex flex-wrap gap-4">
-                        <div class="btn btn-lilaClaro">
-                            <i class="bi bi-file-earmark-text me-1"></i>
-                            DNI del alumno
-                            <asp:LinkButton ID="lnkEliminarDocumento1" runat="server" CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
-                        </div>
-                        <div class="btn btn-lilaClaro">
-                            <i class="bi bi-file-earmark-text me-1"></i>
-                            Partida de nacimiento
-                            <asp:LinkButton ID="lnkEliminarDocumento2" runat="server" CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
-                        </div>
+                        <asp:Repeater ID="rptDocumentos" runat="server" OnItemCommand="rptDocumentos_ItemCommand">
+                            <ItemTemplate>
+                                <div class="btn btn-lilaClaro">
+                                    <i class="bi bi-file-earmark-text me-1"></i>
+                                    <%#: Eval("Descripcion") %>
+                                    <asp:LinkButton ID="lnkEliminarDocumento" runat="server" CausesValidation="false" CommandName="Eliminar" CommandArgument='<%# Container.ItemIndex %>' ToolTip="Quitar documento" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
 
                 </div>
@@ -173,12 +176,15 @@
         <!-- BOTON PARA GUARDAR DATOS -->
         <div class="row m-4">
             <div class="col">
-                <asp:Button ID="btnGuardar" runat="server" Text="Enviar postulación" CssClass="btn btn-lilaOscuro w-100 mb-4" />
+                <asp:Button ID="btnGuardar" runat="server" Text="Enviar postulación" CssClass="btn btn-lilaOscuro w-100 mb-4" OnClick="btnGuardar_Click" />
+            </div>
+        </div>
+        </asp:Panel>
+        <div class="m-4">
                 <p class="text-center text-secondary small">
                     ¿Querés elegir otra institución?
-                    <a href="#" class="link-lilaClaro">Volver a la búsqueda</a>
+                    <a href="ListadoInstituciones.aspx" class="link-lilaClaro">Volver a la búsqueda</a>
                 </p>
-            </div>
         </div>
     </div>
 

@@ -13,6 +13,11 @@ namespace Presentacion
 
     public partial class ResponsableGestionarPostulacionAlumno
     {
+        protected global::System.Web.UI.WebControls.Panel pnlDatos;
+
+        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
+
+        protected global::System.Web.UI.WebControls.Label lblVacantesAviso;
 
         /// <summary>
         /// Control lblMensaje.
