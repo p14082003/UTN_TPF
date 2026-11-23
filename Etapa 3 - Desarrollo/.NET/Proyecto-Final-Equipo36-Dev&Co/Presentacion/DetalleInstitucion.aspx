@@ -290,6 +290,14 @@
                         </ItemTemplate>
                     </asp:Repeater>
 
+                    <asp:Panel ID="pnlPaginacionResenias" runat="server" Visible="false" CssClass="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3" role="navigation" aria-label="Páginas de reseñas">
+                        <asp:LinkButton ID="btnReseniasAnterior" runat="server" Text="Anterior" CausesValidation="false"
+                            CssClass="btn btn-sm btn-lilaClaro" OnClick="btnReseniasAnterior_Click" />
+                        <asp:Label ID="lblPaginaResenias" runat="server" CssClass="text-indigo small" aria-live="polite" />
+                        <asp:LinkButton ID="btnReseniasSiguiente" runat="server" Text="Siguiente" CausesValidation="false"
+                            CssClass="btn btn-sm btn-lilaClaro" OnClick="btnReseniasSiguiente_Click" />
+                    </asp:Panel>
+
                     <asp:Panel ID="pnlSinResenias" runat="server" Visible="false">
                         <p class="text-muted mb-0">Todavía no hay reseñas. ¡Sé el primero en opinar!</p>
                     </asp:Panel>

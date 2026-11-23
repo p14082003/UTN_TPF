@@ -21,6 +21,13 @@ namespace Presentacion
         protected string DescripcionFotoUnica { get; private set; }
         private int idInstitucion;
         private UsuarioSesion usuario;
+        private const int ReseniasPorPagina = 10;
+
+        private int PaginaResenias
+        {
+            get { return (int?)ViewState["PaginaResenias"] ?? 0; }
+            set { ViewState["PaginaResenias"] = value; }
+        }
 
         protected void Page_Init(object sender, EventArgs e)
         {
@@ -109,11 +116,18 @@ namespace Presentacion
         private async Task CargarReseniasAsync(int id)
         {
             var resenias = await InstiRedApi.GetAsync<List<ReseniaApi>>("vw/ValoracionesPorInstitucion?idInstitucion=" + id);
+            int totalPaginas = Math.Max(1, (resenias.Count + ReseniasPorPagina - 1) / ReseniasPorPagina);
+            PaginaResenias = Math.Max(0, Math.Min(PaginaResenias, totalPaginas - 1));
             rptResenias.DataSource = resenias
                 .OrderByDescending(resenia => PuedeEliminarResenia(resenia.IdResponsable))
                 .ThenByDescending(resenia => resenia.Fecha)
-                .ThenByDescending(resenia => resenia.IdResenia);
+                .ThenByDescending(resenia => resenia.IdResenia)
+                .Skip(PaginaResenias * ReseniasPorPagina).Take(ReseniasPorPagina);
             rptResenias.DataBind();
+            pnlPaginacionResenias.Visible = totalPaginas > 1;
+            btnReseniasAnterior.Enabled = PaginaResenias > 0;
+            btnReseniasSiguiente.Enabled = PaginaResenias < totalPaginas - 1;
+            lblPaginaResenias.Text = "Página " + (PaginaResenias + 1) + " de " + totalPaginas;
             pnlSinResenias.Visible = resenias.Count == 0;
             bool yaPublico = usuario != null && usuario.IdResponsable.HasValue &&
                 resenias.Any(r => r.IdResponsable == usuario.IdResponsable.Value);
@@ -124,6 +138,16 @@ namespace Presentacion
         protected void btnReseña_Click(object sender, EventArgs e)
         {
             RegisterAsyncTask(new PageAsyncTask(AbrirReseniaAsync));
+        }
+
+        protected void btnReseniasAnterior_Click(object sender, EventArgs e)
+        {
+            PaginaResenias = Math.Max(0, PaginaResenias - 1);
+        }
+
+        protected void btnReseniasSiguiente_Click(object sender, EventArgs e)
+        {
+            PaginaResenias++;
         }
 
         protected bool PuedeEliminarResenia(int idResponsable)
@@ -163,6 +187,7 @@ namespace Presentacion
                     "?idResponsable=" + usuario.IdResponsable.Value);
                 if (respuesta.Estado == HttpStatusCode.OK)
                 {
+                    PaginaResenias = 0;
                     await CargarDetalleAsync(idInstitucion);
                     if (pnlDetalle.Visible)
                     {
@@ -265,6 +290,7 @@ namespace Presentacion
                     pnlFormularioResenia.Visible = false;
                     txtComentarioResenia.Text = "";
                     ddlCalificacion.SelectedIndex = 0;
+                    PaginaResenias = 0;
                     await CargarDetalleAsync(idInstitucion);
                     if (pnlDetalle.Visible)
                     {

@@ -48,16 +48,19 @@
         <!-- ENCABEZADO -->
         <div class="m-4">
             <h1 class="text-indigo fw-bold text-center">
-                Registra tu institución educativa
+                <%: EsEdicion ? "Gestionar tu institución educativa" : "Registra tu institución educativa" %>
             </h1>
+            <% if (!EsEdicion) { %>
             <h5 class="text-center">
                 Creá el perfil oficial de tu colegio o instituto para que miles
                 de familias encuentren tu propuesta pedagógica y gestionen
                 admisiones de forma ágil y segura.
             </h5>
+            <% } %>
         </div>
 
         <!-- BENEFICIOS -->
+        <% if (!EsEdicion) { %>
         <div class="row m-4">
 
             <h3 class="text-indigo text-center my-4">
@@ -105,6 +108,8 @@
             </div>
 
         </div>
+
+        <% } %>
 
         <!-- DATOS LEGALES E IDENTIFICACIÓN -->
         <div class="row m-4">

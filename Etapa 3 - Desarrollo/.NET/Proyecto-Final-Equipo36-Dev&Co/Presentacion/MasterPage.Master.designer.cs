@@ -13,6 +13,8 @@ namespace Presentacion
 
     public partial class Site1
     {
+        protected global::System.Web.UI.WebControls.HyperLink lnkMiInstitucion;
+
         protected global::System.Web.UI.WebControls.Panel pnlMenuResponsable;
 
         protected global::System.Web.UI.WebControls.HyperLink lnkMisPostulaciones;

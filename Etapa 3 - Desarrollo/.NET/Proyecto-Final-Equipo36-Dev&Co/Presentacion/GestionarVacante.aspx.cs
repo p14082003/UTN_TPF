@@ -143,6 +143,7 @@ namespace Presentacion
             int idNivel = int.Parse(ddlNivel.SelectedValue);
             var vista = cursos.Where(c => c.CicloLectivo == ciclo && (idNivel == 0 || c.IdNivel == idNivel))
                 .OrderBy(c => c.NombreCurso).ToList();
+            dgvCursos.PageIndex = Math.Min(dgvCursos.PageIndex, Math.Max(0, (vista.Count - 1) / dgvCursos.PageSize));
             dgvCursos.DataSource = vista;
             dgvCursos.DataBind();
             lblTotalCursos.Text = vista.Count.ToString();
@@ -152,6 +153,13 @@ namespace Presentacion
 
         protected void Filtro_SelectedIndexChanged(object sender, EventArgs e)
         {
+            dgvCursos.PageIndex = 0;
+            Ejecutar(CargarListadoAsync);
+        }
+
+        protected void dgvCursos_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvCursos.PageIndex = e.NewPageIndex;
             Ejecutar(CargarListadoAsync);
         }
 
@@ -340,6 +348,7 @@ namespace Presentacion
             btnGuardarCurso.Enabled = false;
             ddlCicloLectivo.SelectedValue = ciclo.ToString();
             ddlNivel.SelectedValue = "0";
+            dgvCursos.PageIndex = 0;
             await VolverAlListadoAsync();
             MostrarMensaje("Curso creado correctamente.", true);
         }

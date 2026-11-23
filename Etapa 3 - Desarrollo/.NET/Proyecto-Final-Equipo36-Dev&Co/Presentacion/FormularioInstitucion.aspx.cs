@@ -26,6 +26,15 @@ namespace Presentacion
         private const int tamañoMaximo = 5 * 1024 * 1024;
         private const string carpetaImagenes = "~/Imagenes/Instituciones/";
 
+        protected bool EsEdicion
+        {
+            get
+            {
+                return (institucion != null && institucion.Id > 0) ||
+                    (usuario != null && usuario.IdInstitucion.GetValueOrDefault() > 0);
+            }
+        }
+
         public string institucionJson
         {
             get

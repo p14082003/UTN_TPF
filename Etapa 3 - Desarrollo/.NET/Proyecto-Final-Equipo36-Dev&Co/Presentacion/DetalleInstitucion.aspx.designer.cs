@@ -159,6 +159,14 @@ namespace Presentacion
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptResenias;
 
+        protected global::System.Web.UI.WebControls.Panel pnlPaginacionResenias;
+
+        protected global::System.Web.UI.WebControls.LinkButton btnReseniasAnterior;
+
+        protected global::System.Web.UI.WebControls.Label lblPaginaResenias;
+
+        protected global::System.Web.UI.WebControls.LinkButton btnReseniasSiguiente;
+
         /// <summary>
         /// Control pnlSinResenias.
         /// </summary>

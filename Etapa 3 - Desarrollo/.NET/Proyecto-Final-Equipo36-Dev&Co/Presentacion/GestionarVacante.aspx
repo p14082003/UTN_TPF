@@ -89,9 +89,11 @@
                 <div class="table-responsive">
                     <asp:GridView ID="dgvCursos" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" DataKeyNames="Id"
+                        AllowPaging="true" PageSize="25" OnPageIndexChanging="dgvCursos_PageIndexChanging"
                         EmptyDataText="No hay cursos para mostrar con este filtro.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
+                        <PagerStyle CssClass="text-indigo" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="NombreCurso" HeaderText="Curso" />
                             <asp:BoundField DataField="CicloLectivo" HeaderText="Año calendario" />

@@ -94,8 +94,10 @@ namespace Presentacion
                 filtradas = resenias.Where(r => r.RespuestaInstitucion != null);
             }
 
-            dgvResenias.DataSource = filtradas.OrderByDescending(r => r.Fecha)
+            var vista = filtradas.OrderByDescending(r => r.Fecha)
                 .ThenByDescending(r => r.IdResenia).ToList();
+            dgvResenias.PageIndex = Math.Min(dgvResenias.PageIndex, Math.Max(0, (vista.Count - 1) / dgvResenias.PageSize));
+            dgvResenias.DataSource = vista;
             dgvResenias.DataBind();
 
             int total = resenias.Count;
@@ -108,6 +110,13 @@ namespace Presentacion
 
         protected void Filtro_SelectedIndexChanged(object sender, EventArgs e)
         {
+            dgvResenias.PageIndex = 0;
+            Ejecutar(CargarListadoAsync);
+        }
+
+        protected void dgvResenias_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvResenias.PageIndex = e.NewPageIndex;
             Ejecutar(CargarListadoAsync);
         }
 
