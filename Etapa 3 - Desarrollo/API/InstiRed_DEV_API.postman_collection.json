@@ -2198,6 +2198,61 @@
           ]
         },
         {
+          "name": "RecuperarClave",
+          "item": [
+            {
+              "name": "Generar nueva contraseña",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"responsable.prueba@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RecuperarClave",
+                "description": "Valida una cuenta activa con sp_Olvide_Clave, genera una contraseña criptográfica de 12 caracteres y guarda su hash mediante sp_Actualizar_Clave. Devuelve idUsuario, email, nombre, apellido y nuevaClaveGenerada para que la WebApp envíe el correo desde el servidor. La API no envía el correo. Cada llamada reemplaza la contraseña: repetir la solicitud genera otra y solo sirve la última. Usar una cuenta de prueba."
+              },
+              "response": []
+            },
+            {
+              "name": "Correo inválido",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"correo-invalido\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/sp/RecuperarClave",
+                "description": "Debe devolver HTTP 400 sin cambiar ninguna contraseña. Los correos inexistentes o las cuentas inactivas también se rechazan sin actualizar la clave."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "RegistrarAlumno",
           "item": [
             {

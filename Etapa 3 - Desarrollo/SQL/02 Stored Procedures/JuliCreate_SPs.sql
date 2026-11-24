@@ -1173,6 +1173,8 @@ DELIMITER ;
 
 -- ---------------------------------------------
 -- sp_Olvide_Clave
+-- Valida la cuenta y devuelve los datos para el correo.
+-- La API genera la nueva contraseña con un generador criptográfico.
 -- ---------------------------------------------
 DELIMITER $$
 
@@ -1183,16 +1185,9 @@ IN p_email          VARCHAR (100)
 )
 BEGIN
 	
-    -- Declaramos los conjuntos de caracteres posibles para nueva clave autogenerada.
-	DECLARE v_nueva_clave           VARCHAR (8)DEFAULT '';
-    DECLARE v_mayusculas            VARCHAR(26) DEFAULT 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    DECLARE v_minusculas            VARCHAR(26) DEFAULT 'abcdefghijklmnopqrstuvwxyz';
-    DECLARE v_caracteres_especiales  VARCHAR(9) DEFAULT '!@#$%*-_+';
-    DECLARE v_numeros               VARCHAR(10) DEFAULT '0123456789';
-    DECLARE v_todos_los_caracteres  VARCHAR(71);
     DECLARE v_idUsuario             INT;
- 
-    SET v_todos_los_caracteres = CONCAT(v_mayusculas,v_minusculas,v_caracteres_especiales,v_numeros);
+
+    SET p_email = LOWER(TRIM(p_email));
     
     -- validamos que el email no sea null o vacío
     IF p_email IS NULL OR TRIM(p_email) = '' THEN 
@@ -1214,19 +1209,8 @@ BEGIN
     END IF;
     
     SELECT id INTO v_idUsuario FROM Usuarios WHERE email = p_email;
-    -- generamos nueva clave con formato válido
-		-- Elegimos una mayuscula, una minúscula, un nùumero y un sìmbolo. 
-        SET v_nueva_clave = CONCAT(SUBSTRING(v_mayusculas, FLOOR(1+RAND() *26),1),
-								   SUBSTRING(v_minusculas, FLOOR(1+RAND() *26),1),
-                                   SUBSTRING(v_numeros, FLOOR(1+RAND() *10),1),
-                                   SUBSTRING(v_caracteres_especiales, FLOOR(1+RAND() *9),1),
-                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
-                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
-                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
-                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1));
-                                   
-        -- Devolvemos la contraseña creada y aprovechamos para devolver nombre , apellido y idUsuario
-		SELECT v_nueva_clave AS NuevaClaveGenerada, COALESCE(p_resp.nombre, p_admin.nombre) AS Nombre, COALESCE(p_resp.apellido, p_admin.apellido) AS Apellido, u.id AS IdUsuario
+        -- La clave solo se genera y hashea en la API; no se guarda en texto plano.
+		SELECT u.email AS Email, COALESCE(p_resp.nombre, p_admin.nombre) AS Nombre, COALESCE(p_resp.apellido, p_admin.apellido) AS Apellido, u.id AS IdUsuario
 		FROM Usuarios u LEFT JOIN Responsables r ON r.idUsuario = u.id
 						LEFT JOIN Personas p_resp ON p_resp.id = r.idPersona
                         LEFT JOIN AdministradoresInstitucion ai ON ai.idUsuario = u.id
@@ -1283,7 +1267,10 @@ BEGIN
     
     START TRANSACTION;
 
-    UPDATE Usuarios SET clave = p_clave WHERE id = p_idUsuario;
+    UPDATE Usuarios SET clave = p_clave WHERE id = p_idUsuario AND activo = TRUE;
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta ya no está activa para recuperar la contraseña.';
+    END IF;
     
     COMMIT;
                                    

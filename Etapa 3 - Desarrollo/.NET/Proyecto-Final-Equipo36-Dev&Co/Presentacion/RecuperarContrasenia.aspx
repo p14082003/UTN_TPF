@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="RecuperarContrasenia.aspx.cs" Inherits="Presentacion.RecuperarContrasenia" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" Async="true" CodeBehind="RecuperarContrasenia.aspx.cs" Inherits="Presentacion.RecuperarContrasenia" %>
 
 <!DOCTYPE html>
 
@@ -37,6 +37,7 @@
                                     Ingresá tu correo electrónico y te enviaremos
                                     las credenciales para recuperar tu cuenta.
                                 </p>
+                                <p class="small text-muted">Cada solicitud reemplaza tu contraseña. Si solicitás varias, solo sirve la clave de la última solicitud.</p>
                             </div>
 
                             <%-- Correo electrónico --%>
