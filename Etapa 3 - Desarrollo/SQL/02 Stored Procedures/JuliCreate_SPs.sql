@@ -1170,3 +1170,123 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ---------------------------------------------
+-- sp_Olvide_Clave
+-- ---------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_Olvide_Clave$$
+
+CREATE PROCEDURE sp_Olvide_Clave(
+IN p_email          VARCHAR (100)
+)
+BEGIN
+	
+    -- Declaramos los conjuntos de caracteres posibles para nueva clave autogenerada.
+	DECLARE v_nueva_clave           VARCHAR (8)DEFAULT '';
+    DECLARE v_mayusculas            VARCHAR(26) DEFAULT 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    DECLARE v_minusculas            VARCHAR(26) DEFAULT 'abcdefghijklmnopqrstuvwxyz';
+    DECLARE v_caracteres_especiales  VARCHAR(9) DEFAULT '!@#$%*-_+';
+    DECLARE v_numeros               VARCHAR(10) DEFAULT '0123456789';
+    DECLARE v_todos_los_caracteres  VARCHAR(71);
+    DECLARE v_idUsuario             INT;
+ 
+    SET v_todos_los_caracteres = CONCAT(v_mayusculas,v_minusculas,v_caracteres_especiales,v_numeros);
+    
+    -- validamos que el email no sea null o vacío
+    IF p_email IS NULL OR TRIM(p_email) = '' THEN 
+		SIGNAL SQLSTATE '45000'  SET MESSAGE_TEXT = 'El email es un campo obligatorio.';
+    END IF;
+    
+    -- validamos que el email ingresado tenga formato válido
+    IF p_email NOT LIKE '%_@_%._%' THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email no tiene un formato válido.';
+    END IF;
+    
+    -- validamos que el mail exista 
+    IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE email = p_email) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El email ingresado no se encuentra registrado.';
+    END IF;
+    -- validamos que el usuario este activo 
+    IF NOT EXISTS(SELECT 1 FROM Usuarios WHERE activo = TRUE AND email = p_email) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta se encuentra inactiva. Para activarla y recibir credenciales de acceso debe contacatrse con DEV&CO';
+    END IF;
+    
+    SELECT id INTO v_idUsuario FROM Usuarios WHERE email = p_email;
+    -- generamos nueva clave con formato válido
+		-- Elegimos una mayuscula, una minúscula, un nùumero y un sìmbolo. 
+        SET v_nueva_clave = CONCAT(SUBSTRING(v_mayusculas, FLOOR(1+RAND() *26),1),
+								   SUBSTRING(v_minusculas, FLOOR(1+RAND() *26),1),
+                                   SUBSTRING(v_numeros, FLOOR(1+RAND() *10),1),
+                                   SUBSTRING(v_caracteres_especiales, FLOOR(1+RAND() *9),1),
+                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
+                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
+                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1),
+                                   SUBSTRING(v_todos_los_caracteres, FLOOR(1+RAND() *71),1));
+                                   
+        -- Devolvemos la contraseña creada y aprovechamos para devolver nombre , apellido y idUsuario
+		SELECT v_nueva_clave AS NuevaClaveGenerada, COALESCE(p_resp.nombre, p_admin.nombre) AS Nombre, COALESCE(p_resp.apellido, p_admin.apellido) AS Apellido, u.id AS IdUsuario
+		FROM Usuarios u LEFT JOIN Responsables r ON r.idUsuario = u.id
+						LEFT JOIN Personas p_resp ON p_resp.id = r.idPersona
+                        LEFT JOIN AdministradoresInstitucion ai ON ai.idUsuario = u.id
+                        LEFT JOIN Personas p_admin ON p_admin.id = ai.idPersona WHERE u.id = v_idUsuario;
+
+END$$
+
+DELIMITER ;
+
+-- ---------------------------------------------
+-- sp_Actualizar_Clave
+-- recibe la contraseña hasheada y la updatea en la bd
+-- ---------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_Actualizar_Clave$$
+
+CREATE PROCEDURE sp_Actualizar_Clave(
+IN p_clave          TEXT,
+IN p_idUsuario      INT
+)
+BEGIN
+	
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+		RESIGNAL;
+	END;
+	
+    
+    -- validamos que el clave no sea null o vacío
+    IF p_clave IS NULL OR TRIM(p_clave) = '' THEN 
+		SIGNAL SQLSTATE '45000'  SET MESSAGE_TEXT = 'La clave es un campo obligatorio.';
+    END IF;
+    
+    -- validamos la longitud de la clave hasheada 
+    IF CHAR_LENGTH(p_clave) > 255 THEN 
+		SIGNAL SQLSTATE '45000'  SET MESSAGE_TEXT = 'La longitud de la clave no es válido.';
+    END IF;
+    
+    IF p_idUsuario IS NULL OR p_idUsuario <= 0 THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El identificador del usuario no es válido.';
+	END IF;
+    
+    -- validamos que el usuario exista 
+    IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE id = p_idUsuario) THEN 
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario inexistente';
+    END IF;
+    
+    -- validamos que el usuario este activo 
+    IF NOT EXISTS(SELECT 1 FROM Usuarios WHERE activo = TRUE AND id = p_idUsuario) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta se encuentra inactiva. Para activarla y recibir credenciales de acceso debe contacatrse con DEV&CO';
+    END IF;
+    
+    START TRANSACTION;
+
+    UPDATE Usuarios SET clave = p_clave WHERE id = p_idUsuario;
+    
+    COMMIT;
+                                   
+END$$
+
+DELIMITER ;

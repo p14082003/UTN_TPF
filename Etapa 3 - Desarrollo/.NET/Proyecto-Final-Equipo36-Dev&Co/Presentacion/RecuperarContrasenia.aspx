@@ -46,12 +46,12 @@
 
                             <%-- Mensaje de respuesta --%>
                             <div class="col-12">
-                                <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger d-block mb-3"  role="alert" Visible="false" />
+                                <asp:Label ID="lblMensaje" runat="server" Visible="false" CssClass="d-block mb-4"></asp:Label>
                             </div>
 
-                            <%-- Enviar enlace --%>
+                            <%-- Enviar email nueva clave --%>
                             <div class="input-group mb-3">
-                                <asp:Button CssClass="btn-lilaOscuro w-100 fs-6" ID="btnEnviarCredenciales" runat="server" Text="Enviar credenciales"/>
+                                <asp:Button CssClass="btn-lilaOscuro w-100 fs-6" ID="btnEnviarCredenciales" runat="server" OnClick="btnEnviarCredenciales_Click" Text="Enviar credenciales"/>
                             </div>
 
                             <%-- Volver al login --%>
