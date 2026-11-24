@@ -24,19 +24,126 @@
             color: #FFFFFF !important;
         }
 
-        .idioma-y-botones {
+        .filtros-principales {
             display: grid;
-            grid-template-columns:
-                minmax(0, 1fr)
-                min(2rem, 12%)
-                min(7.5rem, 30%);
-            gap: min(0.875rem, 4%);
+            grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+            align-items: end;
+            gap: 1rem;
         }
 
-        .btn-limpiar-filtros {
-            padding: 0;
-            font-size: 1.35rem;
-            line-height: 1;
+        .filtros-secundarios {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .filtros-instituciones {
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        .filtros-instituciones label, .orden-instituciones label {
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .filtros-instituciones .form-control,
+        .filtros-instituciones select,
+        .orden-instituciones select {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            height: 2.75rem;
+            padding: 0.625rem 0.875rem;
+            font: inherit;
+            line-height: 1.25;
+            color: #373A72;
+            background-color: #FFFFFF;
+            border: 1px solid #E4E0F0;
+            border-radius: 15px;
+            box-shadow: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filtros-instituciones select,
+        .orden-instituciones select {
+            appearance: none;
+            padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='%23373A72' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.875rem center;
+            background-size: 1rem;
+            cursor: pointer;
+        }
+
+        .filtros-instituciones .form-control:focus,
+        .filtros-instituciones select:focus,
+        .orden-instituciones select:focus {
+            outline: none;
+            border-color: #8D91D5;
+            box-shadow: 0 0 0 3px rgb(141 145 213 / 20%);
+        }
+
+        .acciones-busqueda .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.75rem;
+            padding: 0.625rem 1rem;
+        }
+
+        .estado-busqueda { display: block; margin-top: 0.5rem; }
+        .estado-busqueda:empty { display: none; }
+
+        .acciones-busqueda, .barra-resultados, .orden-instituciones {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .filtros-instituciones summary {
+            color: #373A72;
+            font-weight: 600;
+            cursor: pointer;
+            width: fit-content;
+        }
+
+        .filtro-vacantes {
+            display: flex;
+            align-items: center;
+            min-height: 2.75rem;
+        }
+
+        .filtro-vacantes input { margin-right: 0.5rem; accent-color: #373A72; }
+        .filtro-vacantes label { display: inline; margin: 0; }
+        .filtros-instituciones select:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 1; }
+        .barra-resultados { justify-content: space-between; margin-bottom: 1rem; }
+        .orden-instituciones label { margin: 0; white-space: nowrap; }
+        .orden-instituciones select { width: auto; }
+
+        .resultados-instituciones {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .lista-instituciones { overflow-y: auto; min-height: 0; }
+
+        @media (max-width: 991px) {
+            .filtros-principales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .acciones-busqueda { grid-column: 1 / -1; }
+            .filtros-secundarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 600px) {
+            .filtros-principales, .filtros-secundarios { grid-template-columns: minmax(0, 1fr); }
+            .resultados-instituciones { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(12rem, 1fr) minmax(10rem, 0.7fr); }
         }
 
        * {
@@ -48,34 +155,85 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
-    <div class="container-fluid d-flex flex-column h-100 p-4">
+    <div id="busquedaInstituciones" class="container-fluid d-flex flex-column h-100 p-4"
+        data-listado-url="<%= ResolveUrl("~/ListadoInstituciones.aspx") %>" data-avanzados-id="<%= hfFiltrosAvanzados.ClientID %>">
 
         <!-- FILTROS -->
-        <div class="card flex-shrink-0 p-4">
-            <div class="row">
-                <div class="col-4">
-                    <asp:TextBox runat="server" ID="txtFiltro" placeholder="Busqueda avanzada" CssClass="form-control h-100 w-100"></asp:TextBox>
+        <div class="card flex-shrink-0 p-4 filtros-instituciones">
+            <div class="filtros-principales">
+                <div>
+                    <label for="<%= txtFiltro.ClientID %>" class="text-indigo">Buscar institución</label>
+                    <asp:TextBox runat="server" ID="txtFiltro" MaxLength="150" placeholder="Nombre o dirección" CssClass="form-control w-100" data-parametro="texto" />
                 </div>
-                <div class="col-3">
-                    <asp:DropDownList runat="server" ID="ddlDiscapacidades" CssClass="form-control h-100 w-100">
-                        <asp:ListItem Value="0">Todas las discapacidades</asp:ListItem>
+                <div>
+                    <label for="<%= ddlOfertaEducativa.ClientID %>" class="text-indigo">Oferta educativa</label>
+                    <asp:DropDownList ID="ddlOfertaEducativa" runat="server" CssClass="form-select w-100" data-parametro="oferta" OnSelectedIndexChanged="OfertaEducativa_SelectedIndexChanged">
+                        <asp:ListItem Value="0">Todas las ofertas</asp:ListItem>
                     </asp:DropDownList>
                 </div>
-                <div class="col-5 idioma-y-botones">
-                    <asp:DropDownList runat="server" ID="ddlIdiomas" CssClass="form-control h-100 w-100" AppendDataBoundItems="true">
-                        <asp:ListItem Value="0">Todos los idiomas</asp:ListItem>
-                    </asp:DropDownList>
-                    <a href="ListadoInstituciones.aspx" class="btn-lilaOscuro-invertido btn-limpiar-filtros d-flex align-items-center justify-content-center text-decoration-none" title="Limpiar filtros" aria-label="Limpiar filtros">X</a>
-                    <asp:Button runat="server" ID="btnFiltrar" CssClass="btn-lilaOscuro h-100 w-100 px-0" Text="Filtrar" />
+                <div class="acciones-busqueda">
+                    <asp:Button runat="server" ID="btnFiltrar" CssClass="btn btn-lilaOscuro px-4" Text="Filtrar" data-filtrar="true" />
+                    <a href="ListadoInstituciones.aspx" class="btn btn-lilaClaro text-decoration-none" data-limpiar="true">Limpiar filtros</a>
                 </div>
             </div>
+            <span id="estadoBusqueda" class="estado-busqueda small text-indigo" role="status" aria-live="polite"></span>
+            <asp:HiddenField ID="hfFiltrosAvanzados" runat="server" Value="false" />
+            <details id="filtrosAvanzados" class="mt-3" <%= hfFiltrosAvanzados.Value == "true" ? "open" : "" %>>
+                <summary>Más filtros</summary>
+                <div class="filtros-secundarios">
+                    <div>
+                        <label for="<%= ddlAnio.ClientID %>" class="text-indigo">Sala / grado / año</label>
+                        <asp:DropDownList ID="ddlAnio" runat="server" CssClass="form-select w-100" Enabled="false" data-parametro="anio">
+                            <asp:ListItem Value="0">Elegí un nivel escolar</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div>
+                        <label for="<%= ddlCicloLectivo.ClientID %>" class="text-indigo">Ciclo lectivo</label>
+                        <asp:DropDownList ID="ddlCicloLectivo" runat="server" CssClass="form-select w-100" data-parametro="cicloLectivo">
+                            <asp:ListItem Value="0">Actual o próximo</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div>
+                        <label for="<%= ddlTurno.ClientID %>" class="text-indigo">Turno</label>
+                        <asp:DropDownList ID="ddlTurno" runat="server" CssClass="form-select w-100" data-parametro="idTurno">
+                            <asp:ListItem Value="0">Todos los turnos</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div>
+                        <label for="<%= ddlIdiomas.ClientID %>" class="text-indigo">Idioma</label>
+                        <asp:DropDownList runat="server" ID="ddlIdiomas" CssClass="form-select w-100" AppendDataBoundItems="true" data-parametro="idIdioma">
+                            <asp:ListItem Value="0">Todos los idiomas</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div>
+                        <label for="<%= ddlDiscapacidades.ClientID %>" class="text-indigo">Inclusión y accesibilidad</label>
+                        <asp:DropDownList runat="server" ID="ddlDiscapacidades" CssClass="form-select w-100" data-parametro="accesibilidad">
+                            <asp:ListItem Value="0">Sin filtro de accesibilidad</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div class="filtro-vacantes" data-vacantes="true">
+                        <asp:CheckBox ID="chkSoloConVacantes" runat="server" Text="Solo con vacantes disponibles" />
+                    </div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">El grado, ciclo, turno y las vacantes se buscan juntos en un mismo curso.</p>
+            </details>
         </div>
         
         <!-- LISTADO + MAPA -->
-        <div class="card flex-grow-1 min-h-0 p-4 mt-4">
-            <div class="row flex-grow-1 min-h-0">
+        <div id="resultadosBusqueda" class="card flex-grow-1 min-h-0 p-4 mt-4" aria-busy="false">
+            <div class="barra-resultados">
+                <asp:Label ID="lblCantidad" runat="server" CssClass="text-indigo fw-semibold" role="status" data-contador="true" />
+                <div class="orden-instituciones">
+                    <label for="<%= ddlOrdenar.ClientID %>" class="text-indigo">Ordenar por</label>
+                    <asp:DropDownList ID="ddlOrdenar" runat="server" CssClass="form-select" data-parametro="orden">
+                        <asp:ListItem Value="nombre">Nombre</asp:ListItem>
+                        <asp:ListItem Value="valoracion">Mejor valoración</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+            </div>
+            <div class="resultados-instituciones">
                 <!-- LISTADO -->
-                <div class="col-6 h-100 overflow-auto">
+                <div id="listaInstituciones" class="lista-instituciones">
                     <asp:Label ID="lblListado" runat="server" CssClass="d-block mb-3" Visible="false" role="status" />
                     <asp:Repeater ID="rptInstituciones" runat="server">
                         <ItemTemplate>
@@ -103,7 +261,7 @@
                     </asp:Repeater>
                 </div>
                 <!-- MAPA -->
-                <div class="col-6 h-100">
+                <div class="h-100">
                     <div id="mapa"></div>
                 </div>
             </div>
@@ -111,48 +269,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Generar mapa
-        var mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(mapa);
-
-        // Generar marcadores
-        var instituciones = <%= InstitucionesJson %>;
-        var marcadores = {};
-        var limites = L.latLngBounds();
-
-        instituciones.forEach(function (i) {
-            var popup = document.createElement('div');
-            var nombre = document.createElement('b');
-            nombre.textContent = i.Nombre;
-            popup.appendChild(nombre);
-            popup.appendChild(document.createElement('br'));
-            popup.appendChild(document.createTextNode(i.Direccion || ''));
-
-            marcadores[i.Id] = L.marker([i.Latitud, i.Longitud])
-                .addTo(mapa)
-                .bindPopup(popup);
-            limites.extend(marcadores[i.Id].getLatLng());
-        });
-
-        if (limites.isValid()) {
-            mapa.fitBounds(limites, { padding: [20, 20], maxZoom: 15 });
-        }
-
-        // Seleccionar institución
-        document.addEventListener('click', function (e) {
-            var card = e.target.closest('[data-id]');
-            if (!card) return;
-
-            var marcador = marcadores[card.getAttribute('data-id')];
-            if (!marcador) return;
-
-            mapa.flyTo(marcador.getLatLng(), 16);
-            marcador.openPopup();
-        });
-    </script>
+    <script type="application/json" id="datosInstituciones"><%= InstitucionesJson.Replace("<", "\\u003c") %></script>
+    <script src="<%= ResolveUrl("~/Scripts/listado-instituciones.js") %>"></script>
 
 </asp:Content>

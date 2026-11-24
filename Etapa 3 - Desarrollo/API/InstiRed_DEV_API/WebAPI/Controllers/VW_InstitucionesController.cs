@@ -19,12 +19,16 @@ namespace WebAPI.Controllers
         [ProducesResponseType(typeof(List<VW_Instituciones_out>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Get([FromQuery] int? idTipoInstitucion = null, [FromQuery] bool? estado = null, [FromQuery] string? nombre = null)
+        public IActionResult Get([FromQuery] int? idTipoInstitucion = null, [FromQuery] bool? estado = null,
+            [FromQuery] string? nombre = null, [FromQuery] int? idNivel = null, [FromQuery] int? anio = null,
+            [FromQuery] int? cicloLectivo = null, [FromQuery] int? idTurno = null,
+            [FromQuery] bool soloConVacantes = false, [FromQuery] string orden = "nombre")
         {
             try
             {
                 VW_InstitucionesNegocio negocio = new VW_InstitucionesNegocio();
-                return Ok(negocio.listar(idTipoInstitucion, estado, nombre));
+                return Ok(negocio.listar(idTipoInstitucion, estado, nombre, idNivel, anio,
+                    cicloLectivo, idTurno, soloConVacantes, orden));
             }
             catch (Exception ex)
             {

@@ -13,6 +13,21 @@ namespace Presentacion
 
     public partial class ListadoInstituciones
     {
+        protected global::System.Web.UI.WebControls.DropDownList ddlOfertaEducativa;
+
+        protected global::System.Web.UI.WebControls.HiddenField hfFiltrosAvanzados;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlAnio;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlCicloLectivo;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlTurno;
+
+        protected global::System.Web.UI.WebControls.CheckBox chkSoloConVacantes;
+
+        protected global::System.Web.UI.WebControls.Label lblCantidad;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlOrdenar;
 
         /// <summary>
         /// Control txtFiltro.

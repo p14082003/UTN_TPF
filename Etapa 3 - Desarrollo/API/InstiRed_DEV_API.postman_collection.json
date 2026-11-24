@@ -3351,6 +3351,66 @@
               "response": []
             },
             {
+              "name": "Filtrar por nivel escolar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true&idNivel=2",
+                "description": "Instituciones que ofrecen primaria, incluidas las de niveles combinados. Solo elegir nivel no exige que ya tengan cursos cargados. idNivel: 1 preescolar, 2 primaria, 3 secundaria."
+              },
+              "response": []
+            },
+            {
+              "name": "Buscar un curso con vacantes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true&idNivel=2&anio=3&cicloLectivo=2027&idTurno=1&soloConVacantes=true",
+                "description": "Instituciones con un mismo curso de tercer grado de primaria, turno mañana, con vacantes en 2027. Ajustar cicloLectivo al año actual o próximo. No combina datos de cursos distintos ni duplica instituciones. anio requiere idNivel: preescolar 3-5, primaria 1-7, secundaria 1-6."
+              },
+              "response": []
+            },
+            {
+              "name": "Solo con vacantes disponibles",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true&soloConVacantes=true",
+                "description": "Exige al menos un curso con capacidad mayor a inscriptos en el año actual o próximo. Sin cicloLectivo específico busca en ambos años. Cursos históricos no cuentan."
+              },
+              "response": []
+            },
+            {
+              "name": "Institutos de idiomas por turno",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true&idTipoInstitucion=4&idTurno=2&soloConVacantes=true",
+                "description": "Institutos de idiomas con cursos de tarde y vacantes en el ciclo actual o próximo. No usar idNivel ni anio para estos cursos personalizados."
+              },
+              "response": []
+            },
+            {
+              "name": "Ordenar por mejor valoración",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?estado=true&orden=valoracion",
+                "description": "Ordena por promedio descendente, cantidad de reseñas descendente y nombre. Las instituciones sin reseñas quedan al final. El otro orden disponible es nombre, que también es el predeterminado."
+              },
+              "response": []
+            },
+            {
+              "name": "Sala incompatible con nivel",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/vw/Instituciones?idNivel=1&anio=1",
+                "description": "Debe devolver HTTP 400: las salas de preescolar son de 3 a 5 años. También se rechazan anio sin idNivel, ciclos distintos del actual/próximo y órdenes desconocidos."
+              },
+              "response": []
+            },
+            {
               "name": "Obtener por ID",
               "request": {
                 "method": "GET",
