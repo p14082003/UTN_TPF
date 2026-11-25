@@ -49,7 +49,7 @@
         </asp:Panel>
 
         <!-- VISTA 1: DASHBOARD -->
-        <asp:Panel ID="pnlDashboard" runat="server" CssClass="row mb-5">
+        <asp:Panel ID="pnlDashboard" runat="server" CssClass="resumen-gestion row mb-5">
             <div class="col-3 mb-3">
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center px-2 py-4">

@@ -23,14 +23,19 @@
 
     <form id="form1" runat="server">
 
-        <div class="d-flex flex-column bg-fondo vh-100">
+        <div class="app-shell d-flex flex-column bg-fondo vh-100">
             <!-- Navbar -->
-            <nav class="bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 pe-3">
-                <a href="ListadoInstituciones.aspx" class="d-flex align-items-center text-decoration-none" aria-label="Ir al listado de instituciones">
+            <nav class="navegacion-principal bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 pe-3" aria-label="Navegación principal">
+                <a href="ListadoInstituciones.aspx" class="marca-instired d-flex align-items-center text-decoration-none" aria-label="Ir al listado de instituciones">
                     <img src="Imagenes/Logo.png" alt="InstiRed" height="60" />
                 </a>
 
-                <div class="d-flex align-items-center flex-wrap gap-2 me-auto ms-3">
+                <button id="botonMenu" type="button" class="boton-menu" aria-expanded="false" aria-controls="accesosNavegacion" aria-label="Abrir menú de navegación">
+                    <svg class="icono-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <svg class="icono-cerrar" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+                </button>
+
+                <div id="accesosNavegacion" class="accesos-principales d-flex align-items-center flex-wrap gap-2 me-auto ms-3">
                     <asp:Panel ID="pnlMenuResponsable" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2">
                         <asp:HyperLink ID="lnkRegistrarAlumno" runat="server" NavigateUrl="~/RegistroAlumno.aspx"
                             CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Registrar alumno" Visible="false" />
@@ -52,12 +57,12 @@
                 </div>
 
                 <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
-                    CssClass="btn btn-lilaClaro px-3 py-2" Text="Iniciar sesión" />
-                <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="position-relative">
+                    CssClass="entrada-sesion btn btn-lilaClaro px-3 py-2" Text="Iniciar sesión" />
+                <asp:Panel ID="pnlSesion" runat="server" Visible="false" CssClass="menu-cuenta position-relative">
                     <details>
                         <summary class="btn btn-sm btn-lilaClaro px-3 py-2 d-flex align-items-center gap-2">
                             <i class="bi bi-person-circle fs-4" aria-hidden="true"></i>
-                            <asp:Literal ID="litSaludo" runat="server" Mode="Encode" />
+                            <span class="nombre-usuario"><asp:Literal ID="litSaludo" runat="server" Mode="Encode" /></span>
                             <i class="bi bi-chevron-down" aria-hidden="true"></i>
                         </summary>
                         <div class="card position-absolute end-0 mt-1 shadow z-3 text-nowrap">
@@ -89,6 +94,38 @@
     </form>
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL" crossorigin="anonymous"></script>
+    <script>
+        (function () {
+            var boton = document.getElementById('botonMenu');
+            var navegacion = boton.closest('nav');
+
+            function cambiarMenu(abierto) {
+                navegacion.classList.toggle('menu-abierto', abierto);
+                boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+                boton.setAttribute('aria-label', abierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación');
+                if (abierto) {
+                    var cuenta = navegacion.querySelector('.menu-cuenta details');
+                    if (cuenta) cuenta.open = false;
+                }
+            }
+
+            boton.addEventListener('click', function () {
+                cambiarMenu(boton.getAttribute('aria-expanded') !== 'true');
+            });
+            document.addEventListener('click', function (event) {
+                if (!navegacion.contains(event.target) || event.target.closest('.accesos-principales a, .menu-cuenta summary')) {
+                    cambiarMenu(false);
+                }
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && boton.getAttribute('aria-expanded') === 'true') {
+                    cambiarMenu(false);
+                    boton.focus();
+                }
+            });
+            window.matchMedia('(max-width: 767px)').addEventListener('change', function () { cambiarMenu(false); });
+        })();
+    </script>
 
 </body>
 

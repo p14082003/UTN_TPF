@@ -5,12 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>InstiRed - Recuperar contraseña</title>
     <link href="~/EstilosInstiRed.css" rel="stylesheet" type="text/css" runat="server" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 
-<body id="bg-indigo">
+<body id="bg-indigo" class="acceso-cuenta">
     <form id="RecuperarContrasenia" runat="server">
         <div class="container d-flex justify-content-center align-items-center min-vh-100">
             <div class="w-100 p-4" style="max-width: 1100px;">
@@ -20,7 +21,10 @@
                     <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column">
 
                         <div class="featured-image mb-3">
-                            <img src="Imagenes/Login.png" class="img-fluid" style="width: 350px;" alt="Imagen de InstiRed" />
+                            <picture>
+                                <source media="(max-width: 767px)" srcset="Imagenes/Logo.png" />
+                                <img src="Imagenes/Login.png" class="img-fluid" style="width: 350px;" alt="InstiRed" />
+                            </picture>
                         </div>
 
                     </div>

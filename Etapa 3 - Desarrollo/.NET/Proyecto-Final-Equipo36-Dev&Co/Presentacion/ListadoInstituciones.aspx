@@ -198,7 +198,7 @@
                     <asp:Label ID="lblListado" runat="server" CssClass="d-block mb-3" Visible="false" role="status" />
                     <asp:Repeater ID="rptInstituciones" runat="server">
                         <ItemTemplate>
-                            <div class="card mb-2 overflow-hidden" data-id='<%# Eval("IdInstitucion") %>' style="cursor: pointer;">
+                            <div class="tarjeta-institucion card mb-2 overflow-hidden" data-id='<%# Eval("IdInstitucion") %>' style="cursor: pointer;">
                                 <div class="row">
                                     <!-- IMAGEN -->
                                     <div class="col-4">
@@ -222,7 +222,7 @@
                     </asp:Repeater>
                 </div>
                 <!-- MAPA -->
-                <div class="h-100">
+                <div class="mapa-instituciones h-100">
                     <div id="mapa"></div>
                 </div>
             </div>
