@@ -138,6 +138,8 @@ namespace Presentacion
             }
 
             cambioGuardado = true;
+            EnviarCorreo(administrador, reactivar); // Enviar correo para notificar al administrador
+
             await CargarAdministradoresAsync();
             MostrarMensaje(reactivar ? "Administrador reactivado." : "Administrador dado de baja.", true);
         }
@@ -147,6 +149,121 @@ namespace Presentacion
             lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
+        }
+
+        private void EnviarCorreo(AdministradorApi administrador, bool reactivar)
+        {
+            if (string.IsNullOrWhiteSpace(administrador.EmailAdministrador))
+            {
+                // No uso la funcion "mostrar mensaje" ya que en tal caso en el que no tenga un correo (o por algun error no llegue el dato del correo),
+                // el administrador no recibe un correo, pero el cambio de estado impacta igual
+                Trace.Warn("GestionarAdministradores", "No se pudo enviar el correo: el administrador no tiene un email registrado.");
+                return;
+            }
+
+            string asunto = reactivar ? "Administrador Reactivado - InstiRed" : "Baja de Administrador - InstiRed";
+            string cuerpo = reactivar ? CuerpoAdministradorReactivado(administrador) : CuerpoAdministradorDadoDeBaja(administrador);
+
+            try
+            {
+                EmailService emailService = new EmailService();
+                emailService.armarCorreo(administrador.EmailAdministrador, asunto, cuerpo);
+                emailService.enviarEmail();
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("GestionarAdministradores", "Error al enviar el correo de alta o baja de usuario.", ex);
+            }
+        }
+
+        private string CuerpoAdministradorReactivado(AdministradorApi administrador)
+        {
+            string nombre = administrador.NombreAdministrador + " " + administrador.ApellidoAdministrador;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">Tu cuenta fue reactivada</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, <strong>{nombre}</strong>. Tu cuenta de administrador fue reactivada correctamente.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Ya podés volver a ingresar a InstiRed y utilizar las funcionalidades correspondientes a tu cuenta.
+                                                </p>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
+        }
+
+        private string CuerpoAdministradorDadoDeBaja(AdministradorApi administrador)
+        {
+            string nombre = administrador.NombreAdministrador + " " + administrador.ApellidoAdministrador;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">Tu cuenta fue dada de baja</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, <strong>{nombre}</strong>. Tu cuenta de administrador fue dada de baja.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Ya no podrás ingresar a InstiRed ni utilizar las funcionalidades correspondientes a esta cuenta.
+                                                </p>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
         }
 
         private class AdministradorApi
