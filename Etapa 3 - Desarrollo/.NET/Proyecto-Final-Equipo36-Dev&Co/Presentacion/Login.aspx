@@ -11,7 +11,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
 
 </head>
-<body id="bg-indigo">
+<body id="bg-indigo" class="acceso-cuenta">
     <form id="Login" runat="server">
         
         <div class="container d-flex justify-content-center align-items-center min-vh-100">
@@ -20,7 +20,10 @@
                       <%-- Imagen --%>
                       <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column">
                          <div class="featured-image mb-3">
-                            <img src="Imagenes/Login.png" class="img-fluid" style="width: 350px;" alt="Imagen de login"/>
+                            <picture>
+                                <source media="(max-width: 767px)" srcset="Imagenes/Logo.png" />
+                                <img src="Imagenes/Login.png" class="img-fluid" style="width: 350px;" alt="InstiRed" />
+                            </picture>
                          </div>  
                       </div>
                   

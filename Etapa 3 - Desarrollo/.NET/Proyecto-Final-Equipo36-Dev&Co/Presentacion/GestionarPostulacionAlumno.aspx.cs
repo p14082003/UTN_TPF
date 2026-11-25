@@ -1,12 +1,16 @@
-﻿using Negocio;
+﻿using Dominio;
+using Negocio;
 using Presentacion.Auth;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
 
 namespace Presentacion
 {
@@ -280,6 +284,9 @@ namespace Presentacion
 
                 if (respuesta.Estado == HttpStatusCode.OK)
                 {
+                    // Aprovecho el bool de aceptar para que el método evalue.
+                    EnviarCorreo(postulacion, aceptar);
+
                     await CargarListadoAsync(aceptar ? "Postulación aceptada." : "Postulación rechazada.");
                     return;
                 }
@@ -303,6 +310,138 @@ namespace Presentacion
             pnlMensaje.Visible = true;
             pnlMensaje.CssClass = exito ? "alert alert-success mb-4" : "alert alert-danger mb-4";
             litMensaje.Text = Server.HtmlEncode(texto);
+        }
+
+        private void EnviarCorreo(PostulacionApi postulacion, bool aceptada)
+        {
+            if (string.IsNullOrWhiteSpace(postulacion.EmailResponsable))
+            {
+                // No uso la funcion "mostrar mensaje" ya que en tal caso en el que no tenga un correo (o por algun error no llegue el dato del corre),
+                // el responsable no recibe un correo, pero el cambio de estado de la postulación se impacta igual
+                Trace.Warn("GestionarPostulacionAlumno", "No se pudo enviar el correo: el responsable no tiene un email registrado.");
+                return;
+            }
+
+            string asunto = aceptada ? "Postulación Aceptada - InstiRed" : "Postulación Rechazada - InstiRed";
+            string cuerpo = aceptada ? CuerpoPostulacionAceptada(postulacion) : CuerpoPostulacionRechazada(postulacion);
+
+            try
+            {
+                EmailService emailService = new EmailService();
+                emailService.armarCorreo(postulacion.EmailResponsable, asunto, cuerpo);
+                emailService.enviarEmail();
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("GestionarPostulacionAlumno", "Error al enviar el correo de resolución de la postulación.", ex);
+            }
+        }
+
+        private string CuerpoPostulacionAceptada(PostulacionApi postulacion)
+        {
+            string responsable = postulacion.NombreTutor;
+            string alumno = postulacion.Alumno;
+            string curso = postulacion.Curso;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">¡Tu postulación fue aceptada!</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, {responsable}. La institución aceptó la postulación de <strong>{alumno}</strong>.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    <strong>Curso solicitado:</strong> {curso}
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Para completar el proceso de inscripción, todavía falta que confirmes la vacante.
+                                                </p>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
+        }
+
+        private string CuerpoPostulacionRechazada(PostulacionApi postulacion)
+        {
+            string responsable = postulacion.NombreTutor;
+            string alumno = postulacion.Alumno;
+            string curso = postulacion.Curso;
+            string motivoRechazo = postulacion.MotivoRechazo;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">Tu postulación fue rechazada</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, {responsable}. La institución no pudo aceptar la postulación de <strong>{alumno}</strong>.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    <strong>Curso solicitado:</strong> {curso}
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    <strong>Motivo del rechazo:</strong>
+                                                </p>
+
+                                                <div style=""background-color:#F7F5FC; border:1px solid #E4E0F0; border-radius:10px; padding:16px; font-size:14px; line-height:1.6; color:#373A72;"">
+                                                    {motivoRechazo}
+                                                </div>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
         }
 
         private class PostulacionApi

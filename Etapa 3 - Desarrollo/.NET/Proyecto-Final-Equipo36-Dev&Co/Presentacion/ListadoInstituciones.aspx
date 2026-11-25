@@ -49,44 +49,6 @@
             margin-bottom: 0.35rem;
         }
 
-        .filtros-instituciones .form-control,
-        .filtros-instituciones select,
-        .orden-instituciones select {
-            display: block;
-            box-sizing: border-box;
-            width: 100%;
-            min-width: 0;
-            height: 2.75rem;
-            padding: 0.625rem 0.875rem;
-            font: inherit;
-            line-height: 1.25;
-            color: #373A72;
-            background-color: #FFFFFF;
-            border: 1px solid #E4E0F0;
-            border-radius: 15px;
-            box-shadow: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .filtros-instituciones select,
-        .orden-instituciones select {
-            appearance: none;
-            padding-right: 2.5rem;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='%23373A72' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.875rem center;
-            background-size: 1rem;
-            cursor: pointer;
-        }
-
-        .filtros-instituciones .form-control:focus,
-        .filtros-instituciones select:focus,
-        .orden-instituciones select:focus {
-            outline: none;
-            border-color: #8D91D5;
-            box-shadow: 0 0 0 3px rgb(141 145 213 / 20%);
-        }
-
         .acciones-busqueda .btn {
             display: inline-flex;
             align-items: center;
@@ -120,7 +82,6 @@
 
         .filtro-vacantes input { margin-right: 0.5rem; accent-color: #373A72; }
         .filtro-vacantes label { display: inline; margin: 0; }
-        .filtros-instituciones select:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 1; }
         .barra-resultados { justify-content: space-between; margin-bottom: 1rem; }
         .orden-instituciones label { margin: 0; white-space: nowrap; }
         .orden-instituciones select { width: auto; }
@@ -163,7 +124,7 @@
             <div class="filtros-principales">
                 <div>
                     <label for="<%= txtFiltro.ClientID %>" class="text-indigo">Buscar institución</label>
-                    <asp:TextBox runat="server" ID="txtFiltro" MaxLength="150" placeholder="Nombre o dirección" CssClass="form-control w-100" data-parametro="texto" />
+                    <asp:TextBox runat="server" ID="txtFiltro" MaxLength="150" placeholder="Nombre o dirección" CssClass="form-control campo-instired w-100" data-parametro="texto" />
                 </div>
                 <div>
                     <label for="<%= ddlOfertaEducativa.ClientID %>" class="text-indigo">Oferta educativa</label>
@@ -237,7 +198,7 @@
                     <asp:Label ID="lblListado" runat="server" CssClass="d-block mb-3" Visible="false" role="status" />
                     <asp:Repeater ID="rptInstituciones" runat="server">
                         <ItemTemplate>
-                            <div class="card mb-2 overflow-hidden" data-id='<%# Eval("IdInstitucion") %>' style="cursor: pointer;">
+                            <div class="tarjeta-institucion card mb-2 overflow-hidden" data-id='<%# Eval("IdInstitucion") %>' style="cursor: pointer;">
                                 <div class="row">
                                     <!-- IMAGEN -->
                                     <div class="col-4">
@@ -261,7 +222,7 @@
                     </asp:Repeater>
                 </div>
                 <!-- MAPA -->
-                <div class="h-100">
+                <div class="mapa-instituciones h-100">
                     <div id="mapa"></div>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 using Dominio.DTOs;
 using MySqlConnector;
 using Negocio.Helpers;
+using System.Security.Cryptography;
 
 namespace Negocio
 {
@@ -9,6 +10,9 @@ namespace Negocio
         public SP_CrearAdministradorInstitucionAdicional_out crear(SP_CrearAdministradorInstitucionAdicional_in registro)
         {
             validar(registro);
+
+            string claveGenerada = GenerarClave();
+
             return ProcedimientoHelper.ejecutar("sp_AdministradorInstitucion_CrearAdicional", datos =>
             {
                 datos.setearParametro("@p_idUsuarioActor", registro.IdUsuarioActor);
@@ -17,7 +21,7 @@ namespace Negocio
                 datos.setearParametro("@p_documento", registro.Documento.Trim());
                 datos.setearParametro("@p_domicilio", registro.Domicilio.Trim());
                 datos.setearParametro("@p_fechaNacimiento", registro.FechaNacimiento.Date);
-                datos.setearParametro("@p_clave", ContraseñaHelper.generarHash(registro.Clave));
+                datos.setearParametro("@p_clave", ContraseñaHelper.generarHash(claveGenerada));
                 datos.setearParametro("@p_email", registro.Email.Trim().ToLowerInvariant());
                 datos.setearParametro("@p_telefono", registro.Telefono.Trim());
                 datos.setearParametroSalida("@p_idAdministrador", MySqlDbType.Int32);
@@ -89,6 +93,24 @@ namespace Negocio
             {
                 throw new ArgumentException("El campo Telefono no puede superar los 30 caracteres.");
             }
+        }
+
+        private static string GenerarClave()
+        {
+            const string caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%*-_+";
+            char[] clave = new char[12];
+
+            do
+            {
+                for (int i = 0; i < clave.Length; i++)
+                {
+                    clave[i] = caracteres[RandomNumberGenerator.GetInt32(caracteres.Length)];
+                }
+            }
+            while (!clave.Any(char.IsUpper) || !clave.Any(char.IsLower) || !clave.Any(char.IsDigit) ||
+                !clave.Any(c => char.IsPunctuation(c) || char.IsSymbol(c)));
+
+            return new string(clave);
         }
     }
 }
