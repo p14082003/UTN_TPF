@@ -223,27 +223,9 @@ namespace Presentacion
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(nombre))
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido) || string.IsNullOrWhiteSpace(institucion) || string.IsNullOrWhiteSpace(codigoSeguimiento))
             {
-                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un nombre registrado.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(apellido))
-            {
-                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un apellido registrado.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(institucion))
-            {
-                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un nombre de institucion registrado.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(codigoSeguimiento))
-            {
-                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un codigo de seguimiento registrado.");
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: faltan datos de la postulación.");
                 return;
             }
 
@@ -258,7 +240,7 @@ namespace Presentacion
             }
             catch (Exception ex)
             {
-                Trace.Warn("GestionarAdministradores", "Error al enviar el correo de alta o baja de usuario.", ex);
+                Trace.Warn("FormularioAdministradorInstitucion", "Error al enviar el correo con el código de seguimiento", ex);
             }
         }
 
