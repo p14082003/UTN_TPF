@@ -1699,3 +1699,76 @@ END$$
 
 DELIMITER ;
 
+
+-- ---------------------------------------------------------------------
+-- sp_Alumno_Eliminar
+-- El responsable elimina un alumno que tiene a su cargo.
+-- Solo se puede si el alumno NUNCA fue postulado: si tiene alguna postulacion
+-- (de cualquier estado) no se borra, porque la institucion ya la vio.
+-- Borra el vinculo en ResponsablesPorAlumno, el alumno y, si nadie mas la usa,
+-- la persona (asi el DNI queda libre para volver a registrarlo).
+-- Si el alumno es el propio responsable (autogestor), la persona se conserva.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_Alumno_Eliminar;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_Alumno_Eliminar(
+  IN p_idResponsable INT,   -- lo toma C# de la sesion
+  IN p_idAlumno      INT
+)
+BEGIN
+  DECLARE v_idPersona     INT DEFAULT NULL;
+  DECLARE v_idPersonaResp INT DEFAULT NULL;
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF p_idResponsable IS NULL OR p_idAlumno IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Faltan datos obligatorios.';
+  END IF;
+
+  SELECT r.idPersona INTO v_idPersonaResp
+  FROM Responsables r
+  JOIN Usuarios u ON u.id = r.idUsuario
+  WHERE r.id = p_idResponsable AND u.activo = TRUE;
+
+  IF v_idPersonaResp IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No cuenta con permiso para eliminar alumnos.';
+  END IF;
+
+  SELECT idPersona INTO v_idPersona FROM Alumnos WHERE id = p_idAlumno;
+
+  IF v_idPersona IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no existe.';
+  END IF;
+
+  -- Tiene que ser un alumno a su cargo, o el propio responsable (autogestor)
+  IF v_idPersona <> v_idPersonaResp
+     AND NOT EXISTS (SELECT 1 FROM ResponsablesPorAlumno
+                     WHERE idResponsable = p_idResponsable AND idAlumno = p_idAlumno) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El alumno no está a su cargo.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM PostulacionesAlumnos WHERE idAlumno = p_idAlumno) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede eliminar un alumno que tiene postulaciones.';
+  END IF;
+
+  START TRANSACTION;
+
+  DELETE FROM ResponsablesPorAlumno WHERE idAlumno = p_idAlumno;
+  DELETE FROM Alumnos WHERE id = p_idAlumno;
+
+  -- La persona se borra solo si no es tambien responsable ni administrador
+  IF NOT EXISTS (SELECT 1 FROM Responsables WHERE idPersona = v_idPersona)
+     AND NOT EXISTS (SELECT 1 FROM AdministradoresInstitucion WHERE idPersona = v_idPersona) THEN
+    DELETE FROM Personas WHERE id = v_idPersona;
+  END IF;
+
+  COMMIT;
+END$$
+
+DELIMITER ;

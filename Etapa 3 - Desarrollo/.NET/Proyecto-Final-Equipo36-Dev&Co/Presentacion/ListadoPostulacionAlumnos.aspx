@@ -97,8 +97,8 @@
                         <asp:BoundField DataField="Estado" HeaderText="Estado" />
                         <asp:TemplateField HeaderText="Acciones">
                             <ItemTemplate>
-                                <asp:LinkButton ID="btnVerPostulacion" runat="server"  CommandArgument='<%# Eval("IdPostulacion") %>' CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" OnClick="btnVerPostulacion_Click1">
-                                    Gestionar postulación
+                                <asp:LinkButton ID="btnVerPostulacion" runat="server"  CommandArgument='<%# Eval("IdPostulacion") %>' CssClass="btn btn-sm border" ToolTip="Ver y gestionar la postulación" OnClick="btnVerPostulacion_Click1">
+                                    <i class="bi bi-eye text-info fg-info me-1"></i>Ver
                                 </asp:LinkButton>
                             </ItemTemplate>
                         </asp:TemplateField>
@@ -110,11 +110,11 @@
         <!-- Mis alumnos -->
         <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
             <h2 class="h4 text-indigo fw-bold mb-0">Mis alumnos</h2>
-            <asp:HyperLink runat="server" NavigateUrl="~/RegistroAlumno.aspx" CssClass="btn btn-lilaOscuro btn-sm" Text="Registrar alumno" />
+            <a href="RegistroAlumno.aspx" class="btn btn-lilaOscuro btn-sm"><i class="bi bi-person-plus me-1"></i>Registrar alumno</a>
         </div>
         <div class="card p-3 text-center">
             <div class="table-responsive">
-                <asp:GridView ID="dgvAlumnos" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="Todavía no registraste alumnos.">
+                <asp:GridView ID="dgvAlumnos" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="Todavía no registraste alumnos." OnRowDataBound="dgvAlumnos_RowDataBound">
                     <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                     <Columns>
                         <asp:BoundField DataField="NombreCompleto" HeaderText="Alumno" />
@@ -122,6 +122,14 @@
                         <asp:BoundField DataField="FechaNacimiento" HeaderText="Nacimiento" DataFormatString="{0:dd/MM/yyyy}" />
                         <asp:BoundField DataField="Domicilio" HeaderText="Domicilio" />
                         <asp:BoundField DataField="Rol" HeaderText="Vínculo" />
+                        <asp:TemplateField HeaderText="Acciones">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="btnEliminarAlumno" runat="server" CommandArgument='<%# Eval("IdAlumno") %>' CssClass="btn btn-sm border" ToolTip="Eliminar alumno" OnClick="btnEliminarAlumno_Click" OnClientClick="return confirm('¿Eliminar este alumno? Esta acción no se puede deshacer.');">
+                                    <i class="bi bi-trash text-danger fg-danger"></i>
+                                </asp:LinkButton>
+                                <asp:Label ID="lblConPostulaciones" runat="server" Visible="false" CssClass="text-secondary small" Text="Tiene postulaciones"></asp:Label>
+                            </ItemTemplate>
+                        </asp:TemplateField>
                     </Columns>
                 </asp:GridView>
             </div>

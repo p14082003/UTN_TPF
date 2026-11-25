@@ -3,6 +3,7 @@ using Presentacion.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
@@ -119,6 +120,51 @@ namespace Presentacion
                 return;
             }
             Response.Redirect("~/ResponsableGestionarPostulacionAlumno.aspx?id=" + idPostulacion);
+        }
+
+        protected void dgvAlumnos_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.DataRow)
+            {
+                return;
+            }
+            // Un alumno con postulaciones no se puede eliminar: se oculta el botón y se avisa
+            var alumno = (AlumnoResponsable)e.Row.DataItem;
+            bool tienePostulaciones = ListaPostulaciones != null && ListaPostulaciones.Any(p => p.IdAlumno == alumno.IdAlumno);
+            e.Row.FindControl("btnEliminarAlumno").Visible = !tienePostulaciones;
+            e.Row.FindControl("lblConPostulaciones").Visible = tienePostulaciones;
+        }
+
+        protected void btnEliminarAlumno_Click(object sender, EventArgs e)
+        {
+            int idAlumno;
+            if (!int.TryParse(((LinkButton)sender).CommandArgument, out idAlumno))
+            {
+                MostrarMensaje("No se pudo identificar al alumno. Volvé a cargar el listado.", false);
+                return;
+            }
+            RegisterAsyncTask(new PageAsyncTask(() => EliminarAlumnoAsync(idAlumno)));
+        }
+
+        private async Task EliminarAlumnoAsync(int idAlumno)
+        {
+            try
+            {
+                var respuesta = await InstiRedApi.PostAsync("sp/EliminarAlumno",
+                    new { idResponsable = usuario.IdResponsable.Value, idAlumno });
+                if (respuesta.Estado == HttpStatusCode.OK)
+                {
+                    await CargarListadoAsync();
+                    MostrarMensaje("Alumno eliminado correctamente.", true);
+                    return;
+                }
+                MostrarMensaje(respuesta.Mensaje ?? "No se pudo eliminar el alumno. Intentá nuevamente más tarde.", false);
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("ListadoPostulacionAlumnos", "Error al eliminar el alumno.", ex);
+                MostrarMensaje("No se pudo eliminar el alumno. Intentá nuevamente más tarde.", false);
+            }
         }
 
         protected void dgvPostulaciones_PageIndexChanging(object sender, GridViewPageEventArgs e)
