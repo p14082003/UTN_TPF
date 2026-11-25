@@ -64,6 +64,10 @@ namespace Presentacion
 
                         MostrarResultado("Tu solicitud quedó pendiente de revisión. Guardá el código de seguimiento " +
                             registro.CodigoSeguimiento + ". Podrás iniciar sesión cuando Dev&Co apruebe tu solicitud.", true);
+
+                        // Enviar al mail el codigo de seguimiento
+                        EnviarCorreo(txtEmail.Text.Trim(), txtNombre.Text.Trim(), txtApellido.Text.Trim(), txtNombreInstitucion.Text.Trim(), registro.CodigoSeguimiento);
+
                         return;
                     }
 
@@ -209,6 +213,107 @@ namespace Presentacion
                 mensaje += " Volvé a seleccionar los tres archivos antes de enviar nuevamente.";
             }
             litMensaje.Text = mensaje;
+        }
+
+        private void EnviarCorreo(string email, string nombre, string apellido, string institucion, string codigoSeguimiento)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un email registrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un nombre registrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(apellido))
+            {
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un apellido registrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(institucion))
+            {
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un nombre de institucion registrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoSeguimiento))
+            {
+                Trace.Warn("FormularioAdministradorInstitucion", "No se pudo enviar el correo: el administrador no tiene un codigo de seguimiento registrado.");
+                return;
+            }
+
+            string asunto = "Codigo de Seguimiento - InstiRed";
+            string cuerpo = CuerpoCodigoSeguimiento(nombre, apellido, institucion, codigoSeguimiento);
+
+            try
+            {
+                EmailService emailService = new EmailService();
+                emailService.armarCorreo(email, asunto, cuerpo);
+                emailService.enviarEmail();
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("GestionarAdministradores", "Error al enviar el correo de alta o baja de usuario.", ex);
+            }
+        }
+
+        private string CuerpoCodigoSeguimiento(string nombre, string apellido, string institucion, string codigoSeguimiento)
+        {
+            string nombreAdministrador = nombre + " " + apellido;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">¡Tu solicitud fue registrada!</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, <strong>{nombreAdministrador}</strong>. Recibimos correctamente tu solicitud de registro como administrador de la institución <strong>{institucion}</strong>.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Tu solicitud quedó pendiente de revisión por parte de Dev&Co. Para consultar su estado, conservá el siguiente código de seguimiento:
+                                                </p>
+
+                                                <div style=""background-color:#F7F5FC; border:1px solid #E4E0F0; border-radius:10px; padding:20px; text-align:center; margin:24px 0;"">
+                                                    <p style=""margin:0 0 8px 0; font-size:13px; color:#8D91D5;"">CÓDIGO DE SEGUIMIENTO</p>
+                                                    <span style=""font-size:24px; font-weight:700; letter-spacing:1px; color:#373A72;"">{codigoSeguimiento}</span>
+                                                </div>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Recordá que podrás iniciar sesión en InstiRed una vez que Dev&Co apruebe tu solicitud.
+                                                </p>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
         }
 
         private class ResultadoRegistro
