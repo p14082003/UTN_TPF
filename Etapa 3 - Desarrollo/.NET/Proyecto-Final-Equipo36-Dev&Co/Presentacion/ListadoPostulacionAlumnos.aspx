@@ -118,7 +118,7 @@
                     <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                     <Columns>
                         <asp:BoundField DataField="NombreCompleto" HeaderText="Alumno" />
-                        <asp:BoundField DataField="Documento" HeaderText="Docum" />
+                        <asp:BoundField DataField="Documento" HeaderText="Documento" />
                         <asp:BoundField DataField="FechaNacimiento" HeaderText="Nacimiento" DataFormatString="{0:dd/MM/yyyy}" />
                         <asp:BoundField DataField="Domicilio" HeaderText="Domicilio" />
                         <asp:BoundField DataField="Rol" HeaderText="Vínculo" />
