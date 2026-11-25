@@ -92,7 +92,7 @@ namespace Presentacion
                 if (ddlAlumnos.Items.Count == 1)
                 {
                     btnGuardar.Enabled = false;
-                    MostrarMensaje("Todavía no tenés alumnos registrados. Registrá uno desde el enlace debajo del selector.", false);
+                    MostrarMensaje("Todavía no tenés alumnos registrados. Registrá uno desde la opción “Registrar alumno” del menú.", false);
                 }
             }
             catch (Exception ex)

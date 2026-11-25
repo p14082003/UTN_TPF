@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="FormularioPostulacionAlumno.aspx.cs" Inherits="Presentacion.FormularioPostulacionAlumno" Async="true"%>
+﻿<%@ Page Title="Postular alumno" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" CodeBehind="FormularioPostulacionAlumno.aspx.cs" Inherits="Presentacion.FormularioPostulacionAlumno" Async="true"%>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 
@@ -131,7 +131,6 @@
                     <div class="mb-4">
                         <asp:Label ID="lblAlumno" runat="server" Text="Alumno a cargo" CssClass="form-label fw-semibold"></asp:Label>
                         <asp:DropDownList ID="ddlAlumnos" runat="server" CssClass="form-control" required="required"></asp:DropDownList>
-                        <a href="RegistroAlumno.aspx" class="link-lilaClaro d-inline-block mt-2">Registrar un alumno</a>
                     </div>
 
                 </div>

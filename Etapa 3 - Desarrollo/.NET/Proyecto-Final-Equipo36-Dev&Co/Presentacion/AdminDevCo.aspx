@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="AdminDevCo.aspx.cs" Inherits="Presentacion.AdminDevCo" %>
+﻿<%@ Page Title="Panel de control" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="AdminDevCo.aspx.cs" Inherits="Presentacion.AdminDevCo" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>

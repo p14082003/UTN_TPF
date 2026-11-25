@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarResenia.aspx.cs" Inherits="Presentacion.GestionarResenia" %>
+﻿<%@ Page Title="Reseñas" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarResenia.aspx.cs" Inherits="Presentacion.GestionarResenia" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         .encabezado-resenia {

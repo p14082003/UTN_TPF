@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 
-<html data-bs-theme="light">
+<html lang="es" data-bs-theme="light">
 <head runat="server">
 
     <meta charset="utf-8" />

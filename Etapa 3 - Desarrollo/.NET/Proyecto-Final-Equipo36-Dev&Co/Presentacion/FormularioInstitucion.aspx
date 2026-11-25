@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" AsyncTimeout="180" CodeBehind="FormularioInstitucion.aspx.cs" Inherits="Presentacion.FormularioInstitucion" %>
+﻿<%@ Page Title="Mi institución" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" AsyncTimeout="180" CodeBehind="FormularioInstitucion.aspx.cs" Inherits="Presentacion.FormularioInstitucion" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 

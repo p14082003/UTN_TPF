@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarVacante.aspx.cs" Inherits="Presentacion.GestionarVacante" %>
+﻿<%@ Page Title="Cursos y vacantes" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarVacante.aspx.cs" Inherits="Presentacion.GestionarVacante" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         .encabezado-curso {

@@ -131,7 +131,7 @@ namespace Presentacion
 
         protected void btnCancelar_Click(object sender, EventArgs e)
         {
-            Response.Redirect("~/GestionarPostulacionAlumno.aspx");
+            Response.Redirect("~/GestionarAdministradores.aspx");
         }
 
         // Deja el formulario vacío (se mantiene el mensaje de resultado)
