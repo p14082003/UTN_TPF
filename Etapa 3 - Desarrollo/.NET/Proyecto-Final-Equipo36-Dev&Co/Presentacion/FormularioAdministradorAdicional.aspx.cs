@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Negocio;
+using Presentacion.Auth;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Web.UI;
-using Negocio;
-using Presentacion.Auth;
 
 namespace Presentacion
 {
@@ -47,9 +48,7 @@ namespace Presentacion
                 string.IsNullOrWhiteSpace(txtFechaNacimiento.Text) ||
                 string.IsNullOrWhiteSpace(txtTelefono.Text) ||
                 string.IsNullOrWhiteSpace(txtEmail.Text) ||
-                string.IsNullOrWhiteSpace(txtDomicilio.Text) ||
-                string.IsNullOrWhiteSpace(txtClave.Text) ||
-                string.IsNullOrWhiteSpace(txtClaveRepetida.Text))
+                string.IsNullOrWhiteSpace(txtDomicilio.Text))
             {
                 MostrarMensaje("Completá todos los campos del formulario.", false);
                 return;
@@ -84,21 +83,6 @@ namespace Presentacion
                 return;
             }
 
-            string clave = txtClave.Text;
-            if (clave.Length < 8 || clave.Length > 20 ||
-                !clave.Any(char.IsUpper) || !clave.Any(char.IsLower) ||
-                !clave.Any(char.IsDigit) || !clave.Any(c => char.IsPunctuation(c) || char.IsSymbol(c)))
-            {
-                MostrarMensaje("La contraseña debe tener entre 8 y 20 caracteres e incluir una mayúscula, una minúscula, un número y un símbolo.", false);
-                return;
-            }
-
-            if (clave != txtClaveRepetida.Text)
-            {
-                MostrarMensaje("Las contraseñas no coinciden.", false);
-                return;
-            }
-
             RegisterAsyncTask(new PageAsyncTask(AgregarAdministradorAsync));
         }
 
@@ -112,18 +96,27 @@ namespace Presentacion
                 documento = txtDocumento.Text.Trim(),
                 domicilio = txtDomicilio.Text.Trim(),
                 fechaNacimiento = txtFechaNacimiento.Text,
-                clave = txtClave.Text,
                 email = txtEmail.Text.Trim(),
                 telefono = txtTelefono.Text.Trim()
             };
 
             try
             {
-                var respuesta = await InstiRedApi.PostAsync("sp/CrearAdministradorInstitucionAdicional", registro);
+                // Ahora la API devuelve la clave generada
+                // (Mas seguro que copiar y pegar aca el metodo para generar las claves)
+                var respuesta = await InstiRedApi.PostAsync("sp/CrearAdministradorInstitucionAdicional", registro, leerCuerpo: true);
+
                 if (respuesta.Estado == HttpStatusCode.Created)
                 {
                     LimpiarCampos();
                     MostrarMensaje("Administrador agregado correctamente. Ya puede iniciar sesión con su correo y contraseña.", true);
+
+                    AdministradorApi administrador = new JavaScriptSerializer().Deserialize<AdministradorApi>(respuesta.Cuerpo);
+                    if(administrador != null && !string.IsNullOrWhiteSpace(administrador.Clave))
+                    {
+                        EnviarCorreo(administrador.Email, administrador.Nombre, administrador.Apellido, administrador.Clave);
+                    }
+
                     return;
                 }
 
@@ -151,8 +144,6 @@ namespace Presentacion
             txtTelefono.Text = "";
             txtEmail.Text = "";
             txtDomicilio.Text = "";
-            txtClave.Text = "";
-            txtClaveRepetida.Text = "";
         }
 
         private static bool EmailValido(string email)
@@ -172,6 +163,103 @@ namespace Presentacion
             lblMensaje.Text = Server.HtmlEncode(texto);
             lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
+        }
+
+        private void EnviarCorreo(string email, string nombre, string apellido, string clave)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                Trace.Warn("FormularioAdministradorAdicional", "No se pudo enviar el correo: el administrador no tiene un email registrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido) || string.IsNullOrWhiteSpace(clave))
+            {
+                Trace.Warn("FormularioAdministradorAdicional", "No se pudo enviar el correo: faltan datos del administrador.");
+                return;
+            }
+
+            string asunto = "Cuenta de Administrador Creada - InstiRed";
+            string cuerpo = CuerpoCredencialesAdministrador(email, nombre, apellido, clave);
+
+            try
+            {
+                EmailService emailService = new EmailService();
+                emailService.armarCorreo(email, asunto, cuerpo);
+                emailService.enviarEmail();
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("FormularioAdministradorAdicional", "Error al enviar el correo con las credenciales del administrador.", ex);
+            }
+        }
+
+        private string CuerpoCredencialesAdministrador(string email, string nombre, string apellido, string clave)
+        {
+            string administrador = nombre + " " + apellido;
+
+            string cuerpo = $@"
+                <html>
+                    <body style=""margin:0; padding:0; background-color:#F7F5FC; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"">
+                        <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F7F5FC;"">
+                            <tr>
+                                <td align=""center"" style=""padding:32px 16px;"">
+                                    <table role=""presentation"" width=""600"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""width:100%; max-width:600px;"">
+                                        <tr>
+                                            <td align=""center"" bgcolor=""#373A72"" style=""background-color:#373A72; border-radius:15px 15px 0 0; padding:32px 24px;"">
+                                                <span style=""font-size:36px; font-weight:700; color:#FFFFFF;"">InstiRed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">¡Tu cuenta fue creada!</h1>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Hola, <strong>{administrador}</strong>. Se creó correctamente tu cuenta de administrador en InstiRed.
+                                                </p>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Para ingresar a la plataforma, utilizá las siguientes credenciales:
+                                                </p>
+
+                                                <div style=""background-color:#F7F5FC; border:1px solid #E4E0F0; border-radius:10px; padding:20px; margin:24px 0;"">
+                                                    <p style=""margin:0 0 12px 0; font-size:14px; color:#373A72;"">
+                                                        <strong>Correo electrónico:</strong><br/>
+                                                        {email}
+                                                    </p>
+                                                    <p style=""margin:0; font-size:14px; color:#373A72;"">
+                                                        <strong>Contraseña:</strong><br/>
+                                                        <span style=""font-size:20px; font-weight:700; letter-spacing:1px; color:#373A72;"">{clave}</span>
+                                                    </p>
+                                                </div>
+
+                                                <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
+                                                    Ingresá a InstiRed utilizando tu correo electrónico y la contraseña proporcionada. Te recomendamos cambiarla después de iniciar sesión.
+                                                </p>
+
+                                                <hr style=""border:none; border-top:1px solid #E4E0F0; margin:24px 0 20px 0;"">
+
+                                                <p style=""font-size:13px; line-height:1.5; color:#8D91D5;"">
+                                                    Este es un correo automático. Por favor, no respondas a esta dirección.
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>";
+
+            return cuerpo;
+        }
+
+        private class AdministradorApi
+        {
+            public string Nombre { get; set; }
+            public string Apellido { get; set; }
+            public string Email { get; set; }
+            public string Clave { get; set; }
         }
     }
 }

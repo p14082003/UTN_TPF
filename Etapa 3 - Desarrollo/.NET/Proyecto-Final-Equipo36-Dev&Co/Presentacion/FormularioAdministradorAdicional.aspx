@@ -60,22 +60,6 @@
                             </div>
                         </div>
 
-                        <!--Seguridad-->
-                        <div class="row g-2 mb-3">
-                            <div class="col-12">
-                                <asp:Label ID="lblSeguridad" runat="server" Text="Seguridad:" CssClass="form-label fw-bold"></asp:Label>
-                            </div>
-                            <div class="col-12 md:col-6">
-                                <asp:Label ID="lblClave" runat="server" Text="Contraseña" AssociatedControlID="txtClave" CssClass="form-label text-indigo"></asp:Label>
-                                <asp:TextBox ID="txtClave" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control" aria-describedby="requisitosClave"></asp:TextBox>
-                            </div>
-                            <div class="col-12 md:col-6">
-                                <asp:Label ID="lblClaveRepetida" runat="server" Text="Confirmar contraseña" AssociatedControlID="txtClaveRepetida" CssClass="form-label text-indigo"></asp:Label>
-                                <asp:TextBox ID="txtClaveRepetida" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control"></asp:TextBox>
-                            </div>
-                            <div id="requisitosClave" class="col-12 form-text mt-1">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>
-                        </div>
-
                         <!--Botones-->
                         <div class="row g-2">
                             <div class="col-12">
