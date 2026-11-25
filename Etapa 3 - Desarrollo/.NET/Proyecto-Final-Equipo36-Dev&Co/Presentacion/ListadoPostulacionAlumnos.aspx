@@ -106,5 +106,25 @@
                 </asp:GridView>
             </div>
         </div>
+
+        <!-- Mis alumnos -->
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+            <h2 class="h4 text-indigo fw-bold mb-0">Mis alumnos</h2>
+            <asp:HyperLink runat="server" NavigateUrl="~/RegistroAlumno.aspx" CssClass="btn btn-lilaOscuro btn-sm" Text="Registrar alumno" />
+        </div>
+        <div class="card p-3 text-center">
+            <div class="table-responsive">
+                <asp:GridView ID="dgvAlumnos" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="Todavía no registraste alumnos.">
+                    <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                    <Columns>
+                        <asp:BoundField DataField="NombreCompleto" HeaderText="Alumno" />
+                        <asp:BoundField DataField="Documento" HeaderText="Docum" />
+                        <asp:BoundField DataField="FechaNacimiento" HeaderText="Nacimiento" DataFormatString="{0:dd/MM/yyyy}" />
+                        <asp:BoundField DataField="Domicilio" HeaderText="Domicilio" />
+                        <asp:BoundField DataField="Rol" HeaderText="Vínculo" />
+                    </Columns>
+                </asp:GridView>
+            </div>
+        </div>
     </div>
 </asp:Content>

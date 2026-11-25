@@ -150,7 +150,18 @@
 
                     <!-- CARGA DE DOCUMENTOS -->
                     <asp:Label ID="lblDocumentos" runat="server" Text="Documentos de la postulación (PDF, JPG o PNG, hasta 5 MB cada uno y 19 MB en total)" CssClass="form-label fw-semibold mb-3"></asp:Label>
-                    <p class="text-secondary small">Usá nombres claros, como “DNI del alumno”: el nombre del archivo será su descripción. Presioná “Subir documentos” para conservarlos antes de cambiar el curso.</p>
+                    <p class="text-secondary small">El DNI del alumno y la partida de nacimiento son obligatorios. Elegí el tipo de documento, seleccioná el archivo y presioná “Subir documentos” para conservarlo antes de cambiar el curso.</p>
+                    <asp:Label ID="lblFaltantes" runat="server" CssClass="d-block mb-3"></asp:Label>
+                    <div class="mb-3">
+                        <asp:Label ID="lblTipoDocumento" runat="server" Text="Tipo de documento" CssClass="form-label fw-semibold"></asp:Label>
+                        <asp:DropDownList ID="ddlTipoDocumento" runat="server" CssClass="form-control">
+                            <asp:ListItem Value="DNI del alumno" Text="DNI del alumno (obligatorio)"></asp:ListItem>
+                            <asp:ListItem Value="Partida de nacimiento" Text="Partida de nacimiento (obligatorio)"></asp:ListItem>
+                            <asp:ListItem Value="Certificado de estudios" Text="Certificado de estudios (opcional)"></asp:ListItem>
+                            <asp:ListItem Value="Certificado de discapacidad" Text="Certificado de discapacidad (opcional, podés subir más de uno)"></asp:ListItem>
+                            <asp:ListItem Value="Otro documento" Text="Otro documento (opcional)"></asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
                     <div class="d-flex align-items-start gap-4 mb-4">
                         <asp:FileUpload ID="fuDocumentos" runat="server" CssClass="form-control" AllowMultiple="true" accept=".pdf,.jpg,.jpeg,.png" />
                         <asp:Button ID="btnSubirDocumentos" runat="server" CssClass="btn-lilaOscuro flex-shrink-0" Text="Subir documentos" CausesValidation="false" formnovalidate="formnovalidate" OnClick="btnSubirDocumentos_Click"></asp:Button>

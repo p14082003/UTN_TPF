@@ -1160,9 +1160,15 @@ BEGIN
     END IF;
 
     SELECT a.id AS IdAlumno,
-	CONCAT(pe.nombre, ' ', pe.apellido) AS NombreCompleto
+	CONCAT(pe.nombre, ' ', pe.apellido) AS NombreCompleto,
+	pe.documento AS Documento,
+	pe.fechaNacimiento AS FechaNacimiento,
+	pe.domicilio AS Domicilio,
+	COALESCE(ro.descripcion, 'Autogestor') AS Rol
     FROM Alumnos a
     INNER JOIN Personas pe ON pe.id = a.idPersona
+    LEFT JOIN ResponsablesPorAlumno rpa ON rpa.idAlumno = a.id AND rpa.idResponsable = p_idResponsable
+    LEFT JOIN Roles ro ON ro.id = rpa.idRol
     WHERE EXISTS (SELECT 1 FROM Responsables r WHERE r.id = p_idResponsable AND (a.idPersona = r.idPersona    -- autogestor
                OR EXISTS (SELECT 1 FROM ResponsablesPorAlumno rpa WHERE rpa.idResponsable = p_idResponsable AND rpa.idAlumno = a.id)) -- alumno a cargo
     )

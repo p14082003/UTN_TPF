@@ -26,7 +26,11 @@ namespace Negocio
                     lista.Add(new SP_AlumnosPorResponsable_out
                     {
                         IdAlumno = Convert.ToInt32(lector["IdAlumno"]),
-                        NombreCompleto = (string)lector["NombreCompleto"]
+                        NombreCompleto = (string)lector["NombreCompleto"],
+                        Documento = (string)lector["Documento"],
+                        FechaNacimiento = Convert.ToDateTime(lector["FechaNacimiento"]),
+                        Domicilio = (string)lector["Domicilio"],
+                        Rol = (string)lector["Rol"]
                     });
                 }
                 return lista;

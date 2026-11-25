@@ -21,6 +21,9 @@ namespace Presentacion
         private int idInstitucion;
         private string ClaveCursos => "cursosPostulacion:" + idInstitucion;
 
+        // Documentos que hay que adjuntar para poder enviar la postulación (coinciden con el Value del desplegable)
+        private static readonly string[] Obligatorios = { "DNI del alumno", "Partida de nacimiento" };
+
         private string ClaveDocumentos
         {
             get
@@ -413,8 +416,30 @@ namespace Presentacion
             {
                 return;
             }
-            rptDocumentos.DataSource = ObtenerDocumentos();
+            var documentos = ObtenerDocumentos();
+            rptDocumentos.DataSource = documentos;
             rptDocumentos.DataBind();
+            MostrarFaltantes(documentos);
+        }
+
+        private List<string> ObtenerFaltantes(List<DocumentoAdjunto> documentos)
+        {
+            return Obligatorios.Where(o => !documentos.Any(d => d.Tipo == o)).ToList();
+        }
+
+        private void MostrarFaltantes(List<DocumentoAdjunto> documentos)
+        {
+            List<string> faltantes = ObtenerFaltantes(documentos);
+            if (faltantes.Count == 0)
+            {
+                lblFaltantes.Text = "Ya adjuntaste los documentos obligatorios.";
+                lblFaltantes.CssClass = "d-block mb-3 fg-success";
+            }
+            else
+            {
+                lblFaltantes.Text = "Falta adjuntar: " + string.Join(", ", faltantes) + ".";
+                lblFaltantes.CssClass = "d-block mb-3 text-indigo";
+            }
         }
 
         private List<DocumentoAdjunto> ObtenerDocumentos()
@@ -456,7 +481,13 @@ namespace Presentacion
                     throw new ArgumentException("Los documentos de una postulación no pueden superar los 19 MB en total.");
                 }
 
-                string descripcion = Path.GetFileNameWithoutExtension(nombre).Trim();
+                // La descripción es el tipo elegido; solo "Otro documento" usa el nombre del archivo
+                string tipo = ddlTipoDocumento.SelectedValue;
+                string descripcion = tipo;
+                if (tipo == "Otro documento")
+                {
+                    descripcion = Path.GetFileNameWithoutExtension(nombre).Trim();
+                }
                 if (descripcion.Length == 0)
                 {
                     descripcion = "Documento";
@@ -468,7 +499,7 @@ namespace Presentacion
                 using (var copia = new MemoryStream())
                 {
                     archivo.InputStream.CopyTo(copia);
-                    nuevos.Add(new DocumentoAdjunto { Nombre = nombre, Descripcion = descripcion, Contenido = copia.ToArray() });
+                    nuevos.Add(new DocumentoAdjunto { Nombre = nombre, Tipo = tipo, Descripcion = descripcion, Contenido = copia.ToArray() });
                 }
             }
             documentos.AddRange(nuevos);
@@ -530,9 +561,10 @@ namespace Presentacion
 
                 AgregarDocumentos();
                 var documentos = ObtenerDocumentos();
-                if (documentos.Count == 0)
+                List<string> faltantes = ObtenerFaltantes(documentos);
+                if (faltantes.Count > 0)
                 {
-                    throw new ArgumentException("Adjuntá al menos un documento para enviar la postulación.");
+                    throw new ArgumentException("Faltan documentos obligatorios: " + string.Join(", ", faltantes) + ".");
                 }
 
                 using (var formulario = new MultipartFormDataContent())
@@ -596,6 +628,7 @@ namespace Presentacion
         private class DocumentoAdjunto
         {
             public string Nombre { get; set; }
+            public string Tipo { get; set; }
             public string Descripcion { get; set; }
             public byte[] Contenido { get; set; }
         }
