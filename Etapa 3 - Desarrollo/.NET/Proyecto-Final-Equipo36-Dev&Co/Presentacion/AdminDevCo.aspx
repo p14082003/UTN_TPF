@@ -38,7 +38,7 @@
         </asp:Panel>
 
         <!-- TARJETAS -->
-        <asp:Panel ID="pnlDashboard" runat="server" CssClass="row mb-4">
+        <asp:Panel ID="pnlDashboard" runat="server" CssClass="resumen-gestion row mb-4">
             <div class="md:col-4 mb-3">
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
