@@ -113,6 +113,7 @@ namespace Presentacion
                         if (administrador != null && EnviarCorreo(administrador.Email, administrador.Nombre, administrador.Apellido, administrador.Clave))
                         {
                             MostrarMensaje("Administrador agregado correctamente. Se enviaron sus credenciales por correo electrónico.", true);
+                            ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='GestionarAdministradores.aspx',3000);", true);
                             return;
                         }
                     }
@@ -165,7 +166,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool ok)
         {
             lblMensaje.Text = Server.HtmlEncode(texto);
-            lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
+            lblMensaje.CssClass = ok ? "alert theme-success" : "alert theme-danger";
             lblMensaje.Visible = true;
         }
 
