@@ -18,8 +18,8 @@ namespace Presentacion
                 usuario.IdTipoUsuario == UsuarioSesion.AdministradorInstitucion &&
                 usuario.IdInstitucion.GetValueOrDefault() > 0;
             lnkVacantes.Visible = pnlMenuAdmin.Visible;
-            lnkAgregarAdministrador.Visible = pnlMenuAdmin.Visible;
             lnkMiInstitucion.Visible = pnlMenuAdmin.Visible && usuario.IdAdministradorInstitucion.GetValueOrDefault() > 0;
+            lnkPanelDevCo.Visible = usuario != null && usuario.IdTipoUsuario == UsuarioSesion.DevCo;
 
             if (usuario != null)
             {

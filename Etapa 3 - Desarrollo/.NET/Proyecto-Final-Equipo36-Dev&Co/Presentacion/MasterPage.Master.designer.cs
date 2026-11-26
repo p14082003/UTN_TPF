@@ -24,9 +24,9 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.HyperLink lnkRegistrarAlumno;
 
         /// <summary>
-        /// Control lnkAgregarAdministrador.
+        /// Control lnkPanelDevCo.
         /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkAgregarAdministrador;
+        protected global::System.Web.UI.WebControls.HyperLink lnkPanelDevCo;
 
         /// <summary>
         /// Control head.
