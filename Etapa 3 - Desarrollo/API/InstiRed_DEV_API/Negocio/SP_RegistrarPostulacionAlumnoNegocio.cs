@@ -63,7 +63,14 @@ namespace Negocio
             {
                 throw new ArgumentException("Cada documento requiere una descripción de hasta 100 caracteres.");
             }
-            string[] obligatorios = { "DNI del alumno", "Partida de nacimiento" };
+            string[] obligatorios = { "DNI del alumno - Frente", "DNI del alumno - Dorso", "Partida de nacimiento" };
+            var unicos = obligatorios.Append("Certificado de estudios");
+            var repetidos = unicos.Where(tipo => documentos.Count(descripcion =>
+                string.Equals(descripcion, tipo, StringComparison.OrdinalIgnoreCase)) > 1).ToList();
+            if (repetidos.Count > 0)
+            {
+                throw new ArgumentException("Estos documentos solo se pueden adjuntar una vez: " + string.Join(", ", repetidos) + ".");
+            }
             var faltantes = obligatorios.Where(tipo => !documentos.Contains(tipo, StringComparer.OrdinalIgnoreCase)).ToList();
             if (faltantes.Count > 0)
             {

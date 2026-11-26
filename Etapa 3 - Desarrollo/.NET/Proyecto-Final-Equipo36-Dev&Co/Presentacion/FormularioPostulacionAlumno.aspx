@@ -18,6 +18,8 @@
             color: #FFFFFF !important;
         }
 
+        select[id$="ddlTipoDocumento"] option:disabled { color: #9ca3af; }
+
         * {
             scrollbar-color: #373A72 transparent;
         }
@@ -74,7 +76,7 @@
                         <div class="col-6">
                             <div class="mb-4">
                                 <asp:Label ID="lblCicloLectivo" runat="server" Text="Ciclo lectivo" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:DropDownList ID="ddlCiclo" runat="server" CssClass="form-control" required="required" AutoPostBack="true" OnSelectedIndexChanged="ddlCiclo_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlCiclo" runat="server" CssClass="form-control" required="required" data-curso="ciclo"></asp:DropDownList>
                             </div>
                         </div>
 
@@ -82,7 +84,7 @@
                         <div class="col-6">
                             <div class="mb-4">
                                 <asp:Label ID="lblNivel" runat="server" Text="Nivel" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:DropDownList ID="ddlNivel" runat="server" CssClass="form-control" required="required" AutoPostBack="true" OnSelectedIndexChanged="ddlNivel_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlNivel" runat="server" CssClass="form-control" required="required" data-curso="nivel"></asp:DropDownList>
                             </div>
                         </div>
                     </div>
@@ -92,7 +94,7 @@
                         <div class="col-4">
                             <div class="mb-4">
                                 <asp:Label ID="lblAnio" runat="server" Text="Año" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:DropDownList ID="ddlAnio" runat="server" CssClass="form-control" required="required" AutoPostBack="true" OnSelectedIndexChanged="ddlAnio_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlAnio" runat="server" CssClass="form-control" required="required" data-curso="anio"></asp:DropDownList>
                             </div>
                         </div>
 
@@ -100,7 +102,7 @@
                         <div class="col-4">
                             <div class="mb-4">
                                 <asp:Label ID="lblDivision" runat="server" Text="División" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:DropDownList ID="ddlDivision" runat="server" CssClass="form-control" required="required" AutoPostBack="true" OnSelectedIndexChanged="ddlDivision_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlDivision" runat="server" CssClass="form-control" required="required" data-curso="division"></asp:DropDownList>
                             </div>
                         </div>
 
@@ -108,7 +110,7 @@
                         <div class="col-4">
                             <div class="mb-4">
                                 <asp:Label ID="lblTurno" runat="server" Text="Turno" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:DropDownList ID="ddlTurno" runat="server" CssClass="form-control" required="required" AutoPostBack="true" OnSelectedIndexChanged="ddlTurno_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:DropDownList ID="ddlTurno" runat="server" CssClass="form-control" required="required" data-curso="turno"></asp:DropDownList>
                             </div>
                         </div>
                     </div>
@@ -149,14 +151,15 @@
 
                     <!-- CARGA DE DOCUMENTOS -->
                     <asp:Label ID="lblDocumentos" runat="server" Text="Documentos de la postulación (PDF, JPG o PNG, hasta 5 MB cada uno y 19 MB en total)" CssClass="form-label fw-semibold mb-3"></asp:Label>
-                    <p class="text-secondary small">El DNI del alumno y la partida de nacimiento son obligatorios. Elegí el tipo de documento, seleccioná el archivo y presioná “Subir documentos” para conservarlo antes de cambiar el curso.</p>
+                    <p class="text-secondary small">El frente y el dorso del DNI del alumno, y la partida de nacimiento, son obligatorios. Subí cada lado del DNI por separado. Los tipos que admiten un solo archivo se deshabilitan al cargarlos y vuelven a habilitarse si los quitás.</p>
                     <asp:Label ID="lblFaltantes" runat="server" CssClass="d-block mb-3"></asp:Label>
                     <div class="mb-3">
                         <asp:Label ID="lblTipoDocumento" runat="server" Text="Tipo de documento" CssClass="form-label fw-semibold"></asp:Label>
                         <asp:DropDownList ID="ddlTipoDocumento" runat="server" CssClass="form-control">
-                            <asp:ListItem Value="DNI del alumno" Text="DNI del alumno (obligatorio)"></asp:ListItem>
-                            <asp:ListItem Value="Partida de nacimiento" Text="Partida de nacimiento (obligatorio)"></asp:ListItem>
-                            <asp:ListItem Value="Certificado de estudios" Text="Certificado de estudios (opcional)"></asp:ListItem>
+                            <asp:ListItem Value="DNI del alumno - Frente" Text="DNI del alumno: frente (obligatorio)" data-unico="true"></asp:ListItem>
+                            <asp:ListItem Value="DNI del alumno - Dorso" Text="DNI del alumno: dorso (obligatorio)" data-unico="true"></asp:ListItem>
+                            <asp:ListItem Value="Partida de nacimiento" Text="Partida de nacimiento (obligatorio)" data-unico="true"></asp:ListItem>
+                            <asp:ListItem Value="Certificado de estudios" Text="Certificado de estudios (opcional)" data-unico="true"></asp:ListItem>
                             <asp:ListItem Value="Certificado de discapacidad" Text="Certificado de discapacidad (opcional, podés subir más de uno)"></asp:ListItem>
                             <asp:ListItem Value="Otro documento" Text="Otro documento (opcional)"></asp:ListItem>
                         </asp:DropDownList>
@@ -198,4 +201,6 @@
         </div>
     </div>
 
+    <script type="application/json" id="cursosPostulacion"><%= CursosJson.Replace("<", "\\u003c") %></script>
+    <script src="<%= ResolveUrl("~/Scripts/postulacion-alumno.js") %>"></script>
 </asp:Content>

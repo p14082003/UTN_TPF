@@ -1,4 +1,4 @@
-﻿using Dominio;
+using Dominio;
 using Negocio;
 using Presentacion.Auth;
 using System;
@@ -22,8 +22,20 @@ namespace Presentacion
         private string nombreInstitucion;
         private string ClaveCursos => "cursosPostulacion:" + idInstitucion;
 
+        protected string CursosJson
+        {
+            get
+            {
+                var cursos = Session[ClaveCursos] as List<CursoApi> ?? new List<CursoApi>();
+                var niveles = cursos.GroupBy(c => new { c.IdNivel, c.NivelPersonalizado })
+                    .Select(grupo => new { Valor = grupo.First().IdCurso, Cursos = grupo.ToList() });
+                return new JavaScriptSerializer().Serialize(niveles);
+            }
+        }
+
         // Documentos que hay que adjuntar para poder enviar la postulación (coinciden con el Value del desplegable)
-        private static readonly string[] Obligatorios = { "DNI del alumno", "Partida de nacimiento" };
+        private static readonly string[] Obligatorios = { "DNI del alumno - Frente", "DNI del alumno - Dorso", "Partida de nacimiento" };
+        private static readonly string[] DocumentosUnicos = { "DNI del alumno - Frente", "DNI del alumno - Dorso", "Partida de nacimiento", "Certificado de estudios" };
 
         private string ClaveDocumentos
         {
@@ -131,6 +143,10 @@ namespace Presentacion
                 Session[ClaveCursos] = cursos;
 
                 CargarCiclosLectivos(cursos);
+                CargarNivelesEducativos(cursos);
+                CargarAnios(cursos);
+                CargarDivisiones(cursos);
+                CargarTurnos(cursos);
                 if (cursos.Count == 0)
                 {
                     btnGuardar.Enabled = false;
@@ -164,14 +180,14 @@ namespace Presentacion
             }
         }
 
-        private void CargarNivelesEducativos(List<CursoApi> cursos, int cicloSeleccionado)
+        private void CargarNivelesEducativos(List<CursoApi> cursos)
         {
             ddlNivel.Items.Clear();
 
             ddlNivel.Items.Add(new ListItem("Seleccionar nivel", ""));
 
-            // Filtro solo los niveles correspondientes al ciclo lectivo seleccionado
-            List<CursoApi> niveles = cursos.Where(c => c.CicloLectivo == cicloSeleccionado).GroupBy(c => new { c.IdNivel, c.NivelPersonalizado }).Select(g => g.First()).ToList();
+            // Se registran todas las opciones; el navegador muestra las del ciclo elegido.
+            List<CursoApi> niveles = cursos.GroupBy(c => new { c.IdNivel, c.NivelPersonalizado }).Select(g => g.First()).ToList();
 
             foreach (CursoApi curso in niveles)
             {
@@ -193,14 +209,13 @@ namespace Presentacion
             //  el nivel personalizado al mismo tiempo. Por lo tanto hay que contemplar el caso en el que esten ambos
         }
 
-        private void CargarAnios(List<CursoApi> cursos, int cicloSeleccionado, CursoApi nivelSeleccionado)
+        private void CargarAnios(List<CursoApi> cursos)
         {
             ddlAnio.Items.Clear();
 
             ddlAnio.Items.Add(new ListItem("Seleccionar año", ""));
 
-            // Filtra los cursos correspondientes al ciclo y nivel seleccionados
-            List<CursoApi> anios = cursos.Where(c => c.CicloLectivo == cicloSeleccionado && c.IdNivel == nivelSeleccionado.IdNivel &&c.NivelPersonalizado == nivelSeleccionado.NivelPersonalizado).GroupBy(c => c.Anio).Select(g => g.First()).OrderBy(c => c.Anio).ToList();
+            List<CursoApi> anios = cursos.GroupBy(c => c.Anio).Select(g => g.First()).OrderBy(c => c.Anio).ToList();
 
             foreach (CursoApi curso in anios)
             {
@@ -212,13 +227,13 @@ namespace Presentacion
             }
         }
 
-        private void CargarDivisiones(List<CursoApi> cursos, int cicloSeleccionado, CursoApi nivelSeleccionado, int? anioSeleccionado)
+        private void CargarDivisiones(List<CursoApi> cursos)
         {
             ddlDivision.Items.Clear();
 
             ddlDivision.Items.Add(new ListItem("Seleccionar división", ""));
 
-            List<CursoApi> divisiones = cursos.Where(c => c.CicloLectivo == cicloSeleccionado && c.IdNivel == nivelSeleccionado.IdNivel && c.NivelPersonalizado == nivelSeleccionado.NivelPersonalizado && c.Anio == anioSeleccionado).GroupBy(c => c.Division).Select(g => g.First()).OrderBy(c => c.Division).ToList();
+            List<CursoApi> divisiones = cursos.GroupBy(c => c.Division).Select(g => g.First()).OrderBy(c => c.Division).ToList();
 
             foreach (CursoApi curso in divisiones)
             {
@@ -226,13 +241,13 @@ namespace Presentacion
             }
         }
 
-        private void CargarTurnos(List<CursoApi> cursos, int cicloSeleccionado, CursoApi nivelSeleccionado, int? anioSeleccionado, string divisionSeleccionada)
+        private void CargarTurnos(List<CursoApi> cursos)
         {
             ddlTurno.Items.Clear();
 
             ddlTurno.Items.Add(new ListItem("Seleccionar turno", ""));
 
-            List<CursoApi> turnos = cursos.Where(c => c.CicloLectivo == cicloSeleccionado && c.IdNivel == nivelSeleccionado.IdNivel && c.NivelPersonalizado == nivelSeleccionado.NivelPersonalizado && c.Anio == anioSeleccionado && c.Division == divisionSeleccionada).GroupBy(c => new { c.IdTurno, c.Turno }).Select(g => g.First()).OrderBy(c => c.Turno).ToList();
+            List<CursoApi> turnos = cursos.GroupBy(c => c.IdTurno).Select(g => g.First()).OrderBy(c => c.Turno).ToList();
 
             foreach (CursoApi curso in turnos)
             {
@@ -240,175 +255,32 @@ namespace Presentacion
             }
         }
 
-        protected void ddlCiclo_SelectedIndexChanged(object sender, EventArgs e)
+        private CursoApi ObtenerCursoSeleccionado(List<CursoApi> cursos)
         {
-            ViewState.Remove("IdCurso");
-            // Validar cursos
-            List<CursoApi> cursos = (List<CursoApi>)Session[ClaveCursos];
-
-            ddlNivel.Items.Clear();
-            ddlAnio.Items.Clear();
-            ddlDivision.Items.Clear();
-            ddlTurno.Items.Clear();
-            txtVacantes.Text = "";
-
-            if (cursos == null || ddlCiclo.SelectedValue == "")
+            int ciclo;
+            int idNivel;
+            int idTurno;
+            if (cursos == null || !int.TryParse(ddlCiclo.SelectedValue, out ciclo) ||
+                !int.TryParse(ddlNivel.SelectedValue, out idNivel) ||
+                !int.TryParse(ddlTurno.SelectedValue, out idTurno) ||
+                string.IsNullOrEmpty(ddlAnio.SelectedValue) || string.IsNullOrEmpty(ddlDivision.SelectedValue))
             {
-                return;
+                return null;
             }
 
-            int cicloSeleccionado = int.Parse(ddlCiclo.SelectedValue);
-
-            CargarNivelesEducativos(cursos, cicloSeleccionado);
-        }
-
-        protected void ddlNivel_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ViewState.Remove("IdCurso");
-            // Validar cursos
-            List<CursoApi> cursos = (List<CursoApi>)Session[ClaveCursos];
-
-            ddlAnio.Items.Clear();
-            ddlDivision.Items.Clear();
-            ddlTurno.Items.Clear();
-            txtVacantes.Text = "";
-
-            if (cursos == null || ddlCiclo.SelectedValue == "" || ddlNivel.SelectedValue == "")
-            {
-                return;
-            }
-
-            int cicloSeleccionado = int.Parse(ddlCiclo.SelectedValue);
-            int idCurso = int.Parse(ddlNivel.SelectedValue);
-
-            CursoApi nivelSeleccionado = cursos.FirstOrDefault(c => c.IdCurso == idCurso);
-
-            if (nivelSeleccionado == null)
-            {
-                return;
-            }
-
-            CargarAnios(cursos, cicloSeleccionado, nivelSeleccionado);
-        }
-
-        protected void ddlAnio_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ViewState.Remove("IdCurso");
-            // Validar cursos
-            List<CursoApi> cursos = (List<CursoApi>)Session[ClaveCursos];
-
-            ddlDivision.Items.Clear();
-            ddlTurno.Items.Clear();
-            txtVacantes.Text = "";
-
-            if (cursos == null || ddlCiclo.SelectedValue == "" || ddlNivel.SelectedValue == "" ||
-                ddlAnio.SelectedValue == "")
-            {
-                return;
-            }
-
-            int cicloSeleccionado = int.Parse(ddlCiclo.SelectedValue);
-            int idCurso = int.Parse(ddlNivel.SelectedValue);
-
-            CursoApi nivelSeleccionado = cursos.FirstOrDefault(c => c.IdCurso == idCurso);
-
-            if (nivelSeleccionado == null)
-            {
-                return;
-            }
-
-            // "int?" permite guardar tanto un int como null (Ya que la DB permite que el anio sea null)
+            int anio;
             int? anioSeleccionado = null;
-
             if (ddlAnio.SelectedValue != "null")
             {
-                anioSeleccionado = int.Parse(ddlAnio.SelectedValue);
+                if (!int.TryParse(ddlAnio.SelectedValue, out anio)) return null;
+                anioSeleccionado = anio;
             }
+            var nivel = cursos.FirstOrDefault(c => c.IdCurso == idNivel);
+            if (nivel == null) return null;
 
-            CargarDivisiones(cursos, cicloSeleccionado, nivelSeleccionado, anioSeleccionado);
-        }
-
-        protected void ddlDivision_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ViewState.Remove("IdCurso");
-            // Validar cursos
-            List<CursoApi> cursos = (List<CursoApi>)Session[ClaveCursos];
-
-            ddlTurno.Items.Clear();
-            txtVacantes.Text = "";
-
-            if (cursos == null || ddlCiclo.SelectedValue == "" || ddlNivel.SelectedValue == "" ||
-                ddlAnio.SelectedValue == "" || ddlDivision.SelectedValue == "")
-            {
-                return;
-            }
-
-            int cicloSeleccionado = int.Parse(ddlCiclo.SelectedValue);
-            int idCurso = int.Parse(ddlNivel.SelectedValue);
-            string divisionSeleccionada = ddlDivision.SelectedValue;
-
-            CursoApi nivelSeleccionado = cursos.FirstOrDefault(c => c.IdCurso == idCurso);
-
-            if (nivelSeleccionado == null)
-            {
-                return;
-            }
-
-            // "int?" permite guardar tanto un int como null (Ya que la DB permite que el anio sea null)
-            int? anioSeleccionado = null;
-
-            if (ddlAnio.SelectedValue != "null")
-            {
-                anioSeleccionado = int.Parse(ddlAnio.SelectedValue);
-            }
-
-            CargarTurnos(cursos, cicloSeleccionado, nivelSeleccionado, anioSeleccionado, divisionSeleccionada);
-        }
-
-        protected void ddlTurno_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ViewState.Remove("IdCurso");
-            // Validar cursos
-            List<CursoApi> cursos = (List<CursoApi>)Session[ClaveCursos];
-
-            if (cursos == null || ddlCiclo.SelectedValue == "" || ddlNivel.SelectedValue == "" ||
-                ddlAnio.SelectedValue == "" || ddlDivision.SelectedValue == "" || ddlTurno.SelectedValue == "")
-            {
-                txtVacantes.Text = "";
-                return;
-            }
-
-            int cicloSeleccionado = int.Parse(ddlCiclo.SelectedValue);
-            int idCurso = int.Parse(ddlNivel.SelectedValue);
-            int idTurnoSeleccionado = int.Parse(ddlTurno.SelectedValue);
-            string divisionSeleccionada = ddlDivision.SelectedValue;
-
-            CursoApi nivelSeleccionado = cursos.FirstOrDefault(c => c.IdCurso == idCurso);
-
-            if (nivelSeleccionado == null)
-            {
-                txtVacantes.Text = "";
-                return;
-            }
-
-            // "int?" permite guardar tanto un int como null (Ya que la DB permite que el anio sea null)
-            int? anioSeleccionado = null;
-
-            if (ddlAnio.SelectedValue != "null")
-            {
-                anioSeleccionado = int.Parse(ddlAnio.SelectedValue);
-            }
-
-            CursoApi cursoSeleccionado = cursos.FirstOrDefault(c => c.CicloLectivo == cicloSeleccionado && c.IdNivel == nivelSeleccionado.IdNivel && c.NivelPersonalizado == nivelSeleccionado.NivelPersonalizado && c.Anio == anioSeleccionado && c.Division == divisionSeleccionada && c.IdTurno == idTurnoSeleccionado);
-
-            if (cursoSeleccionado == null)
-            {
-                txtVacantes.Text = "";
-                return;
-            }
-
-            txtVacantes.Text = cursoSeleccionado.VacantesDisponibles.ToString();
-            ViewState["IdCurso"] = cursoSeleccionado.IdCurso;
+            return cursos.FirstOrDefault(c => c.IdInstitucion == idInstitucion && c.CicloLectivo == ciclo &&
+                c.IdNivel == nivel.IdNivel && c.NivelPersonalizado == nivel.NivelPersonalizado &&
+                c.Anio == anioSeleccionado && c.Division == ddlDivision.SelectedValue && c.IdTurno == idTurno);
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
@@ -421,6 +293,25 @@ namespace Presentacion
             rptDocumentos.DataSource = documentos;
             rptDocumentos.DataBind();
             MostrarFaltantes(documentos);
+            ActualizarTiposDocumento(documentos);
+        }
+
+        private void ActualizarTiposDocumento(List<DocumentoAdjunto> documentos)
+        {
+            // Enabled=false hace que WebForms omita la opción; disabled la mantiene visible y grisada.
+            foreach (ListItem tipo in ddlTipoDocumento.Items)
+            {
+                tipo.Enabled = true;
+                bool cargado = DocumentosUnicos.Contains(tipo.Value) && documentos.Any(d => d.Tipo == tipo.Value);
+                if (cargado) tipo.Attributes["disabled"] = "disabled";
+                else tipo.Attributes.Remove("disabled");
+            }
+            if (ddlTipoDocumento.SelectedItem == null || ddlTipoDocumento.SelectedItem.Attributes["disabled"] != null)
+            {
+                ddlTipoDocumento.ClearSelection();
+                var siguiente = ddlTipoDocumento.Items.Cast<ListItem>().FirstOrDefault(tipo => tipo.Attributes["disabled"] == null);
+                if (siguiente != null) siguiente.Selected = true;
+            }
         }
 
         private List<string> ObtenerFaltantes(List<DocumentoAdjunto> documentos)
@@ -457,15 +348,30 @@ namespace Presentacion
         private void AgregarDocumentos()
         {
             var documentos = ObtenerDocumentos();
+            var archivos = fuDocumentos.PostedFiles.Where(archivo => !string.IsNullOrEmpty(archivo.FileName)).ToList();
+            if (archivos.Count == 0) return;
+
+            string tipo = ddlTipoDocumento.SelectedValue;
+            if (ddlTipoDocumento.Items.FindByValue(tipo) == null)
+            {
+                throw new ArgumentException("Seleccioná un tipo de documento válido.");
+            }
+            if (DocumentosUnicos.Contains(tipo))
+            {
+                if (documentos.Any(d => d.Tipo == tipo))
+                {
+                    throw new ArgumentException("Ya adjuntaste " + tipo + ". Quitá el archivo anterior si querés reemplazarlo.");
+                }
+                if (archivos.Count > 1)
+                {
+                    throw new ArgumentException("Solo podés adjuntar un archivo de tipo " + tipo + ".");
+                }
+            }
             var nuevos = new List<DocumentoAdjunto>();
             long total = documentos.Sum(d => (long)d.Contenido.Length);
 
-            foreach (HttpPostedFile archivo in fuDocumentos.PostedFiles)
+            foreach (HttpPostedFile archivo in archivos)
             {
-                if (string.IsNullOrEmpty(archivo.FileName))
-                {
-                    continue;
-                }
                 if (archivo.ContentLength <= 0 || archivo.ContentLength > 5 * 1024 * 1024)
                 {
                     throw new ArgumentException("Cada documento debe tener contenido y pesar como máximo 5 MB.");
@@ -482,16 +388,12 @@ namespace Presentacion
                     throw new ArgumentException("Los documentos de una postulación no pueden superar los 19 MB en total.");
                 }
 
-                // La descripción es el tipo elegido; solo "Otro documento" usa el nombre del archivo
-                string tipo = ddlTipoDocumento.SelectedValue;
+                // Los documentos libres conservan el nombre sin confundirse con los tipos obligatorios.
                 string descripcion = tipo;
                 if (tipo == "Otro documento")
                 {
-                    descripcion = Path.GetFileNameWithoutExtension(nombre).Trim();
-                }
-                if (descripcion.Length == 0)
-                {
-                    descripcion = "Documento";
+                    string nombreDocumento = Path.GetFileNameWithoutExtension(nombre).Trim();
+                    descripcion = "Otro documento: " + (nombreDocumento.Length == 0 ? "Documento" : nombreDocumento);
                 }
                 if (descripcion.Length > 100)
                 {
@@ -550,11 +452,12 @@ namespace Presentacion
             {
                 int idAlumno;
                 var cursos = Session[ClaveCursos] as List<CursoApi>;
-                int idCurso = (int?)ViewState["IdCurso"] ?? 0;
-                if (cursos == null || !cursos.Any(c => c.IdCurso == idCurso && c.IdInstitucion == idInstitucion))
+                var curso = ObtenerCursoSeleccionado(cursos);
+                if (curso == null)
                 {
                     throw new ArgumentException("Seleccioná el curso completo: ciclo, nivel, año, división y turno. Si la sesión venció, volvé a abrir el formulario.");
                 }
+                int idCurso = curso.IdCurso;
                 if (!int.TryParse(ddlAlumnos.SelectedValue, out idAlumno) || idAlumno <= 0)
                 {
                     throw new ArgumentException("Seleccioná el alumno que querés postular.");

@@ -45,19 +45,18 @@
 
                     <!-- Acceso de Dev&Co -->
                     <asp:HyperLink ID="lnkPanelDevCo" runat="server" NavigateUrl="~/AdminDevCo.aspx"
-                        CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Panel de control" Visible="false" />
+                        CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Panel de Control" Visible="false" />
 
                     <!-- Menú del administrador de institución -->
                     <asp:Panel ID="pnlMenuAdmin" runat="server" Visible="false" CssClass="d-flex align-items-center flex-wrap gap-2">
                         <asp:HyperLink ID="lnkMiInstitucion" runat="server" NavigateUrl="~/FormularioInstitucion.aspx"
                             CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Mi institución" Visible="false" />
                         <asp:HyperLink ID="lnkPostulaciones" runat="server" NavigateUrl="~/GestionarPostulacionAlumno.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Postulaciones" />
-                        <asp:HyperLink ID="lnkAgregarAdministrador" runat="server" NavigateUrl="~/FormularioAdministradorAdicional.aspx"
-                            CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Agregar administrador" Visible="false" />
                         <asp:HyperLink ID="lnkAdministradores" runat="server" NavigateUrl="~/GestionarAdministradores.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Administradores" />
                         <asp:HyperLink ID="lnkVacantes" runat="server" NavigateUrl="~/GestionarVacante.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Cursos y vacantes" />
                         <asp:HyperLink ID="lnkResenias" runat="server" NavigateUrl="~/GestionarResenia.aspx" CssClass="btn btn-sm btn-lilaClaro px-3 py-2" Text="Reseñas" />
                     </asp:Panel>
+
                 </div>
 
                 <asp:HyperLink ID="lnkIniciarSesion" runat="server" NavigateUrl="~/Login.aspx"
