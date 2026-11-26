@@ -334,7 +334,7 @@ namespace Presentacion
         {
             lblMensajeResenia.Visible = true;
             lblMensajeResenia.Text = HttpUtility.HtmlEncode(mensaje);
-            lblMensajeResenia.CssClass = exito ? "alert alert-success d-block my-3" : "alert alert-danger d-block my-3";
+            lblMensajeResenia.CssClass = exito ? "alert theme-success d-block my-3" : "alert theme-danger d-block my-3";
         }
 
         private async Task CargarImagenesAsync(int id)

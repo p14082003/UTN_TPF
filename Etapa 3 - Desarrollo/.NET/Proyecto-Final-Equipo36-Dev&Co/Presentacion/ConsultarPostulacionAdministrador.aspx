@@ -18,8 +18,8 @@
                 </header>
 
                 <!-- Mensaje de error -->
-                <asp:Panel ID="pnlMensaje" runat="server" Visible="false" CssClass="alert alert-danger mb-3" role="alert">
-                    <asp:Literal ID="litMensaje" runat="server" />
+                <asp:Panel ID="pnlMensaje" runat="server" Visible="false" CssClass="col-12 alert mb-3" role="alert">
+                    <asp:Literal ID="litMensaje" runat="server" Mode="Encode"  />
                 </asp:Panel>
 
                 <!-- FORMULARIO DE CONSULTA -->

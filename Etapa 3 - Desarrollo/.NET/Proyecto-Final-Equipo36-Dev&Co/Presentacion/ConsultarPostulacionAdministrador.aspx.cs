@@ -30,17 +30,17 @@ namespace Presentacion
             string email = txtEmail.Text.Trim();
             if (codigo == "" || email == "")
             {
-                MostrarError("Ingresá el código de seguimiento y el correo electrónico.");
+                MostrarError("Ingresá el código de seguimiento y el correo electrónico.",false);
                 return;
             }
             if (codigo.Length > 30 || email.Length > 100)
             {
-                MostrarError("El código admite hasta 30 caracteres y el correo hasta 100.");
+                MostrarError("El código admite hasta 30 caracteres y el correo hasta 100.",false);
                 return;
             }
             if (!EmailValido(email))
             {
-                MostrarError("Ingresá un correo electrónico válido.");
+                MostrarError("Ingresá un correo electrónico válido.",false);
                 return;
             }
 
@@ -50,19 +50,19 @@ namespace Presentacion
                     new { codigo, email }, leerCuerpo: true);
                 if (respuesta.Estado == HttpStatusCode.BadRequest)
                 {
-                    MostrarError(respuesta.Mensaje ?? "No se encontró una postulación con esos datos.");
+                    MostrarError(respuesta.Mensaje ?? "No se encontró una postulación con esos datos.",false);
                     return;
                 }
                 if (respuesta.Estado != HttpStatusCode.OK)
                 {
-                    MostrarError("No se pudo consultar la postulación. Intentá nuevamente más tarde.");
+                    MostrarError("No se pudo consultar la postulación. Intentá nuevamente más tarde.",false);
                     return;
                 }
 
                 var postulacion = new JavaScriptSerializer().Deserialize<PostulacionApi>(respuesta.Cuerpo);
                 if (postulacion == null || postulacion.Tipo != "Administrador")
                 {
-                    MostrarError("No se encontró una postulación de administrador con esos datos.");
+                    MostrarError("No se encontró una postulación de administrador con esos datos.",false);
                     return;
                 }
 
@@ -89,7 +89,7 @@ namespace Presentacion
             catch (Exception ex)
             {
                 Trace.Warn("ConsultarPostulacionAdministrador", "Error al consultar la API de InstiRed.", ex);
-                MostrarError("No se pudo consultar la postulación. Intentá nuevamente más tarde.");
+                MostrarError("No se pudo consultar la postulación. Intentá nuevamente más tarde.",false);
             }
         }
 
@@ -103,11 +103,14 @@ namespace Presentacion
             txtEmail.Text = "";
         }
 
-        private void MostrarError(string mensaje)
+        private void MostrarError(string mensaje,bool exito)
         {
-            litMensaje.Text = Server.HtmlEncode(mensaje);
+            litMensaje.Text = mensaje;
+            pnlMensaje.CssClass = exito ? "alert theme-success" : "alert theme-danger";
             pnlMensaje.Visible = true;
         }
+
+
 
         private static bool EmailValido(string email)
         {

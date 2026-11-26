@@ -1,5 +1,12 @@
 ﻿<%@ Page Title="Administradores" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarAdministradores.aspx.cs" Inherits="Presentacion.GestionarAdministradores" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .btn-admin-accion{
+            width: 125px;
+            height: 48px;
+
+        }
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="p-3 bg-fondo rounded-4">
@@ -35,14 +42,14 @@
                                 <ItemTemplate>
                                     <%-- No se puede dar de baja a uno mismo (lo rechaza el SP), por eso no se muestra el botón --%>
                                     <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("Activo") && !(bool)Eval("EsPropio") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn-outline theme-danger btn-sm rounded-pill px-3 fw-bold"
+                                        CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
                                         OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
-                                        Dar de baja
+                                        <i class="bi bi-trash fg-danger fs-lg"></i> Baja
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("Activo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
+                                        CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
                                         OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
-                                        Reactivar
+                                        <i class="bi bi-arrow-repeat fg-success fs-lg"></i>  Reactivar
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>

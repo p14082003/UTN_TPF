@@ -116,8 +116,9 @@ namespace Presentacion
                     {
                         EnviarCorreo(administrador.Email, administrador.Nombre, administrador.Apellido, administrador.Clave);
                     }
-
+                    ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='GestionarPostulacionAlumno.aspx',3000);", true);
                     return;
+                   
                 }
 
                 MostrarMensaje(respuesta.Mensaje ?? "No se pudo completar el alta. Intentá nuevamente más tarde.", false);
@@ -161,7 +162,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool ok)
         {
             lblMensaje.Text = Server.HtmlEncode(texto);
-            lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
+            lblMensaje.CssClass = ok ? "alert theme-success" : "alert theme-danger";
             lblMensaje.Visible = true;
         }
 

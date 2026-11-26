@@ -117,9 +117,9 @@
                             <asp:BoundField DataField="Estado" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnVerDetalle" runat="server" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
+                                    <asp:LinkButton ID="btnVerDetalle" runat="server" CssClass="btn btn-outline-secondary rounded-pill px-3 fw-bold"
                                         CommandArgument='<%# Eval("IdPostulacion") %>' OnClick="btnVerDetalle_Click">
-                                        Ver Detalle
+                                         <i class="bi bi-eye fg-info fs-lg"></i> Ver
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>

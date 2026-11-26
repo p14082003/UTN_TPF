@@ -13,27 +13,6 @@ namespace Presentacion
 
     public partial class GestionarPostulacionAlumno
     {
-        protected global::System.Web.UI.WebControls.Label lblConfirmadas;
-        protected global::System.Web.UI.WebControls.DropDownList ddlEstado;
-        protected global::System.Web.UI.WebControls.Literal litEstadoPostulacion;
-        protected global::System.Web.UI.WebControls.Label lblAvisoEstado;
-        protected global::System.Web.UI.WebControls.Panel pnlMotivoRechazo;
-        protected global::System.Web.UI.WebControls.Literal litMotivoRechazo;
-        protected global::System.Web.UI.WebControls.Label lblPendientes;
-        protected global::System.Web.UI.WebControls.Label lblAceptadas;
-        protected global::System.Web.UI.WebControls.Label lblRechazadas;
-        protected global::System.Web.UI.WebControls.Literal litAlumno;
-        protected global::System.Web.UI.WebControls.Literal litCurso;
-        protected global::System.Web.UI.WebControls.Literal litDniAlumno;
-        protected global::System.Web.UI.WebControls.Literal litFechaNacimientoAlumno;
-        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
-        protected global::System.Web.UI.WebControls.Literal litTutor;
-        protected global::System.Web.UI.WebControls.Literal litRolResponsable;
-        protected global::System.Web.UI.WebControls.Literal litCorreoTutor;
-        protected global::System.Web.UI.WebControls.Literal litTelefonosResponsable;
-        protected global::System.Web.UI.WebControls.Repeater rptDocumentos;
-        protected global::System.Web.UI.WebControls.Panel pnlSinDocumentos;
-
 
         /// <summary>
         /// Control pnlMensaje.
@@ -63,6 +42,42 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Panel pnlDashboard;
 
         /// <summary>
+        /// Control lblPendientes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPendientes;
+
+        /// <summary>
+        /// Control lblAceptadas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblAceptadas;
+
+        /// <summary>
+        /// Control lblConfirmadas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblConfirmadas;
+
+        /// <summary>
+        /// Control lblRechazadas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRechazadas;
+
+        /// <summary>
         /// Control pnlListado.
         /// </summary>
         /// <remarks>
@@ -70,6 +85,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlListado;
+
+        /// <summary>
+        /// Control ddlEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlEstado;
 
         /// <summary>
         /// Control dgvPostulaciones.
@@ -97,6 +121,141 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCerrarDetalle;
+
+        /// <summary>
+        /// Control litCodigoSeguimiento.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
+
+        /// <summary>
+        /// Control litEstadoPostulacion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litEstadoPostulacion;
+
+        /// <summary>
+        /// Control litAlumno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAlumno;
+
+        /// <summary>
+        /// Control litCurso.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCurso;
+
+        /// <summary>
+        /// Control litDniAlumno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litDniAlumno;
+
+        /// <summary>
+        /// Control litFechaNacimientoAlumno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litFechaNacimientoAlumno;
+
+        /// <summary>
+        /// Control litTutor.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litTutor;
+
+        /// <summary>
+        /// Control litRolResponsable.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRolResponsable;
+
+        /// <summary>
+        /// Control litCorreoTutor.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCorreoTutor;
+
+        /// <summary>
+        /// Control litTelefonosResponsable.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litTelefonosResponsable;
+
+        /// <summary>
+        /// Control rptDocumentos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptDocumentos;
+
+        /// <summary>
+        /// Control pnlSinDocumentos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSinDocumentos;
+
+        /// <summary>
+        /// Control lblAvisoEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblAvisoEstado;
+
+        /// <summary>
+        /// Control pnlMotivoRechazo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlMotivoRechazo;
+
+        /// <summary>
+        /// Control litMotivoRechazo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMotivoRechazo;
 
         /// <summary>
         /// Control pnlConVacantes.

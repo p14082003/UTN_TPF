@@ -21,6 +21,14 @@
             grid-column: 3;
             justify-self: end;
         }
+
+    
+        .btn-admin-accion{
+            width: 125px;
+            height: 48px;
+
+        }
+
     </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -339,13 +347,13 @@
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn btn-light btn-sm rounded-4 p-3"
+                                        CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
                                         OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
                                         <i class="bi bi-trash fg-danger fs-lg"></i>
                                         Baja
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn btn-light btn-sm rounded-4 p-3"
+                                        CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
                                         OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
                                         <i class="bi bi-arrow-repeat fg-success fs-lg"></i> 
                                         Reactivar
