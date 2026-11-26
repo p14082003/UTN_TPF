@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Gestión de postulación" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ResponsableGestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.ResponsableGestionarPostulacionAlumno" %>
+﻿<%@ Page Title="InstiRed - Gestión de postulación" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ResponsableGestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.ResponsableGestionarPostulacionAlumno" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>

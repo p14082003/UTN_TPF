@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Postulaciones recibidas" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.GestionarPostulacionAlumno" %>
+﻿<%@ Page Title="InstiRed - Postulaciones recibidas" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarPostulacionAlumno.aspx.cs" Inherits="Presentacion.GestionarPostulacionAlumno" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         .encabezado-postulacion {

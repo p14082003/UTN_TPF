@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Administradores" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarAdministradores.aspx.cs" Inherits="Presentacion.GestionarAdministradores" %>
+﻿<%@ Page Title="InstiRed - Administradores" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="GestionarAdministradores.aspx.cs" Inherits="Presentacion.GestionarAdministradores" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         .btn-admin-accion{

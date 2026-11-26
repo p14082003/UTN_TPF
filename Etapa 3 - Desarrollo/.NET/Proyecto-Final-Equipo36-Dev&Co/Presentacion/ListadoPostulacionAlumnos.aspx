@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Mis postulaciones" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ListadoPostulacionAlumnos.aspx.cs" Inherits="Presentacion.ListadoPostulacionAlumnos" %>
+﻿<%@ Page Title="InstiRed - Mis postulaciones" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ListadoPostulacionAlumnos.aspx.cs" Inherits="Presentacion.ListadoPostulacionAlumnos" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     
     <style>

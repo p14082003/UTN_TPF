@@ -135,11 +135,13 @@ namespace Presentacion
 
         protected void ddlFiltroEstado_SelectedIndexChanged(object sender, EventArgs e)
         {
+            dgvSolicitudes.PageIndex = 0;
             Ejecutar(CargarSolicitudesAsync);
         }
 
         protected void ddlFiltroInstituciones_SelectedIndexChanged(object sender, EventArgs e)
         {
+            dgvInstituciones.PageIndex = 0;
             Ejecutar(CargarInstitucionesAsync);
         }
 
@@ -238,6 +240,7 @@ namespace Presentacion
             {
                 if (await GuardarAsync(ruta, datos))
                 {
+                    dgvSolicitudes.PageIndex = 0;
                     MostrarVista("solicitudes");
                     await CargarSolicitudesAsync();
                     MostrarMensaje(mensaje, true);
@@ -248,6 +251,7 @@ namespace Presentacion
         protected void btnVerInstitucion_Click(object sender, EventArgs e)
         {
             int id = int.Parse(((LinkButton)sender).CommandArgument);
+            dgvAdministradores.PageIndex = 0;
             Ejecutar(() => CargarDetalleInstitucionAsync(id));
         }
 
@@ -307,6 +311,7 @@ namespace Presentacion
                 if (await GuardarAsync(ruta, new { idInstitucion, idUsuarioDevCo }))
                 {
                     await CargarDetalleInstitucionAsync(idInstitucion);
+                    dgvInstituciones.PageIndex = 0;
                     await CargarInstitucionesAsync();
                     MostrarMensaje(mensaje, true);
                 }
@@ -404,6 +409,25 @@ namespace Presentacion
             public bool UsuarioActivo { get; set; }
             public string NombreCompleto => (NombreAdministrador + " " + ApellidoAdministrador).Trim();
             public string EstadoVisible => UsuarioActivo ? "Activo" : "Dado de baja";
+        }
+
+        protected void dgvSolicitudes_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvSolicitudes.PageIndex = e.NewPageIndex;
+            Ejecutar(CargarSolicitudesAsync);
+        }
+
+        protected void dgvInstituciones_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvInstituciones.PageIndex = e.NewPageIndex;
+            Ejecutar(CargarInstitucionesAsync);
+        }
+
+        protected void dgvAdministradores_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvAdministradores.PageIndex = e.NewPageIndex;
+            int idInstitucion = (int)ViewState["IdInstitucion"];
+            Ejecutar(() => CargarDetalleInstitucionAsync(idInstitucion));
         }
     }
 }

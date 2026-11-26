@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Buscar instituciones" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ListadoInstituciones.aspx.cs" Inherits="Presentacion.ListadoInstituciones" %>
+﻿<%@ Page Title="InstiRed - Buscar instituciones" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ListadoInstituciones.aspx.cs" Inherits="Presentacion.ListadoInstituciones" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
