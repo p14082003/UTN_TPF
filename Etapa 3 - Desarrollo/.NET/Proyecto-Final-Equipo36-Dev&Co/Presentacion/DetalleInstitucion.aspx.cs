@@ -68,6 +68,9 @@ namespace Presentacion
 
                 pnlDetalle.Visible = true;
                 CargarFicha(institucion);
+                // El botón Matricular es solo para responsables (el formulario de postulación no deja entrar a otros usuarios).
+                btnRegistrarAlumno.Visible = usuario != null && usuario.IdTipoUsuario == UsuarioSesion.Responsable &&
+                    usuario.IdResponsable.GetValueOrDefault() > 0;
                 btnRegistrarAlumno.NavigateUrl = "~/FormularioPostulacionAlumno.aspx?id=" + id +
                     "&nombre=" + HttpUtility.UrlEncode(institucion.Nombre);
                 await Task.WhenAll(CargarReseniasAsync(id), CargarImagenesAsync(id));

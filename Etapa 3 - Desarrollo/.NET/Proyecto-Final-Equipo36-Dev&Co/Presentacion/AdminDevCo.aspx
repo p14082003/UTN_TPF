@@ -37,29 +37,55 @@
             <asp:Label ID="lblMensaje" runat="server"></asp:Label>
         </asp:Panel>
 
-        <!-- TARJETAS -->
-        <asp:Panel ID="pnlDashboard" runat="server" CssClass="resumen-gestion row mb-4">
+        <!-- TARJETAS: se muestran las de la pestaña activa (ver MostrarVista) -->
+        <asp:Panel ID="pnlTarjetasSolicitudes" runat="server" CssClass="resumen-gestion row mb-4">
             <div class="md:col-4 mb-3">
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
-                        <h5 class="card-title text-indigo"><i class="bi bi-hourglass-split text-lavanda fs-4 me-2"></i>Pendientes</h5>
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litPendientes" runat="server" Text="—" /></h2>
+                        <h5 class="card-title text-indigo"><i class="bi bi-hourglass-split text-lavanda fs-4 me-2"></i>Solicitudes pendientes</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litSolicitudesPendientes" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
             <div class="md:col-4 mb-3">
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
-                        <h5 class="card-title text-indigo"><i class="bi bi-building-check text-lavanda fs-4 me-2"></i>Activas</h5>
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litActivas" runat="server" Text="—" /></h2>
+                        <h5 class="card-title text-indigo"><i class="bi bi-check-circle text-lavanda fs-4 me-2"></i>Solicitudes aprobadas</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litSolicitudesAprobadas" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
             <div class="md:col-4 mb-3">
                 <div class="card shadow-sm h-100 bg-white">
                     <div class="card-body text-center py-4">
-                        <h5 class="card-title text-indigo"><i class="bi bi-x-octagon text-lavanda fs-4 me-2"></i>Dadas de baja</h5>
-                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litDadasDeBaja" runat="server" Text="—" /></h2>
+                        <h5 class="card-title text-indigo"><i class="bi bi-x-circle text-lavanda fs-4 me-2"></i>Solicitudes rechazadas</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litSolicitudesRechazadas" runat="server" Text="—" /></h2>
+                    </div>
+                </div>
+            </div>
+        </asp:Panel>
+        <asp:Panel ID="pnlTarjetasInstituciones" runat="server" CssClass="resumen-gestion row mb-4" Visible="false">
+            <div class="md:col-4 mb-3">
+                <div class="card shadow-sm h-100 bg-white">
+                    <div class="card-body text-center py-4">
+                        <h5 class="card-title text-indigo"><i class="bi bi-building-check text-lavanda fs-4 me-2"></i>Instituciones activas</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litInstitucionesActivas" runat="server" Text="—" /></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="md:col-4 mb-3">
+                <div class="card shadow-sm h-100 bg-white">
+                    <div class="card-body text-center py-4">
+                        <h5 class="card-title text-indigo"><i class="bi bi-x-octagon text-lavanda fs-4 me-2"></i>Instituciones dadas de baja</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litInstitucionesBaja" runat="server" Text="—" /></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="md:col-4 mb-3">
+                <div class="card shadow-sm h-100 bg-white">
+                    <div class="card-body text-center py-4">
+                        <h5 class="card-title text-indigo"><i class="bi bi-buildings text-lavanda fs-4 me-2"></i>Total de instituciones</h5>
+                        <h2 class="fs-5xl fw-bold text-indigo mt-3"><asp:Literal ID="litInstitucionesTotal" runat="server" Text="—" /></h2>
                     </div>
                 </div>
             </div>
@@ -212,6 +238,14 @@
                 <h5 class="mb-0"><i class="bi bi-building me-2"></i>Instituciones</h5>
             </div>
             <div class="card-body bg-white rounded-bottom-9">
+                <div class="mb-3" style="max-width: 260px;">
+                    <label for="<%= ddlFiltroInstituciones.ClientID %>" class="form-label text-indigo fw-bold">Mostrar</label>
+                    <asp:DropDownList ID="ddlFiltroInstituciones" runat="server" CssClass="form-control border-neutro" AutoPostBack="true" OnSelectedIndexChanged="ddlFiltroInstituciones_SelectedIndexChanged">
+                        <asp:ListItem Text="Activas" Value="1" Selected="True"></asp:ListItem>
+                        <asp:ListItem Text="Dadas de baja" Value="0"></asp:ListItem>
+                        <asp:ListItem Text="Todas" Value=""></asp:ListItem>
+                    </asp:DropDownList>
+                </div>
                 <div class="table-responsive">
                     <asp:GridView ID="dgvInstituciones" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay instituciones para mostrar.">
@@ -266,6 +300,11 @@
                             <asp:Label ID="lblInstEstado" runat="server" />
                         </div>
                     </div>
+                </div>
+
+                <!-- Perfil público de la institución (solo activas: las dadas de baja no tienen perfil público) -->
+                <div class="mb-4">
+                    <asp:HyperLink ID="lnkVerPerfil" runat="server" Target="_blank" Text="Ver perfil" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" />
                 </div>
 
                 <!-- Baja / reactivación de la institución.
