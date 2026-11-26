@@ -17,6 +17,8 @@ namespace Presentacion
         private const int Pendiente = 1;
         private const int Confirmado = 3;
         private const int Rechazado = 4;
+        private const string BotonActivo = "btn btn-indigo fw-bold rounded-pill px-4";
+        private const string BotonInactivo = "btn btn-outline-lavanda fw-bold rounded-pill px-4";
 
         protected override void OnInit(EventArgs e)
         {
@@ -44,40 +46,47 @@ namespace Presentacion
             }
         }
 
+        // Carga todas las solicitudes una sola vez: las cuenta para las tarjetas y filtra la grilla según el desplegable.
         private async Task CargarSolicitudesAsync()
         {
-            string estado = ddlFiltroEstado.SelectedValue;
-            string ruta = RutaSolicitudes;
-            if (estado != "")
-            {
-                ruta += "?idEstado=" + estado;
-            }
+            var solicitudes = await InstiRedApi.GetAsync<List<SolicitudApi>>(RutaSolicitudes);
+            litSolicitudesPendientes.Text = solicitudes.Count(s => s.IdEstado == Pendiente).ToString();
+            litSolicitudesAprobadas.Text = solicitudes.Count(s => s.IdEstado == Confirmado).ToString();
+            litSolicitudesRechazadas.Text = solicitudes.Count(s => s.IdEstado == Rechazado).ToString();
 
-            var solicitudes = await InstiRedApi.GetAsync<List<SolicitudApi>>(ruta);
-            dgvSolicitudes.DataSource = solicitudes;
+            string estado = ddlFiltroEstado.SelectedValue;
+            dgvSolicitudes.DataSource = estado == "" ? solicitudes : solicitudes.Where(s => s.IdEstado == int.Parse(estado)).ToList();
             dgvSolicitudes.DataBind();
-            if (estado == "" || estado == Pendiente.ToString())
-            {
-                litPendientes.Text = solicitudes.Count(s => s.IdEstado == Pendiente).ToString();
-            }
         }
 
+        // Igual que las solicitudes: trae todas las instituciones (activas y dadas de baja) y filtra.
         private async Task CargarInstitucionesAsync()
         {
             var instituciones = await InstiRedApi.GetAsync<List<InstitucionApi>>(RutaInstituciones);
             int activas = instituciones.Count(i => i.Estado);
-            litActivas.Text = activas.ToString();
-            litDadasDeBaja.Text = (instituciones.Count - activas).ToString();
-            dgvInstituciones.DataSource = instituciones;
+            litInstitucionesActivas.Text = activas.ToString();
+            litInstitucionesBaja.Text = (instituciones.Count - activas).ToString();
+            litInstitucionesTotal.Text = instituciones.Count.ToString();
+
+            string estado = ddlFiltroInstituciones.SelectedValue;
+            dgvInstituciones.DataSource = estado == "" ? instituciones : instituciones.Where(i => i.Estado == (estado == "1")).ToList();
             dgvInstituciones.DataBind();
         }
 
+        // La pestaña activa también incluye sus paneles de detalle.
         private void MostrarVista(string vista)
         {
-            pnlSolicitudes.Visible = vista == "solicitudes";
+            pnlSolicitudes.Visible = vista == "solicitudes"; 
             pnlDetalleSolicitud.Visible = vista == "detalleSolicitud";
             pnlInstituciones.Visible = vista == "instituciones";
             pnlDetalleInstitucion.Visible = vista == "detalleInstitucion";
+
+            bool enSolicitudes = vista == "solicitudes" || vista == "detalleSolicitud";
+            //enSolicitudes Guarda un true o false. Vale true si estás en el listado de solicitudes o en el detalle de una solicitud o false en cualquier otro caso (Instituciones o en su detalle)
+            btnMenuSolicitudes.CssClass = enSolicitudes ? BotonActivo : BotonInactivo;
+            btnMenuInstituciones.CssClass = enSolicitudes ? BotonInactivo : BotonActivo;
+            pnlTarjetasSolicitudes.Visible = enSolicitudes;
+            pnlTarjetasInstituciones.Visible = !enSolicitudes;
         }
 
         private void MostrarMensaje(string texto, bool exito)
@@ -127,6 +136,11 @@ namespace Presentacion
         protected void ddlFiltroEstado_SelectedIndexChanged(object sender, EventArgs e)
         {
             Ejecutar(CargarSolicitudesAsync);
+        }
+
+        protected void ddlFiltroInstituciones_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Ejecutar(CargarInstitucionesAsync);
         }
 
         protected void btnVerSolicitud_Click(object sender, EventArgs e)
@@ -226,12 +240,6 @@ namespace Presentacion
                 {
                     MostrarVista("solicitudes");
                     await CargarSolicitudesAsync();
-                    string estado = ddlFiltroEstado.SelectedValue;
-                    if (estado != "" && estado != Pendiente.ToString())
-                    {
-                        var pendientes = await InstiRedApi.GetAsync<List<SolicitudApi>>(RutaSolicitudes + "?idEstado=" + Pendiente);
-                        litPendientes.Text = pendientes.Count.ToString();
-                    }
                     MostrarMensaje(mensaje, true);
                 }
             });
@@ -262,6 +270,8 @@ namespace Presentacion
             lblInstEstado.CssClass = institucion.Estado ? "fw-bold fg-success" : "fw-bold fg-danger";
             pnlBajaInstitucion.Visible = institucion.Estado;
             pnlReactivarInstitucion.Visible = !institucion.Estado;
+            lnkVerPerfil.Visible = institucion.Estado;
+            lnkVerPerfil.NavigateUrl = "~/DetalleInstitucion.aspx?id=" + institucion.IdInstitucion;
 
             dgvAdministradores.DataSource = administradores;
             dgvAdministradores.DataBind();

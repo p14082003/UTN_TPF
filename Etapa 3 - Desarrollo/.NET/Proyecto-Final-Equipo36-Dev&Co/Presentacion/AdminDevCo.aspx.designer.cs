@@ -13,24 +13,6 @@ namespace Presentacion
 
     public partial class AdminDevCo
     {
-        protected global::System.Web.UI.WebControls.Literal litPendientes;
-        protected global::System.Web.UI.WebControls.Literal litActivas;
-        protected global::System.Web.UI.WebControls.Literal litDadasDeBaja;
-        protected global::System.Web.UI.WebControls.Literal litSolInstitucion;
-        protected global::System.Web.UI.WebControls.Literal litSolCuit;
-        protected global::System.Web.UI.WebControls.Literal litSolFecha;
-        protected global::System.Web.UI.WebControls.Literal litSolCodigo;
-        protected global::System.Web.UI.WebControls.Literal litSolAdministrador;
-        protected global::System.Web.UI.WebControls.Literal litSolDocumento;
-        protected global::System.Web.UI.WebControls.Literal litSolEmail;
-        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaFiscal;
-        protected global::System.Web.UI.WebControls.HyperLink lnkHabilitacion;
-        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaLaboral;
-        protected global::System.Web.UI.WebControls.Literal litInstNombre;
-        protected global::System.Web.UI.WebControls.Literal litInstCuit;
-        protected global::System.Web.UI.WebControls.Literal litInstTipo;
-        protected global::System.Web.UI.WebControls.Literal litInstEmail;
-        protected global::System.Web.UI.WebControls.Label lblInstEstado;
 
         /// <summary>
         /// Control pnlMensaje.
@@ -51,13 +33,76 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Label lblMensaje;
 
         /// <summary>
-        /// Control pnlDashboard.
+        /// Control pnlTarjetasSolicitudes.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlDashboard;
+        protected global::System.Web.UI.WebControls.Panel pnlTarjetasSolicitudes;
+
+        /// <summary>
+        /// Control litSolicitudesPendientes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolicitudesPendientes;
+
+        /// <summary>
+        /// Control litSolicitudesAprobadas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolicitudesAprobadas;
+
+        /// <summary>
+        /// Control litSolicitudesRechazadas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolicitudesRechazadas;
+
+        /// <summary>
+        /// Control pnlTarjetasInstituciones.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTarjetasInstituciones;
+
+        /// <summary>
+        /// Control litInstitucionesActivas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstitucionesActivas;
+
+        /// <summary>
+        /// Control litInstitucionesBaja.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstitucionesBaja;
+
+        /// <summary>
+        /// Control litInstitucionesTotal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstitucionesTotal;
 
         /// <summary>
         /// Control btnMenuSolicitudes.
@@ -121,6 +166,96 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnVolverSolicitud;
+
+        /// <summary>
+        /// Control litSolInstitucion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolInstitucion;
+
+        /// <summary>
+        /// Control litSolCuit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolCuit;
+
+        /// <summary>
+        /// Control litSolFecha.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolFecha;
+
+        /// <summary>
+        /// Control litSolCodigo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolCodigo;
+
+        /// <summary>
+        /// Control litSolAdministrador.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolAdministrador;
+
+        /// <summary>
+        /// Control litSolDocumento.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolDocumento;
+
+        /// <summary>
+        /// Control litSolEmail.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSolEmail;
+
+        /// <summary>
+        /// Control lnkConstanciaFiscal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaFiscal;
+
+        /// <summary>
+        /// Control lnkHabilitacion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkHabilitacion;
+
+        /// <summary>
+        /// Control lnkConstanciaLaboral.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkConstanciaLaboral;
 
         /// <summary>
         /// Control pnlAcciones.
@@ -231,6 +366,15 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Panel pnlInstituciones;
 
         /// <summary>
+        /// Control ddlFiltroInstituciones.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFiltroInstituciones;
+
+        /// <summary>
         /// Control dgvInstituciones.
         /// </summary>
         /// <remarks>
@@ -256,6 +400,60 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnVolverInstitucion;
+
+        /// <summary>
+        /// Control litInstNombre.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstNombre;
+
+        /// <summary>
+        /// Control litInstCuit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstCuit;
+
+        /// <summary>
+        /// Control litInstTipo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstTipo;
+
+        /// <summary>
+        /// Control litInstEmail.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litInstEmail;
+
+        /// <summary>
+        /// Control lblInstEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblInstEstado;
+
+        /// <summary>
+        /// Control lnkVerPerfil.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVerPerfil;
 
         /// <summary>
         /// Control pnlBajaInstitucion.

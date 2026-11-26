@@ -13,20 +13,6 @@ namespace Presentacion
 
     public partial class Site1
     {
-        protected global::System.Web.UI.WebControls.HyperLink lnkMiInstitucion;
-
-        protected global::System.Web.UI.WebControls.Panel pnlMenuResponsable;
-
-        protected global::System.Web.UI.WebControls.HyperLink lnkMisPostulaciones;
-        /// <summary>
-        /// Control lnkRegistrarAlumno.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkRegistrarAlumno;
-
-        /// <summary>
-        /// Control lnkAgregarAdministrador.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkAgregarAdministrador;
 
         /// <summary>
         /// Control head.
@@ -47,6 +33,42 @@ namespace Presentacion
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// Control pnlMenuResponsable.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlMenuResponsable;
+
+        /// <summary>
+        /// Control lnkRegistrarAlumno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkRegistrarAlumno;
+
+        /// <summary>
+        /// Control lnkMisPostulaciones.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkMisPostulaciones;
+
+        /// <summary>
+        /// Control lnkPanelDevCo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkPanelDevCo;
+
+        /// <summary>
         /// Control pnlMenuAdmin.
         /// </summary>
         /// <remarks>
@@ -56,6 +78,15 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Panel pnlMenuAdmin;
 
         /// <summary>
+        /// Control lnkMiInstitucion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkMiInstitucion;
+
+        /// <summary>
         /// Control lnkPostulaciones.
         /// </summary>
         /// <remarks>
@@ -63,6 +94,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkPostulaciones;
+
+        /// <summary>
+        /// Control lnkAgregarAdministrador.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkAgregarAdministrador;
 
         /// <summary>
         /// Control lnkAdministradores.
@@ -85,6 +125,10 @@ namespace Presentacion
         /// <summary>
         /// Control lnkResenias.
         /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkResenias;
 
         /// <summary>
@@ -131,6 +175,7 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnCerrarSesion;
+
         /// <summary>
         /// Control ContentPlaceHolder1.
         /// </summary>
