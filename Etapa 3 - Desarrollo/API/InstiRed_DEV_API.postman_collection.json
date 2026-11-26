@@ -3033,7 +3033,7 @@
                     },
                     {
                       "key": "Documentos[0].Descripcion",
-                      "value": "DNI del alumno",
+                      "value": "DNI del alumno - Frente",
                       "type": "text"
                     },
                     {
@@ -3043,18 +3043,28 @@
                     },
                     {
                       "key": "Documentos[1].Descripcion",
-                      "value": "Partida de nacimiento",
+                      "value": "DNI del alumno - Dorso",
                       "type": "text"
                     },
                     {
                       "key": "Documentos[1].Archivo",
                       "type": "file",
                       "src": []
+                    },
+                    {
+                      "key": "Documentos[2].Descripcion",
+                      "value": "Partida de nacimiento",
+                      "type": "text"
+                    },
+                    {
+                      "key": "Documentos[2].Archivo",
+                      "type": "file",
+                      "src": []
                     }
                   ]
                 },
                 "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
-                "description": "Adjuntá los dos documentos obligatorios: DNI del alumno y Partida de nacimiento, usando esos valores en Descripcion y un archivo en cada campo Archivo. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. Los índices deben ser consecutivos desde 0. No agregues Content-Type manualmente: Postman genera el boundary. Responde HTTP 201 con los datos y el código de la postulación; si falta un documento obligatorio, responde HTTP 400 con message antes de guardar archivos o ejecutar el SP."
+                "description": "Adjuntá tres archivos obligatorios, uno por cada descripción: DNI del alumno - Frente, DNI del alumno - Dorso y Partida de nacimiento. Cada tipo admite un solo archivo. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. Los índices deben ser consecutivos desde 0. No agregues Content-Type manualmente: Postman genera el boundary. Responde HTTP 201 con los datos y el código de la postulación. Si falta un documento obligatorio o se repite un tipo único, responde HTTP 400 con message antes de guardar archivos o ejecutar el SP."
               },
               "response": []
             },
@@ -3064,19 +3074,21 @@
                 "method": "POST",
                 "header": [],
                 "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
-                "description": "Incluye DNI del alumno y Partida de nacimiento como obligatorios, y un Certificado de estudios opcional. Seleccioná un archivo local en cada campo de tipo File o quitá el par opcional. Se pueden agregar otros documentos repitiendo Descripcion y Archivo con índices consecutivos desde 0. Cada descripción admite hasta 100 caracteres. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. No agregues Content-Type manualmente: Postman genera el boundary. Usá un alumno a cargo del responsable (también admite autogestor) y un curso habilitado. Responde HTTP 201 con los datos y el código de la postulación, o HTTP 400 con message si faltan documentos obligatorios o una regla del SP impide el alta. Los IDs de ejemplo se cambian por los de tus datos de prueba.",
+                "description": "Incluye frente y dorso del DNI en archivos separados, partida de nacimiento y un certificado de estudios opcional. Estos cuatro tipos solo pueden aparecer una vez. Certificado de discapacidad admite varios archivos; para otros adjuntos usá descripciones como Otro documento: nombre del archivo. Seleccioná un archivo local en cada campo File o quitá el par opcional. Los índices deben ser consecutivos desde 0 y cada descripción admite hasta 100 caracteres. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. No agregues Content-Type manualmente: Postman genera el boundary. Usá un alumno a cargo del responsable (también admite autogestor) y un curso habilitado. Responde HTTP 201 al registrar, o HTTP 400 con message si faltan documentos, hay tipos únicos repetidos o una regla del SP impide el alta. Cambiá los IDs de ejemplo por tus datos de prueba.",
                 "body": {
                   "mode": "formdata",
                   "formdata": [
                     { "key": "IdResponsable", "value": "1", "type": "text" },
                     { "key": "IdAlumno", "value": "1", "type": "text" },
                     { "key": "IdCurso", "value": "1", "type": "text" },
-                    { "key": "Documentos[0].Descripcion", "value": "DNI del alumno", "type": "text" },
+                    { "key": "Documentos[0].Descripcion", "value": "DNI del alumno - Frente", "type": "text" },
                     { "key": "Documentos[0].Archivo", "type": "file", "src": [] },
-                    { "key": "Documentos[1].Descripcion", "value": "Partida de nacimiento", "type": "text" },
+                    { "key": "Documentos[1].Descripcion", "value": "DNI del alumno - Dorso", "type": "text" },
                     { "key": "Documentos[1].Archivo", "type": "file", "src": [] },
-                    { "key": "Documentos[2].Descripcion", "value": "Certificado de estudios", "type": "text" },
-                    { "key": "Documentos[2].Archivo", "type": "file", "src": [] }
+                    { "key": "Documentos[2].Descripcion", "value": "Partida de nacimiento", "type": "text" },
+                    { "key": "Documentos[2].Archivo", "type": "file", "src": [] },
+                    { "key": "Documentos[3].Descripcion", "value": "Certificado de estudios", "type": "text" },
+                    { "key": "Documentos[3].Archivo", "type": "file", "src": [] }
                   ]
                 }
               },

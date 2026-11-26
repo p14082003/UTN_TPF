@@ -11,6 +11,15 @@
     var division = document.querySelector('[data-curso="division"]');
     var turno = document.querySelector('[data-curso="turno"]');
     var vacantes = document.querySelector('input[id$="txtVacantes"]');
+    var tipoDocumento = document.querySelector('select[id$="ddlTipoDocumento"]');
+    var archivo = document.querySelector('input[type="file"][id$="fuDocumentos"]');
+
+    function actualizarCargaDocumento() {
+        var opcion = tipoDocumento.selectedOptions[0];
+        archivo.multiple = !opcion || opcion.dataset.unico !== 'true';
+    }
+    tipoDocumento.addEventListener('change', actualizarCargaDocumento);
+    actualizarCargaDocumento();
     var campos = [ciclo, nivel, anio, division, turno];
     var opciones = new Map(campos.map(function (campo) {
         return [campo, Array.from(campo.options).map(function (opcion) { return opcion.cloneNode(true); })];
