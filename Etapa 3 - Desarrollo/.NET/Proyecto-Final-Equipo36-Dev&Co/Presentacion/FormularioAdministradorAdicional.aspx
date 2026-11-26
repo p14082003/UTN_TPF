@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Agregar administrador" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="FormularioAdministradorAdicional.aspx.cs" Inherits="Presentacion.FormularioAdministradorAdicional" %>
+﻿<%@ Page Title="InstiRed - Agregar administrador" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="FormularioAdministradorAdicional.aspx.cs" Inherits="Presentacion.FormularioAdministradorAdicional" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">

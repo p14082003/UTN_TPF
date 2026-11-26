@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Preregistro de administrador" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="FormularioAdministradorInstitucion.aspx.cs" Inherits="Presentacion.FormularioAdministradorInstitucion" %>
+﻿<%@ Page Title="InstiRed - Preregistro de administrador" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="FormularioAdministradorInstitucion.aspx.cs" Inherits="Presentacion.FormularioAdministradorInstitucion" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         .registro-administrador {

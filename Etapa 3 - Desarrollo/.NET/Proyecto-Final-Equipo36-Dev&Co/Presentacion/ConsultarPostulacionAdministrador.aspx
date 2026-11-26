@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Consultar postulación" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ConsultarPostulacionAdministrador.aspx.cs" Inherits="Presentacion.ConsultarPostulacionAdministrador" %>
+﻿<%@ Page Title="InstiRed - Consultar postulación" Language="C#" MasterPageFile="~/MasterPage.Master" AutoEventWireup="true" Async="true" CodeBehind="ConsultarPostulacionAdministrador.aspx.cs" Inherits="Presentacion.ConsultarPostulacionAdministrador" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
