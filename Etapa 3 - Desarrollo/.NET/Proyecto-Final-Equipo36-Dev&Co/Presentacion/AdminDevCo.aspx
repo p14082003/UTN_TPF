@@ -125,7 +125,8 @@
                 </div>
                 <div class="table-responsive">
                     <asp:GridView ID="dgvSolicitudes" runat="server" CssClass="table table-hover align-middle border-neutro"
-                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay solicitudes para mostrar.">
+                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay solicitudes para mostrar." 
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvSolicitudes_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <Columns>
                             <asp:BoundField DataField="Fecha" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
@@ -256,7 +257,8 @@
                 </div>
                 <div class="table-responsive">
                     <asp:GridView ID="dgvInstituciones" runat="server" CssClass="table table-hover align-middle border-neutro"
-                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay instituciones para mostrar.">
+                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay instituciones para mostrar."
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvInstituciones_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <Columns>
                             <asp:BoundField DataField="Nombre" HeaderText="Institución" />
@@ -337,7 +339,8 @@
                 <h6 class="text-indigo fw-bold mb-3">Administradores</h6>
                 <div class="table-responsive">
                     <asp:GridView ID="dgvAdministradores" runat="server" CssClass="table table-hover align-middle border-neutro"
-                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores.">
+                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores."
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvAdministradores_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <Columns>
                             <asp:BoundField DataField="NombreCompleto" HeaderText="Administrador" />
