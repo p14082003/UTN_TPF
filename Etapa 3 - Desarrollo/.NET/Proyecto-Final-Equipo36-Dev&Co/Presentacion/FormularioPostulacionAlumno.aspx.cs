@@ -642,7 +642,7 @@ namespace Presentacion
                 return;
             }
 
-            if (curso.IdCurso <= 0 || curso == null)
+            if (curso == null || curso.IdCurso <= 0)
             {
                 Trace.Warn("FormularioPostulacionAlumno", "No se puede enviar el correo: El id de curso no es válido");
                 return;
