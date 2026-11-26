@@ -325,11 +325,11 @@
                         </p>
                        
                         <asp:Button ID="btnBajaInstitucion" runat="server" Text="Dar de baja la institución" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4"
-                            OnClientClick="return confirm('¿Dar de baja esta institución? Se rechazarán las postulaciones pendientes y aceptadas.');" OnClick="btnBajaInstitucion_Click" />
+                            OnClientClick="return confirmarAccion(this, '¿Desea dar de baja esta institución? Se rechazarán las postulaciones pendientes y aceptadas.', 'Aceptar');" OnClick="btnBajaInstitucion_Click" />
                     </asp:Panel>
                     <asp:Panel ID="pnlReactivarInstitucion" runat="server" Visible="false">
                         <asp:Button ID="btnReactivarInstitucion" runat="server" Text="Reactivar institución" CssClass="btn btn-indigo fw-bold rounded-pill px-4"
-                            OnClientClick="return confirm('¿Reactivar esta institución?');" OnClick="btnReactivarInstitucion_Click" />
+                            OnClientClick="return confirmarAccion(this, '¿Desea reactivar esta institución?', 'Aceptar');" OnClick="btnReactivarInstitucion_Click" />
                     </asp:Panel>
                 </div>
 
@@ -348,13 +348,13 @@
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
-                                        OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
+                                        OnClientClick="return confirmarAccion(this, '¿Desea dar de baja a este administrador?', 'Aceptar');" OnClick="btnBajaAdministrador_Click">
                                         <i class="bi bi-trash fg-danger fs-lg"></i>
                                         Baja
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
-                                        OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
+                                        OnClientClick="return confirmarAccion(this, '¿Desea reactivar a este administrador?', 'Aceptar');" OnClick="btnReactivarAdministrador_Click">
                                         <i class="bi bi-arrow-repeat fg-success fs-lg"></i> 
                                         Reactivar
                                     </asp:LinkButton>

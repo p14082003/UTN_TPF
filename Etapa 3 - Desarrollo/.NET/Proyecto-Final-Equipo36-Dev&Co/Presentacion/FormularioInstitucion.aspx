@@ -215,7 +215,7 @@
                                         <ItemTemplate>
                                             <div class="btn btn-lilaClaro">
                                                 <%# Eval("NombreIdioma") %>
-                                                <asp:LinkButton runat="server" CommandName="EliminarIdioma" CommandArgument='<%# Eval("Id") %>' CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
+                                                <asp:LinkButton runat="server" CommandName="EliminarIdioma" CommandArgument='<%# Eval("Id") %>' CausesValidation="false" OnClientClick="return confirmarAccion(this, '¿Desea quitar este idioma?', 'Aceptar');" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
@@ -254,7 +254,7 @@
                                         <ItemTemplate>
                                             <div class="btn btn-lilaClaro">
                                                 <%# Container.DataItem %>
-                                                <asp:LinkButton runat="server" CommandName="EliminarAccesibilidad" CommandArgument='<%# Container.DataItem %>' CausesValidation="false" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
+                                                <asp:LinkButton runat="server" CommandName="EliminarAccesibilidad" CommandArgument='<%# Container.DataItem %>' CausesValidation="false" OnClientClick="return confirmarAccion(this, '¿Desea quitar esta accesibilidad?', 'Aceptar');" CssClass="text-indigo text-decoration-none ms-1">×</asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
@@ -323,7 +323,7 @@
                                                         <div class="card-body">
                                                             <div class="d-flex justify-content-between">
                                                                 <p>Imagen <%#: Eval("Descripcion") %></p>
-                                                                <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" formnovalidate="formnovalidate" />
+                                                                <asp:Button runat="server" Text="x" CssClass="btn-solid theme-danger" CommandName="EliminarImagen" CommandArgument='<%# Container.ItemIndex %>' CausesValidation="false" formnovalidate="formnovalidate" OnClientClick="return confirmarAccion(this, '¿Desea quitar esta imagen?', 'Aceptar');" />
                                                             </div>
                                                         </div>
                                                     </div>

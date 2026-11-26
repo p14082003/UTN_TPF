@@ -89,6 +89,20 @@
                 <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server"></asp:ContentPlaceHolder>
             </main>
 
+            <!-- Confirmación de acciones: lo usan los botones con OnClientClick="return confirmarAccion(this, 'mensaje', 'texto del botón');" -->
+            <dialog class="dialog" id="dlgConfirmarAccion">
+                <div class="dialog-header">
+                    <h5 class="dialog-title text-indigo">Confirmar</h5>
+                </div>
+                <div class="dialog-body">
+                    <p id="textoConfirmarAccion"></p>
+                </div>
+                <div class="dialog-footer">
+                    <button type="button" class="btn btn-lilaClaro" onclick="document.getElementById('dlgConfirmarAccion').close()">Cancelar</button>
+                    <button type="button" id="btnConfirmarAccion" class="btn-lilaOscuro">Confirmar</button>
+                </div>
+            </dialog>
+
             <!-- Footer -->
             <footer class="bg-indigo text-center">
                 <small>© 2026 InstiRed. Todos los derechos reservados.</small>
@@ -129,6 +143,23 @@
             });
             window.matchMedia('(max-width: 767px)').addEventListener('change', function () { cambiarMenu(false); });
         })();
+    </script>
+    <script>
+        // CONFIRMAR ACCIÓN: el botón llama a esta función y no hace postback (devuelve false).
+        // Si el usuario acepta, se vuelve a hacer clic en ese mismo botón sin el onclick, y ahí sí se envía.
+        var botonConfirmar = null;
+        function confirmarAccion(boton, mensaje, textoBoton) {
+            botonConfirmar = boton;
+            document.getElementById('textoConfirmarAccion').textContent = mensaje;
+            document.getElementById('btnConfirmarAccion').textContent = textoBoton || 'Confirmar';
+            document.getElementById('dlgConfirmarAccion').showModal();
+            return false;
+        }
+        document.getElementById('btnConfirmarAccion').addEventListener('click', function () {
+            document.getElementById('dlgConfirmarAccion').close();
+            botonConfirmar.onclick = null;
+            botonConfirmar.click();
+        });
     </script>
 
 </body>

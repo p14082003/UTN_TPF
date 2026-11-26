@@ -13,11 +13,6 @@ namespace Presentacion
 
     public partial class ResponsableGestionarPostulacionAlumno
     {
-        protected global::System.Web.UI.WebControls.Panel pnlDatos;
-
-        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
-
-        protected global::System.Web.UI.WebControls.Label lblVacantesAviso;
 
         /// <summary>
         /// Control lblMensaje.
@@ -27,6 +22,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMensaje;
+
+        /// <summary>
+        /// Control pnlDatos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDatos;
 
         /// <summary>
         /// Control lblNombreCompleto.
@@ -54,6 +58,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblEstado;
+
+        /// <summary>
+        /// Control litCodigoSeguimiento.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCodigoSeguimiento;
 
         /// <summary>
         /// Control pnlAnio.
@@ -261,6 +274,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMotivoRechazo;
+
+        /// <summary>
+        /// Control lblVacantesAviso.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblVacantesAviso;
 
         /// <summary>
         /// Control btnConfirmar.

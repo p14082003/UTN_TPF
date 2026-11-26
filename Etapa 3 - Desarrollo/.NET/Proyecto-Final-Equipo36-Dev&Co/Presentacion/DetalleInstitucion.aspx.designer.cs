@@ -13,25 +13,33 @@ namespace Presentacion
 
     public partial class DetalleInstitucion
     {
-        protected global::System.Web.UI.WebControls.Label lblValoracion;
 
-        protected global::System.Web.UI.WebControls.HyperLink lnkIniciarSesionResenia;
-
-        protected global::System.Web.UI.WebControls.Label lblMensajeResenia;
-
-        protected global::System.Web.UI.WebControls.Panel pnlFormularioResenia;
-
-        protected global::System.Web.UI.WebControls.Label lblErrorResenia;
-
-        protected global::System.Web.UI.WebControls.DropDownList ddlCalificacion;
-
-        protected global::System.Web.UI.WebControls.TextBox txtComentarioResenia;
-
-        protected global::System.Web.UI.WebControls.Button btnPublicarResenia;
+        /// <summary>
+        /// Control pnlError.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlError;
-        protected global::System.Web.UI.WebControls.Label lblError;
-        protected global::System.Web.UI.WebControls.Panel pnlDetalle;
 
+        /// <summary>
+        /// Control lblError.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblError;
+
+        /// <summary>
+        /// Control pnlDetalle.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDetalle;
 
         /// <summary>
         /// Control pnlImagenes.
@@ -68,6 +76,15 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblNombreInstitucion;
+
+        /// <summary>
+        /// Control lblValoracion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblValoracion;
 
         /// <summary>
         /// Control lblDescripcion.
@@ -151,6 +168,69 @@ namespace Presentacion
         protected global::System.Web.UI.WebControls.Button btnReseña;
 
         /// <summary>
+        /// Control lnkIniciarSesionResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkIniciarSesionResenia;
+
+        /// <summary>
+        /// Control lblMensajeResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMensajeResenia;
+
+        /// <summary>
+        /// Control pnlFormularioResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFormularioResenia;
+
+        /// <summary>
+        /// Control lblErrorResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblErrorResenia;
+
+        /// <summary>
+        /// Control ddlCalificacion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCalificacion;
+
+        /// <summary>
+        /// Control txtComentarioResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtComentarioResenia;
+
+        /// <summary>
+        /// Control btnPublicarResenia.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnPublicarResenia;
+
+        /// <summary>
         /// Control rptResenias.
         /// </summary>
         /// <remarks>
@@ -159,12 +239,40 @@ namespace Presentacion
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptResenias;
 
+        /// <summary>
+        /// Control pnlPaginacionResenias.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlPaginacionResenias;
 
+        /// <summary>
+        /// Control btnReseniasAnterior.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnReseniasAnterior;
 
+        /// <summary>
+        /// Control lblPaginaResenias.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblPaginaResenias;
 
+        /// <summary>
+        /// Control btnReseniasSiguiente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnReseniasSiguiente;
 
         /// <summary>

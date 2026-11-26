@@ -178,7 +178,7 @@
                         <asp:Button ID="btnCancelarRespuesta" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro fw-bold rounded-pill px-4" OnClick="btnCerrarDetalle_Click" />
                         <asp:Button ID="btnEnviarRespuesta" runat="server" Text="Enviar respuesta" CssClass="btn btn-indigo fw-bold rounded-pill px-4"
                             OnClick="btnEnviarRespuesta_Click"
-                            OnClientClick="return confirm('¿Querés enviar esta respuesta?');" />
+                            OnClientClick="return confirmarAccion(this, '¿Querés enviar esta respuesta?', 'Aceptar');" />
                     </div>
                 </asp:Panel>
 
@@ -193,7 +193,7 @@
                     <div class="d-flex justify-content-end mt-3">
                         <asp:Button ID="btnEliminarRespuesta" runat="server" Text="Eliminar respuesta" CssClass="btn btn-outline-danger rounded-pill px-4"
                             OnClick="btnEliminarRespuesta_Click" CausesValidation="false"
-                            OnClientClick="return confirm('¿Querés eliminar la respuesta de tu institución? La reseña y la puntuación del responsable se conservarán.');" />
+                            OnClientClick="return confirmarAccion(this, '¿Querés eliminar la respuesta de tu institución? La reseña y la puntuación del responsable se conservarán.' , 'Aceptar');" />
                     </div>
                 </asp:Panel>
             </div>

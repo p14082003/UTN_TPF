@@ -272,7 +272,7 @@
                                         <asp:LinkButton ID="btnEliminarResenia" runat="server" Text="Eliminar" CssClass="btn btn-sm btn-outline-danger rounded-pill"
                                             Visible='<%# PuedeEliminarResenia(Convert.ToInt32(Eval("IdResponsable"))) %>'
                                             CommandArgument='<%# Eval("IdResenia") %>' OnClick="btnEliminarResenia_Click" CausesValidation="false"
-                                            OnClientClick="return confirm('¿Querés eliminar tu reseña? También se eliminará la respuesta de la institución, si la tiene. Esta acción es definitiva.');"></asp:LinkButton>
+                                            OnClientClick="return confirmarAccion(this, '¿Querés eliminar tu reseña? También se eliminará la respuesta de la institución, si la tiene. Esta acción es definitiva.', 'Aceptar');"></asp:LinkButton>
                                     </div>
                                 </div>
 

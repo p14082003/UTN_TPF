@@ -168,7 +168,6 @@ namespace Presentacion
         private void ConfigurarBotonesPorEstado(int idEstado, int cicloLectivo)
         {
             int anioActual = DateTime.Now.Year;
-            btnCancelarPostulacion.OnClientClick = "";
 
             btnConfirmar.Enabled = true;
             btnConfirmar.Visible = false;
@@ -197,8 +196,6 @@ namespace Presentacion
                     //Confirmado
               
                         btnCancelarPostulacion.Visible = true;
-                        // aca se podría poner un modal pero no se como probar si funciona con este boostrap. Hay que probar cuando este funcionando la pantalla
-                        btnCancelarPostulacion.OnClientClick = "return confirm('Esta postulación se encuentra confirmada. Si se cancela se perderá el cupo reservado en el curso.¿Desea continuar?');";
                     
                     break;  
             }

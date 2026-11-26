@@ -13,16 +13,6 @@ namespace Presentacion
 
     public partial class FormularioInstitucion
     {
-        /// <summary>
-        /// Control lblTipoInstitucion.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblTipoInstitucion;
-
-        /// <summary>
-        /// Control ddlTipoInstitucion.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInstitucion;
-
 
         /// <summary>
         /// Control scriptManager.
@@ -68,6 +58,24 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCuit;
+
+        /// <summary>
+        /// Control lblTipoInstitucion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTipoInstitucion;
+
+        /// <summary>
+        /// Control ddlTipoInstitucion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInstitucion;
 
         /// <summary>
         /// Control lblEmail.

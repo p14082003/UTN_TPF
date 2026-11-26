@@ -43,12 +43,12 @@
                                     <%-- No se puede dar de baja a uno mismo (lo rechaza el SP), por eso no se muestra el botón --%>
                                     <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("Activo") && !(bool)Eval("EsPropio") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
-                                        OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
+                                        OnClientClick="return confirmarAccion(this, '¿Desea dar de baja este administrador?', 'Aceptar');" OnClick="btnBajaAdministrador_Click">
                                         <i class="bi bi-trash fg-danger fs-lg"></i> Baja
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("Activo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
                                         CssClass="btn btn-light btn-sm rounded-4 btn-admin-accion"
-                                        OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
+                                        OnClientClick="return confirmarAccion(this, '¿Desea reactivar a este administrador?', 'Aceptar');" OnClick="btnReactivarAdministrador_Click">
                                         <i class="bi bi-arrow-repeat fg-success fs-lg"></i>  Reactivar
                                     </asp:LinkButton>
                                 </ItemTemplate>
