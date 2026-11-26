@@ -102,21 +102,26 @@ namespace Presentacion
 
             try
             {
-                // Ahora la API devuelve la clave generada
-                // (Mas seguro que copiar y pegar aca el metodo para generar las claves)
                 var respuesta = await InstiRedApi.PostAsync("sp/CrearAdministradorInstitucionAdicional", registro, leerCuerpo: true);
 
                 if (respuesta.Estado == HttpStatusCode.Created)
                 {
                     LimpiarCampos();
-                    MostrarMensaje("Administrador agregado correctamente. Ya puede iniciar sesión con su correo y contraseña.", true);
-
-                    AdministradorApi administrador = new JavaScriptSerializer().Deserialize<AdministradorApi>(respuesta.Cuerpo);
-                    if(administrador != null && !string.IsNullOrWhiteSpace(administrador.Clave))
+                    try
                     {
-                        EnviarCorreo(administrador.Email, administrador.Nombre, administrador.Apellido, administrador.Clave);
+                        AdministradorApi administrador = new JavaScriptSerializer().Deserialize<AdministradorApi>(respuesta.Cuerpo);
+                        if (administrador != null && EnviarCorreo(administrador.Email, administrador.Nombre, administrador.Apellido, administrador.Clave))
+                        {
+                            MostrarMensaje("Administrador agregado correctamente. Se enviaron sus credenciales por correo electrónico.", true);
+                            return;
+                        }
                     }
                     ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='GestionarPostulacionAlumno.aspx',3000);", true);
+                    catch (Exception ex)
+                    {
+                        Trace.Warn("FormularioAdministradorAdicional", "El administrador se creó, pero no se pudieron obtener las credenciales para el correo.", ex);
+                    }
+                    MostrarMensaje("El administrador se creó, pero no pudimos enviar sus credenciales. Para obtener una nueva contraseña, puede usar «¿Olvidaste tu contraseña?» en el inicio de sesión. No vuelvas a registrar la cuenta.", false);
                     return;
                    
                 }
@@ -166,18 +171,18 @@ namespace Presentacion
             lblMensaje.Visible = true;
         }
 
-        private void EnviarCorreo(string email, string nombre, string apellido, string clave)
+        private bool EnviarCorreo(string email, string nombre, string apellido, string clave)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
                 Trace.Warn("FormularioAdministradorAdicional", "No se pudo enviar el correo: el administrador no tiene un email registrado.");
-                return;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido) || string.IsNullOrWhiteSpace(clave))
             {
                 Trace.Warn("FormularioAdministradorAdicional", "No se pudo enviar el correo: faltan datos del administrador.");
-                return;
+                return false;
             }
 
             string asunto = "Cuenta de Administrador Creada - InstiRed";
@@ -188,16 +193,20 @@ namespace Presentacion
                 EmailService emailService = new EmailService();
                 emailService.armarCorreo(email, asunto, cuerpo);
                 emailService.enviarEmail();
+                return true;
             }
             catch (Exception ex)
             {
                 Trace.Warn("FormularioAdministradorAdicional", "Error al enviar el correo con las credenciales del administrador.", ex);
+                return false;
             }
         }
 
         private string CuerpoCredencialesAdministrador(string email, string nombre, string apellido, string clave)
         {
-            string administrador = nombre + " " + apellido;
+            string administrador = Server.HtmlEncode(nombre + " " + apellido);
+            email = Server.HtmlEncode(email);
+            clave = Server.HtmlEncode(clave);
 
             string cuerpo = $@"
                 <html>

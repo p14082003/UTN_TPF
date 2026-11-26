@@ -16,6 +16,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         [ProducesResponseType(typeof(SP_CrearAdministradorInstitucionAdicional_out), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

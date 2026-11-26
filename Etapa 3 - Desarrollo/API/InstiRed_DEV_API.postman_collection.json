@@ -2991,7 +2991,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Pérez\",\n  \"documento\": \"32123456\",\n  \"domicilio\": \"Calle 100\",\n  \"fechaNacimiento\": \"1990-05-10\",\n  \"clave\": \"test1234\",\n  \"email\": \"testadmin.adicional@mail.test\",\n  \"telefono\": \"1155551234\"\n}",
+                  "raw": "{\n  \"idUsuarioActor\": 1,\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Pérez\",\n  \"documento\": \"32123456\",\n  \"domicilio\": \"Calle 100\",\n  \"fechaNacimiento\": \"1990-05-10\",\n  \"email\": \"testadmin.adicional@mail.test\",\n  \"telefono\": \"1155551234\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2999,7 +2999,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/sp/CrearAdministradorInstitucionAdicional",
-                "description": "El actor es el usuario de un administrador activo vinculado a la institución. Usá un DNI y email disponibles."
+                "description": "Ejecuta sp_AdministradorInstitucion_CrearAdicional. El actor es el usuario de un administrador activo vinculado a la institución. Usá un DNI y email disponibles. No se envía clave: la API genera una contraseña de 12 caracteres y guarda su hash. Responde HTTP 201 con idAdministrador, nombre, apellido, email y clave. La clave se devuelve únicamente en el alta para que el servidor de la WebApp envíe las credenciales por correo; la API no envía ese correo. La respuesta no se almacena en caché. Si falla el envío, la cuenta ya existe y puede recuperar su contraseña desde el login. Las reglas del SP responden HTTP 400 con message."
               },
               "response": []
             }
@@ -3033,18 +3033,28 @@
                     },
                     {
                       "key": "Documentos[0].Descripcion",
-                      "value": "Documento del alumno",
+                      "value": "DNI del alumno",
                       "type": "text"
                     },
                     {
                       "key": "Documentos[0].Archivo",
                       "type": "file",
                       "src": []
+                    },
+                    {
+                      "key": "Documentos[1].Descripcion",
+                      "value": "Partida de nacimiento",
+                      "type": "text"
+                    },
+                    {
+                      "key": "Documentos[1].Archivo",
+                      "type": "file",
+                      "src": []
                     }
                   ]
                 },
                 "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
-                "description": "Adjuntá al menos un PDF, JPG, JPEG o PNG de hasta 5 MB. Usá Documentos[0].Descripcion y Documentos[0].Archivo y repetí el par con índices consecutivos. El formulario completo admite hasta 20 MB."
+                "description": "Adjuntá los dos documentos obligatorios: DNI del alumno y Partida de nacimiento, usando esos valores en Descripcion y un archivo en cada campo Archivo. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. Los índices deben ser consecutivos desde 0. No agregues Content-Type manualmente: Postman genera el boundary. Responde HTTP 201 con los datos y el código de la postulación; si falta un documento obligatorio, responde HTTP 400 con message antes de guardar archivos o ejecutar el SP."
               },
               "response": []
             },
@@ -3054,7 +3064,7 @@
                 "method": "POST",
                 "header": [],
                 "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
-                "description": "Seleccioná un archivo local en cada campo de tipo File. Los índices deben ser consecutivos desde 0 y cada documento debe tener una descripción de hasta 100 caracteres. Se admite PDF, JPG o PNG de hasta 5 MB por archivo y 20 MB por request completo. No agregues Content-Type manualmente: Postman genera el boundary. Usa un alumno a cargo del responsable (también admite autogestor) y un curso habilitado. Un alta correcta responde HTTP 201 con CodigoSeguimiento; las reglas del SP, como falta de cupo o postulación duplicada, responden HTTP 400 con message. Los IDs de ejemplo se cambian por los de tus datos de prueba.",
+                "description": "Incluye DNI del alumno y Partida de nacimiento como obligatorios, y un Certificado de estudios opcional. Seleccioná un archivo local en cada campo de tipo File o quitá el par opcional. Se pueden agregar otros documentos repitiendo Descripcion y Archivo con índices consecutivos desde 0. Cada descripción admite hasta 100 caracteres. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. No agregues Content-Type manualmente: Postman genera el boundary. Usá un alumno a cargo del responsable (también admite autogestor) y un curso habilitado. Responde HTTP 201 con los datos y el código de la postulación, o HTTP 400 con message si faltan documentos obligatorios o una regla del SP impide el alta. Los IDs de ejemplo se cambian por los de tus datos de prueba.",
                 "body": {
                   "mode": "formdata",
                   "formdata": [
@@ -3063,8 +3073,10 @@
                     { "key": "IdCurso", "value": "1", "type": "text" },
                     { "key": "Documentos[0].Descripcion", "value": "DNI del alumno", "type": "text" },
                     { "key": "Documentos[0].Archivo", "type": "file", "src": [] },
-                    { "key": "Documentos[1].Descripcion", "value": "Certificado de estudios", "type": "text" },
-                    { "key": "Documentos[1].Archivo", "type": "file", "src": [] }
+                    { "key": "Documentos[1].Descripcion", "value": "Partida de nacimiento", "type": "text" },
+                    { "key": "Documentos[1].Archivo", "type": "file", "src": [] },
+                    { "key": "Documentos[2].Descripcion", "value": "Certificado de estudios", "type": "text" },
+                    { "key": "Documentos[2].Archivo", "type": "file", "src": [] }
                   ]
                 }
               },
@@ -3156,7 +3168,29 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/sp/AlumnosPorResponsable?idResponsable=1",
-                "description": "Ejecuta sp_alumnos_Por_Responsable. idResponsable es obligatorio. Devuelve IdAlumno y NombreCompleto de los alumnos a cargo, incluido el autogestor. Sin alumnos devuelve [] con HTTP 200."
+                "description": "Ejecuta sp_alumnos_Por_Responsable. idResponsable es obligatorio. Devuelve IdAlumno, NombreCompleto, Documento, FechaNacimiento, Domicilio y Rol de los alumnos a cargo, incluido el autogestor. Sin alumnos devuelve [] con HTTP 200. Requiere la versión ampliada del SP de JuliCreate_SPs.sql."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "EliminarAlumno",
+          "item": [
+            {
+              "name": "Eliminar alumno del responsable",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "url": "{{baseUrl}}/sp/EliminarAlumno",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idResponsable\": 1,\n  \"idAlumno\": 1\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Ejecuta sp_Alumno_Eliminar de create_SPs_Marcos.sql. El responsable debe tener un usuario activo y el alumno debe estar a su cargo o ser él mismo (autogestor). No permite eliminar alumnos con postulaciones de ningún estado. El SP elimina el alumno y todos sus vínculos con responsables; conserva la persona si también es responsable o administrador. Responde HTTP 200 con message al eliminar, o HTTP 400 con el motivo del rechazo (IDs inválidos, falta de permiso, alumno inexistente o con postulaciones). En la WebApp idResponsable se toma de la sesión."
               },
               "response": []
             }

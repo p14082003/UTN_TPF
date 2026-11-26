@@ -52,9 +52,22 @@ namespace Negocio
             {
                 throw new ArgumentException("El campo IdCurso debe ser mayor que cero.");
             }
-            if (registro.ListaDocumentos == null || registro.ListaDocumentos.Count == 0)
+            validarDocumentos(registro.ListaDocumentos?.Select(documento => documento.Descripcion));
+        }
+
+        public static void validarDocumentos(IEnumerable<string>? descripciones)
+        {
+            var documentos = (descripciones ?? Enumerable.Empty<string>())
+                .Select(descripcion => descripcion?.Trim() ?? "").ToList();
+            if (documentos.Any(descripcion => descripcion.Length == 0 || descripcion.Length > 100))
             {
-                throw new ArgumentException("Debe adjuntar al menos un documento.");
+                throw new ArgumentException("Cada documento requiere una descripción de hasta 100 caracteres.");
+            }
+            string[] obligatorios = { "DNI del alumno", "Partida de nacimiento" };
+            var faltantes = obligatorios.Where(tipo => !documentos.Contains(tipo, StringComparer.OrdinalIgnoreCase)).ToList();
+            if (faltantes.Count > 0)
+            {
+                throw new ArgumentException("Faltan documentos obligatorios: " + string.Join(", ", faltantes) + ".");
             }
         }
     }

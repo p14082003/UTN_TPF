@@ -27,7 +27,14 @@ namespace Negocio
                 datos.setearParametroSalida("@p_idAdministrador", MySqlDbType.Int32);
                 datos.ejecutarAccion();
                 int id = ProcedimientoHelper.leerIdSalida(datos, "@p_idAdministrador");
-                return new SP_CrearAdministradorInstitucionAdicional_out { IdAdministrador = id };
+                return new SP_CrearAdministradorInstitucionAdicional_out
+                {
+                    IdAdministrador = id,
+                    Nombre = registro.Nombre.Trim(),
+                    Apellido = registro.Apellido.Trim(),
+                    Email = registro.Email.Trim().ToLowerInvariant(),
+                    Clave = claveGenerada
+                };
             });
         }
 
