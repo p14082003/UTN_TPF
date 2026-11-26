@@ -34,7 +34,8 @@ namespace Presentacion
         }
 
         // Documentos que hay que adjuntar para poder enviar la postulación (coinciden con el Value del desplegable)
-        private static readonly string[] Obligatorios = { "DNI del alumno", "Partida de nacimiento" };
+        private static readonly string[] Obligatorios = { "DNI del alumno - Frente", "DNI del alumno - Dorso", "Partida de nacimiento" };
+        private static readonly string[] DocumentosUnicos = { "DNI del alumno - Frente", "DNI del alumno - Dorso", "Partida de nacimiento", "Certificado de estudios" };
 
         private string ClaveDocumentos
         {
@@ -292,6 +293,25 @@ namespace Presentacion
             rptDocumentos.DataSource = documentos;
             rptDocumentos.DataBind();
             MostrarFaltantes(documentos);
+            ActualizarTiposDocumento(documentos);
+        }
+
+        private void ActualizarTiposDocumento(List<DocumentoAdjunto> documentos)
+        {
+            // Enabled=false hace que WebForms omita la opción; disabled la mantiene visible y grisada.
+            foreach (ListItem tipo in ddlTipoDocumento.Items)
+            {
+                tipo.Enabled = true;
+                bool cargado = DocumentosUnicos.Contains(tipo.Value) && documentos.Any(d => d.Tipo == tipo.Value);
+                if (cargado) tipo.Attributes["disabled"] = "disabled";
+                else tipo.Attributes.Remove("disabled");
+            }
+            if (ddlTipoDocumento.SelectedItem == null || ddlTipoDocumento.SelectedItem.Attributes["disabled"] != null)
+            {
+                ddlTipoDocumento.ClearSelection();
+                var siguiente = ddlTipoDocumento.Items.Cast<ListItem>().FirstOrDefault(tipo => tipo.Attributes["disabled"] == null);
+                if (siguiente != null) siguiente.Selected = true;
+            }
         }
 
         private List<string> ObtenerFaltantes(List<DocumentoAdjunto> documentos)
@@ -328,15 +348,30 @@ namespace Presentacion
         private void AgregarDocumentos()
         {
             var documentos = ObtenerDocumentos();
+            var archivos = fuDocumentos.PostedFiles.Where(archivo => !string.IsNullOrEmpty(archivo.FileName)).ToList();
+            if (archivos.Count == 0) return;
+
+            string tipo = ddlTipoDocumento.SelectedValue;
+            if (ddlTipoDocumento.Items.FindByValue(tipo) == null)
+            {
+                throw new ArgumentException("Seleccioná un tipo de documento válido.");
+            }
+            if (DocumentosUnicos.Contains(tipo))
+            {
+                if (documentos.Any(d => d.Tipo == tipo))
+                {
+                    throw new ArgumentException("Ya adjuntaste " + tipo + ". Quitá el archivo anterior si querés reemplazarlo.");
+                }
+                if (archivos.Count > 1)
+                {
+                    throw new ArgumentException("Solo podés adjuntar un archivo de tipo " + tipo + ".");
+                }
+            }
             var nuevos = new List<DocumentoAdjunto>();
             long total = documentos.Sum(d => (long)d.Contenido.Length);
 
-            foreach (HttpPostedFile archivo in fuDocumentos.PostedFiles)
+            foreach (HttpPostedFile archivo in archivos)
             {
-                if (string.IsNullOrEmpty(archivo.FileName))
-                {
-                    continue;
-                }
                 if (archivo.ContentLength <= 0 || archivo.ContentLength > 5 * 1024 * 1024)
                 {
                     throw new ArgumentException("Cada documento debe tener contenido y pesar como máximo 5 MB.");
@@ -353,16 +388,12 @@ namespace Presentacion
                     throw new ArgumentException("Los documentos de una postulación no pueden superar los 19 MB en total.");
                 }
 
-                // La descripción es el tipo elegido; solo "Otro documento" usa el nombre del archivo
-                string tipo = ddlTipoDocumento.SelectedValue;
+                // Los documentos libres conservan el nombre sin confundirse con los tipos obligatorios.
                 string descripcion = tipo;
                 if (tipo == "Otro documento")
                 {
-                    descripcion = Path.GetFileNameWithoutExtension(nombre).Trim();
-                }
-                if (descripcion.Length == 0)
-                {
-                    descripcion = "Documento";
+                    string nombreDocumento = Path.GetFileNameWithoutExtension(nombre).Trim();
+                    descripcion = "Otro documento: " + (nombreDocumento.Length == 0 ? "Documento" : nombreDocumento);
                 }
                 if (descripcion.Length > 100)
                 {
