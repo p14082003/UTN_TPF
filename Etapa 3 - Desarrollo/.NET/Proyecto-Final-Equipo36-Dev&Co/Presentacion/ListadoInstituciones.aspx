@@ -96,6 +96,58 @@
 
         .lista-instituciones { overflow-y: auto; min-height: 0; }
 
+        .tarjeta-institucion {
+            display: grid;
+            grid-template-columns: 32% minmax(0, 1fr);
+        }
+
+        .imagen-tarjeta-institucion {
+            position: relative;
+            min-height: 13rem;
+            background: #F7F5FC;
+            border-right: 1px solid #E4E0F0;
+        }
+
+        .foto-tarjeta-institucion {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0.75rem;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .tarjeta-institucion .card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            min-width: 0;
+            padding: 1rem;
+        }
+
+        .tarjeta-institucion .card-title { margin: 0; font-size: 1.0625rem; line-height: 1.35; }
+        .tarjeta-institucion .card-text { margin: 0 !important; }
+        .tarjeta-institucion .card-text.text-lavanda {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .tarjeta-institucion .btn { margin-top: auto; }
+
+        @media (max-width: 767px) {
+            .tarjeta-institucion { grid-template-columns: minmax(0, 1fr); }
+            .imagen-tarjeta-institucion {
+                height: clamp(11rem, 50vw, 15rem);
+                min-height: 0;
+                border-right: 0;
+                border-bottom: 1px solid #E4E0F0;
+            }
+            .tarjeta-institucion .card-title { font-size: 1.125rem; }
+            .tarjeta-institucion .btn { font-size: 0.875rem; padding: 0.625rem; }
+        }
+
         @media (max-width: 991px) {
             .filtros-principales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .acciones-busqueda { grid-column: 1 / -1; }
@@ -199,23 +251,16 @@
                     <asp:Repeater ID="rptInstituciones" runat="server">
                         <ItemTemplate>
                             <div class="tarjeta-institucion card mb-2 overflow-hidden" data-id='<%# Eval("IdInstitucion") %>' style="cursor: pointer;">
-                                <div class="row">
-                                    <!-- IMAGEN -->
-                                    <div class="col-4">
-                                        <img src="<%#: Eval("UrlFoto") %>" alt="" loading="lazy" class="w-100 h-100 d-block"
-                                             data-imagen-generica="<%#: ImagenGenerica %>" onerror="this.onerror = null; this.src = this.dataset.imagenGenerica;"
-                                             style="object-fit: cover; aspect-ratio: 4 / 3;" />
-                                    </div>
-                                    <!-- TEXTO -->
-                                    <div class="col-8">
-                                        <div class="card-body">
-                                            <h5 class="card-title text-indigo"><%#: Eval("Nombre") %></h5>
-                                            <p class="card-text text-indigo mb-1"><%#: Eval("Valoracion") %></p>
-                                            <p class="card-text mb-1"><%#: Eval("Direccion") %></p>
-                                            <p class="card-text text-lavanda"><%#: Eval("Descripcion") %></p>
-                                            <asp:HyperLink ID="lnkDetalle" runat="server" CssClass="btn btn-lilaOscuro-invertido btn-sm w-100" Text="Más información" NavigateUrl='<%# Eval("IdInstitucion", "~/DetalleInstitucion.aspx?id={0}") %>' />
-                                        </div>
-                                    </div>
+                                <div class="imagen-tarjeta-institucion">
+                                    <img src="<%#: Eval("UrlFoto") %>" alt="" loading="lazy" class="foto-tarjeta-institucion"
+                                         data-imagen-generica="<%#: ImagenGenerica %>" onerror="this.onerror = null; this.src = this.dataset.imagenGenerica;" />
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title text-indigo"><%#: Eval("Nombre") %></h5>
+                                    <p class="card-text text-indigo mb-1"><%#: Eval("Valoracion") %></p>
+                                    <p class="card-text mb-1"><%#: Eval("Direccion") %></p>
+                                    <p class="card-text text-lavanda"><%#: Eval("Descripcion") %></p>
+                                    <asp:HyperLink ID="lnkDetalle" runat="server" CssClass="btn btn-lilaOscuro-invertido btn-sm w-100" Text="Más información" NavigateUrl='<%# Eval("IdInstitucion", "~/DetalleInstitucion.aspx?id={0}") %>' />
                                 </div>
                             </div>
                         </ItemTemplate>

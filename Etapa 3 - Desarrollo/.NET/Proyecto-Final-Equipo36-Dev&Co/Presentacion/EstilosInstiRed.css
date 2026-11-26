@@ -319,10 +319,6 @@ input.form-control[readonly]:focus {
     }
 
     #contenido .dialog-footer { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
-    #contenido .galeria-fotos { height: clamp(11rem, 30dvh, 17rem); padding: 0.75rem !important; }
-    #contenido .foto-unica { width: 100%; }
-    #contenido .carousel { --bs-carousel-items: 1 !important; --bs-carousel-items-gap: 0.5rem !important; }
-    #contenido .carousel-indicators { flex-wrap: wrap; max-width: 100%; }
 
     /* Los accesos se despliegan debajo de la barra sin desplazar el contenido. */
     .app-shell .navegacion-principal {
@@ -380,14 +376,6 @@ input.form-control[readonly]:focus {
     #busquedaInstituciones .mapa-instituciones { order: -1; flex: none; height: clamp(12rem, 35svh, 20rem) !important; }
     #busquedaInstituciones .orden-instituciones { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; gap: 0.35rem; }
     #busquedaInstituciones .orden-instituciones select { width: 100%; min-width: 0; }
-    #busquedaInstituciones .tarjeta-institucion > .row { flex-wrap: nowrap; margin: 0; row-gap: 0; }
-    #busquedaInstituciones .tarjeta-institucion > .row > .col-4 { flex: 0 0 30%; width: 30%; max-width: 30%; padding: 0; }
-    #busquedaInstituciones .tarjeta-institucion > .row > .col-8 { flex: 0 0 70%; width: 70%; max-width: 70%; padding: 0; }
-    #busquedaInstituciones .tarjeta-institucion .card-body { padding: 0.75rem; }
-    #busquedaInstituciones .tarjeta-institucion img { height: 7rem !important; aspect-ratio: auto !important; }
-    #busquedaInstituciones .tarjeta-institucion .card-title { font-size: 1rem; }
-    #busquedaInstituciones .tarjeta-institucion .card-text.text-lavanda { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    #busquedaInstituciones .tarjeta-institucion .btn { font-size: 0.875rem; padding: 0.5rem; }
 
     /* Login y recuperación se muestran como formularios compactos. */
     .acceso-cuenta .container { min-height: 100dvh !important; padding: 1rem; }

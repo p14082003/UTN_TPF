@@ -84,6 +84,7 @@
     <Content Include="GestionarResenia.aspx" />
     <Content Include="ListadoInstituciones.aspx" />
     <Content Include="Scripts\listado-instituciones.js" />
+    <Content Include="Scripts\postulacion-alumno.js" />
     <Content Include="GestionarVacante.aspx" />
     <Content Include="ListadoPostulacionAlumnos.aspx" />
     <Content Include="Login.aspx" />

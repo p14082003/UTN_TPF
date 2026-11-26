@@ -15,7 +15,7 @@ namespace Presentacion
 {
     public partial class ListadoInstituciones : Page
     {
-        protected const string ImagenGenerica = "https://placehold.co/400x250";
+        protected const string ImagenGenerica = "Imagenes/Institucion.png";
         public string InstitucionesJson { get; private set; } = "[]";
 
         protected void Page_Load(object sender, EventArgs e)

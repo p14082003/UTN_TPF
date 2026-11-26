@@ -27,13 +27,29 @@
 
         .galeria-fotos {
             --separacion-fotos: 1rem;
-            height: 40dvh;
+            height: clamp(18rem, 40dvh, 27rem);
+            padding: 1rem;
         }
 
-        .foto-unica {
-            width: calc((100% - var(--separacion-fotos)) / 2);
+        .foto-unica, .foto-galeria {
+            display: block;
+            width: 100%;
             height: 100%;
+            padding: 0.5rem;
             object-fit: contain;
+            object-position: center;
+            background: #F7F5FC;
+            border-radius: 12px;
+        }
+
+        .galeria-controles { flex: 0 0 auto; flex-wrap: nowrap !important; gap: 0.75rem; }
+        .galeria-controles .carousel-indicators { min-width: 0; flex-wrap: wrap; }
+        .galeria-botones { display: flex; flex-shrink: 0; gap: 0.25rem; }
+
+        @media (max-width: 767px) {
+            #contenido .galeria-fotos { height: clamp(16rem, 70vw, 23rem); padding: 0.75rem !important; }
+            .galeria-fotos .carousel { --bs-carousel-items: 1 !important; --bs-carousel-items-gap: 0.5rem !important; }
+            .galeria-controles .carousel-indicators { max-width: 100%; }
         }
 
         .dialogo-resenia {
@@ -81,16 +97,16 @@
             <div class="row m-4">
                 <div class="col-12">
                     <% if (ImagenesVisibles == 1) { %>
-                        <div class="card p-5 galeria-fotos">
-                            <img src="<%: UrlFotoUnica %>" alt="<%: DescripcionFotoUnica %>" class="foto-unica d-block mx-auto rounded-5">
+                        <div class="card galeria-fotos">
+                            <img src="<%: UrlFotoUnica %>" alt="<%: DescripcionFotoUnica %>" class="foto-unica">
                         </div>
                     <% } else { %>
-                    <div class="card p-5 galeria-fotos">
+                    <div class="card galeria-fotos">
 
                         <div id="carouselMultiple" class="carousel slide h-100 d-flex flex-column" data-bs-autoplay="true" data-bs-ends="wrap" style="--bs-carousel-items: <%= ImagenesVisibles %>; --bs-carousel-items-gap: var(--separacion-fotos);">
 
                             <!-- Controles -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="galeria-controles d-flex justify-content-between align-items-center mb-2">
                                 <div class="carousel-indicators">
                                     <asp:Repeater ID="rptIndicadores" runat="server">
                                         <ItemTemplate>
@@ -103,7 +119,7 @@
                                     </asp:Repeater>
                                 </div>
 
-                                <div>
+                                <div class="galeria-botones">
                                     <button class="btn-icon btn-sm carousel-control-play-pause" type="button" data-bs-target="#carouselMultiple" aria-label="Pause" data-bs-pause-label="Pause" data-bs-play-label="Play">
                                         <span class="carousel-icon-pause" aria-hidden="true"></span>
                                         <span class="carousel-icon-play" aria-hidden="true"></span>
@@ -130,8 +146,7 @@
                                     <ItemTemplate>
                                         <div class="carousel-item h-100 <%# Container.ItemIndex == 0 ? "active" : "" %>">
                                             <img src="<%#: Eval("UrlPublica") %>"
-                                                class="d-block w-100 h-100 rounded-5"
-                                                style="object-fit: cover;" alt="<%#: Eval("Descripcion") %>">
+                                                class="foto-galeria" alt="<%#: Eval("Descripcion") %>">
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
