@@ -162,8 +162,8 @@
                     <hr class="border-neutro mb-4" />
                     <!-- Botones según estado -->
                     <asp:Label ID="lblVacantesAviso" runat="server" Visible="false" CssClass="alert alert-info d-block mb-3"></asp:Label>
-                    <asp:Button ID="btnConfirmar" runat="server" Visible="false" Text="Confirmar postulación" OnClick="btnConfirmar_Click" CssClass="btn btn-lilaOscuro w-100 mb-3" />
-                    <asp:Button ID="btnCancelarPostulacion" runat="server" Visible="false" Text="Cancelar postulación" OnClientClick="return confirmarAccion(this, 'Si se cancela esta postulación perderá el cupo reservado en el curso ¿Desea continuar?', 'Aceptar');"  OnClick="btnCancelarPostulacion_Click" CausesValidation="false" CssClass="btn btn-solid theme-danger w-100 mb-3" style="--bs-btn-padding-y: 14px; --bs-btn-border-radius: 15px;" />
+                    <asp:Button ID="btnConfirmar" runat="server" Visible="false" Text="Confirmar postulación" OnClientClick="return confirmarAccion(this, '¿Desea confirmar esta postulación?', 'Aceptar');" OnClick="btnConfirmar_Click" CssClass="btn btn-lilaOscuro w-100 mb-3" />
+                    <asp:Button ID="btnCancelarPostulacion" runat="server" Visible="false" Text="Cancelar postulación" OnClientClick="return confirmarAccion(this, '¿Desea cancelar esta postulación?', 'Aceptar');"  OnClick="btnCancelarPostulacion_Click" CausesValidation="false" CssClass="btn btn-solid theme-danger w-100 mb-3" style="--bs-btn-padding-y: 14px; --bs-btn-border-radius: 15px;" />
                     </asp:Panel>
                     <asp:Button ID="btnVolver" runat="server" Text="Volver al listado" OnClick="btnVolver_Click" CausesValidation="false" CssClass="btn btn-lilaClaro w-100" />
                 </div>

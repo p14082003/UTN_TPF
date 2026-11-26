@@ -178,7 +178,7 @@
                         <asp:Button ID="btnCancelarRespuesta" runat="server" Text="Cancelar" CssClass="btn btn-lilaClaro fw-bold rounded-pill px-4" OnClick="btnCerrarDetalle_Click" />
                         <asp:Button ID="btnEnviarRespuesta" runat="server" Text="Enviar respuesta" CssClass="btn btn-indigo fw-bold rounded-pill px-4"
                             OnClick="btnEnviarRespuesta_Click"
-                            OnClientClick="return confirmarAccion(this, '¿Querés enviar esta respuesta?', 'Aceptar');" />
+                            OnClientClick="return confirmarAccion(this, '¿Desea enviar esta respuesta?', 'Aceptar');" />
                     </div>
                 </asp:Panel>
 

@@ -213,7 +213,7 @@
                 <asp:Panel ID="pnlAcciones" runat="server">
                     <div class="d-flex justify-content-end gap-5 mt-4">
                         <asp:Button ID="btnDesplegarRechazo" runat="server" Text="Rechazar" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4" OnClick="btnDesplegarRechazo_Click" />
-                        <asp:Button ID="btnAprobar" runat="server" Text="Aprobar solicitud" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAprobar_Click" />
+                        <asp:Button ID="btnAprobar" runat="server" Text="Aprobar solicitud" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClientClick="return confirmarAccion(this, '¿Desea aprobar esta solicitud?', 'Aceptar');"  OnClick="btnAprobar_Click" />
                     </div>
 
                     <asp:Panel ID="panelRechazo" runat="server" CssClass="mt-4" Visible="false">

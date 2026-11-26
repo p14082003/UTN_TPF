@@ -218,7 +218,7 @@
                 <!-- Acciones -->
                 <div class="d-flex justify-content-end gap-3 mt-4">
                     <asp:Button ID="btnDesplegarRechazo" runat="server" Text="Rechazar" CssClass="btn btn-outline-danger fw-bold rounded-pill px-4" OnClick="btnDesplegarRechazo_Click" />
-                    <asp:Button ID="btnAceptar" runat="server" Text="Aceptar Postulación" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAceptar_Click" />
+                    <asp:Button ID="btnAceptar" runat="server" Text="Aceptar Postulación" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClientClick="return confirmarAccion(this, '¿Desea aceptar esta postulación?', 'Aceptar');" OnClick="btnAceptar_Click" />
                 </div>
 
                 <!-- Rechazo con motivo -->
