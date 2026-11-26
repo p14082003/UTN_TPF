@@ -8,7 +8,6 @@ namespace Dominio.DTOs
         public string Documento { get; set; } = "";
         public string Domicilio { get; set; } = "";
         public DateTime FechaNacimiento { get; set; }
-        public string Clave { get; set; } = "";
         public string Email { get; set; } = "";
         public string Telefono { get; set; } = "";
     }

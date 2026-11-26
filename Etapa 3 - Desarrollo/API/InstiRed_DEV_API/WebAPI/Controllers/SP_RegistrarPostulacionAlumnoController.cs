@@ -39,17 +39,8 @@ namespace WebAPI.Controllers
 
             try
             {
-                if (formulario.Documentos.Count == 0)
-                {
-                    throw new ArgumentException("Debe adjuntar al menos un documento.");
-                }
-                foreach (SP_DocumentoPostulacionAlumno_form documento in formulario.Documentos)
-                {
-                    if (string.IsNullOrWhiteSpace(documento.Descripcion) || documento.Descripcion.Trim().Length > 100)
-                    {
-                        throw new ArgumentException("Cada documento requiere una descripción de hasta 100 caracteres.");
-                    }
-                }
+                SP_RegistrarPostulacionAlumnoNegocio.validarDocumentos(
+                    formulario.Documentos.Select(documento => documento.Descripcion));
                 archivos = new ArchivoHelper(configuracion["Archivos:DirectorioRaiz"], entorno.ContentRootPath);
                 SP_RegistrarPostulacionAlumno_in registro = new SP_RegistrarPostulacionAlumno_in
                 {
