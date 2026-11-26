@@ -83,7 +83,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool exito)
         {
             lblMensaje.Text = Server.HtmlEncode(texto);
-            lblMensaje.CssClass = exito ? "fw-bold fg-success" : "fw-bold fg-danger";
+            lblMensaje.CssClass = exito ? "alert theme-success" : "alert theme-danger";
             pnlMensaje.Visible = true;
         }
 

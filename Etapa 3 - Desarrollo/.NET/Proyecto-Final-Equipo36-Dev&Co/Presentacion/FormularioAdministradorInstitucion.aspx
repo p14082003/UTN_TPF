@@ -38,7 +38,7 @@
 
                 <div class="card mb-4">
                     <div class="card-body p-3 p-md-4">
-                        <asp:Panel ID="pnlMensaje" runat="server" Visible="false" CssClass="alert" role="status">
+                        <asp:Panel ID="pnlMensaje" runat="server" Visible="false" CssClass="alert mb-3" role="status">
                             <asp:Literal ID="litMensaje" runat="server" Mode="Encode" />
                         </asp:Panel>
 

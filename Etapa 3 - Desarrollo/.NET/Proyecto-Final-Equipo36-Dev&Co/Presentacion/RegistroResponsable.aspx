@@ -19,6 +19,9 @@
                     <h4 class="text-indigo mb-3">DATOS PERSONALES</h4>
                      <!--Datos Personales-->
                     <div class="row g-2 mb-3">
+                        <asp:Panel ID="pnlResultado" runat="server" Visible="false" role="status" CssClass="col-12 alert mb-3">
+                            <asp:Literal ID="litResultado" runat="server" Mode="Encode" />
+                        </asp:Panel>
                         <div class="col-12">
                             <asp:Label ID="lblDatosPersonales" runat="server" Text="Datos Personales:" CssClass="form-label fw-bold"></asp:Label>
                         </div>
@@ -73,9 +76,7 @@
                         </div>
                         <div id="requisitosClave" class="col-12 form-text mt-1">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>
                     </div>
-                    <asp:Panel ID="pnlResultado" runat="server" Visible="false" role="status">
-                        <asp:Literal ID="litResultado" runat="server" Mode="Encode" />
-                    </asp:Panel>
+                    
                     <!--Botones-->
                     <div class ="row g-2 mb-3">
                         <div class="col-12">

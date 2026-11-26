@@ -102,8 +102,8 @@
                             <asp:BoundField DataField="EstadoVisible" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnVerSolicitud" runat="server" CommandArgument='<%# Eval("IdPostulacion") %>' CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" OnClick="btnVerSolicitud_Click">
-                                        Ver detalle
+                                    <asp:LinkButton ID="btnVerSolicitud" runat="server" CommandArgument='<%# Eval("IdPostulacion") %>' CssClass="btn btn-outline-secondary rounded-pill px-3 fw-bold" OnClick="btnVerSolicitud_Click">
+                                       <i class="bi bi-eye fg-info fs-lg"></i> Ver
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
@@ -224,8 +224,8 @@
                             <asp:BoundField DataField="EstadoVisible" HeaderText="Estado" />
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnVerInstitucion" runat="server" CommandArgument='<%# Eval("IdInstitucion") %>' CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" OnClick="btnVerInstitucion_Click">
-                                        Ver detalle
+                                    <asp:LinkButton ID="btnVerInstitucion" runat="server" CommandArgument='<%# Eval("IdInstitucion") %>' CssClass="btn btn-outline-secondary rounded-pill px-3 fw-bold" OnClick="btnVerInstitucion_Click">
+                                        <i class="bi bi-eye fg-info fs-lg"></i> Ver
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
@@ -276,6 +276,7 @@
                             Al dar de baja la institución se rechazan automáticamente las postulaciones de alumnos pendientes y aceptadas.
                             Las confirmadas se conservan. Si después se reactiva, las rechazadas no se restauran.
                         </p>
+                       
                         <asp:Button ID="btnBajaInstitucion" runat="server" Text="Dar de baja la institución" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4"
                             OnClientClick="return confirm('¿Dar de baja esta institución? Se rechazarán las postulaciones pendientes y aceptadas.');" OnClick="btnBajaInstitucion_Click" />
                     </asp:Panel>
@@ -299,13 +300,15 @@
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnBajaAdministrador" runat="server" Visible='<%# (bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn-outline theme-danger btn-sm rounded-pill px-3 fw-bold"
+                                        CssClass="btn btn-light btn-sm rounded-4 p-3"
                                         OnClientClick="return confirm('¿Dar de baja a este administrador?');" OnClick="btnBajaAdministrador_Click">
-                                        Dar de baja
+                                        <i class="bi bi-trash fg-danger fs-lg"></i>
+                                        Baja
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="btnReactivarAdministrador" runat="server" Visible='<%# !(bool)Eval("UsuarioActivo") %>' CommandArgument='<%# Eval("IdAdministrador") %>'
-                                        CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
+                                        CssClass="btn btn-light btn-sm rounded-4 p-3"
                                         OnClientClick="return confirm('¿Reactivar a este administrador?');" OnClick="btnReactivarAdministrador_Click">
+                                        <i class="bi bi-arrow-repeat fg-success fs-lg"></i> 
                                         Reactivar
                                     </asp:LinkButton>
                                 </ItemTemplate>

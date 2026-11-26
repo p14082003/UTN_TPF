@@ -15,6 +15,24 @@ namespace Presentacion
     {
 
         /// <summary>
+        /// Control pnlResultado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlResultado;
+
+        /// <summary>
+        /// Control litResultado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litResultado;
+
+        /// <summary>
         /// Control lblDatosPersonales.
         /// </summary>
         /// <remarks>
@@ -202,16 +220,6 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtClaveRepetida;
-
-        /// <summary>
-        /// Control pnlResultado.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlResultado;
-
-        /// <summary>
-        /// Control litResultado.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litResultado;
 
         /// <summary>
         /// Control btnRegistrar.

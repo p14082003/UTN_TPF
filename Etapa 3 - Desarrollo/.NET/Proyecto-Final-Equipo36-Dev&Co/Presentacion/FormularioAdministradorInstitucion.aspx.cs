@@ -207,7 +207,7 @@ namespace Presentacion
         private void MostrarResultado(string mensaje, bool exito)
         {
             pnlMensaje.Visible = true;
-            pnlMensaje.CssClass = exito ? "alert alert-success mb-3" : "alert alert-danger mb-3";
+            pnlMensaje.CssClass = exito ? "alert theme-success mb-3" : "alert theme-danger mb-3";
             if (!exito)
             {
                 mensaje += " Volvé a seleccionar los tres archivos antes de enviar nuevamente.";

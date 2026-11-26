@@ -9,26 +9,10 @@
 
 namespace Presentacion
 {
+
+
     public partial class FormularioAdministradorInstitucion
     {
-
-        /// <summary>
-        /// Control Content1.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Content Content1;
-
-        /// <summary>
-        /// Control Content2.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Content Content2;
 
         /// <summary>
         /// Control pnlMensaje.

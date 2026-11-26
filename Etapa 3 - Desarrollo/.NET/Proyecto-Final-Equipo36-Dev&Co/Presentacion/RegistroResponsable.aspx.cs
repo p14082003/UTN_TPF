@@ -130,7 +130,7 @@ namespace Presentacion
         private void MostrarResultado(string mensaje, bool exito)
         {
             pnlResultado.Visible = true;
-            pnlResultado.CssClass = exito ? "alert alert-success mb-3" : "alert alert-danger mb-3";
+            pnlResultado.CssClass = exito ? "alert theme-success mb-3" : "alert theme-danger mb-3";
             litResultado.Text = mensaje;
         }
 
