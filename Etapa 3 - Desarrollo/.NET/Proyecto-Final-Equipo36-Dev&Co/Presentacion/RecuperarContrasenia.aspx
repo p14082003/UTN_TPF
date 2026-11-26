@@ -7,6 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>InstiRed - Recuperar contraseña</title>
+    <link rel="icon" href="Imagenes/InstiRed.ico" />
     <link href="~/EstilosInstiRed.css" rel="stylesheet" type="text/css" runat="server" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>

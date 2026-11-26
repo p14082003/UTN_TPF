@@ -87,6 +87,8 @@
     <Content Include="Scripts\postulacion-alumno.js" />
     <Content Include="GestionarVacante.aspx" />
     <Content Include="ListadoPostulacionAlumnos.aspx" />
+    <Content Include="Default.aspx" />
+    <Content Include="Imagenes\InstiRed.ico" />
     <Content Include="Login.aspx" />
     <Content Include="MiPerfil.aspx" />
     <Content Include="RecuperarContrasenia.aspx" />
