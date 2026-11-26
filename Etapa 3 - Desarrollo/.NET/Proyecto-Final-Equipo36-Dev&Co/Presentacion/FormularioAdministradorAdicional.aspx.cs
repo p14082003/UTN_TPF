@@ -116,14 +116,12 @@ namespace Presentacion
                             return;
                         }
                     }
-                    ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='GestionarPostulacionAlumno.aspx',3000);", true);
                     catch (Exception ex)
                     {
                         Trace.Warn("FormularioAdministradorAdicional", "El administrador se creó, pero no se pudieron obtener las credenciales para el correo.", ex);
                     }
                     MostrarMensaje("El administrador se creó, pero no pudimos enviar sus credenciales. Para obtener una nueva contraseña, puede usar «¿Olvidaste tu contraseña?» en el inicio de sesión. No vuelvas a registrar la cuenta.", false);
                     return;
-                   
                 }
 
                 MostrarMensaje(respuesta.Mensaje ?? "No se pudo completar el alta. Intentá nuevamente más tarde.", false);
@@ -167,7 +165,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool ok)
         {
             lblMensaje.Text = Server.HtmlEncode(texto);
-            lblMensaje.CssClass = ok ? "alert theme-success" : "alert theme-danger";
+            lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
             lblMensaje.Visible = true;
         }
 
