@@ -120,7 +120,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCerrarDetalle;
+        protected global::System.Web.UI.WebControls.LinkButton btnCerrarDetalle;
 
         /// <summary>
         /// Control litCodigoSeguimiento.
@@ -291,7 +291,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnDesplegarRechazo;
+        protected global::System.Web.UI.WebControls.LinkButton btnDesplegarRechazo;
 
         /// <summary>
         /// Control btnAceptar.
@@ -300,7 +300,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnAceptar;
+        protected global::System.Web.UI.WebControls.LinkButton btnAceptar;
 
         /// <summary>
         /// Control panelRechazo.
@@ -327,6 +327,6 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnConfirmarRechazo;
+        protected global::System.Web.UI.WebControls.LinkButton btnConfirmarRechazo;
     }
 }

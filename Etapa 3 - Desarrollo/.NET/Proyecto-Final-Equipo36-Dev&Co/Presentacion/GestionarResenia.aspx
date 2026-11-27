@@ -121,9 +121,9 @@
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Acciones">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnVerDetalle" runat="server" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
+                                    <asp:LinkButton ID="btnVerDetalle" runat="server" CssClass="btn btn-sm btn-outline-lavanda rounded-circle d-inline-flex align-items-center justify-content-center m-3"
                                         CommandArgument='<%# Eval("IdResenia") %>' OnClick="btnVerDetalle_Click">
-                                        <%# Eval("RespuestaInstitucion") == null ? "Responder" : "Ver" %>
+                                         <i class='<%# Eval("RespuestaInstitucion") == null ? "bi bi-pencil-square fs-lg" : "bi bi-eye fs-lg" %>'></i>
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>

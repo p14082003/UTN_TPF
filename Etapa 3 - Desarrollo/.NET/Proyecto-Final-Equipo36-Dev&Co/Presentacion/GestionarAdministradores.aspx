@@ -17,7 +17,11 @@
                 <h1 tabindex="0" class="text-indigo fw-bold">Administradores</h1>
                 <p class="text-muted mb-0">Gestión de los administradores de tu institución.</p>
             </div>
-            <asp:Button ID="btnAgregarAdministrador" runat="server" Text="Agregar administrador" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAgregarAdministrador_Click" />
+            <asp:LinkButton ID="btnAgregarAdministrador" runat="server" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnAgregarAdministrador_Click">
+                <i class="bi-person-plus fs-lg"></i> 
+                Agregar Administrador
+            </asp:LinkButton>
+
         </header>
 
         <!-- MENSAJE DE RESULTADO DE LA ÚLTIMA ACCIÓN -->
@@ -29,7 +33,7 @@
                 <h5 class="mb-0"><i class="bi bi-people me-2"></i>Administradores de la institución</h5>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive text-center">
                     <asp:GridView ID="dgvAdministradores" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />

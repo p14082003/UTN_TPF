@@ -105,7 +105,7 @@
                 <div class="table-responsive">
                     <asp:GridView ID="dgvPostulaciones" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" DataKeyNames="IdPostulacion"
-                        EmptyDataText="No hay postulaciones para mostrar con este filtro.">
+                        EmptyDataText="No hay postulaciones para mostrar con este filtro." AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvPostulaciones_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
                         <Columns>
@@ -133,7 +133,10 @@
         <asp:Panel ID="pnlDetalle" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
             <div class="card-header bg-indigo text-white encabezado-postulacion">
                 <h2>Revisión de Postulación</h2>
-                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnCerrarDetalle_Click" />
+                <asp:LinkButton ID="btnCerrarDetalle" runat="server" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnCerrarDetalle_Click"> 
+                    <i class="bi bi-arrow-left fs-lg"></i> 
+                    Volver
+                </asp:LinkButton>
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
@@ -217,8 +220,16 @@
 
                 <!-- Acciones -->
                 <div class="d-flex justify-content-end gap-3 mt-4">
-                    <asp:Button ID="btnDesplegarRechazo" runat="server" Text="Rechazar" CssClass="btn btn-outline-danger fw-bold rounded-pill px-4" OnClick="btnDesplegarRechazo_Click" />
-                    <asp:Button ID="btnAceptar" runat="server" Text="Aceptar Postulación" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClientClick="return confirmarAccion(this, '¿Desea aceptar esta postulación?', 'Aceptar');" OnClick="btnAceptar_Click" />
+                   
+                    <asp:LinkButton ID="btnDesplegarRechazo" runat="server" CssClass="btn btn-outline-danger fw-bold rounded-pill px-4" OnClick="btnDesplegarRechazo_Click"> 
+                        <i class="bi bi-x-lg fg-danger fs-lg me-2"></i> 
+                        Rechazar
+                    </asp:LinkButton>
+
+                    <asp:LinkButton ID="btnAceptar" runat="server" CssClass="btn btn-light fw-bold rounded-pill px-4" OnClientClick="return confirmarAccion(this, '¿Desea aceptar esta postulación?', 'Aceptar');" OnClick="btnAceptar_Click"> 
+                        <i class="bi bi-check-lg fg-success fs-lg me-2"></i> 
+                        Aceptar Postulación
+                    </asp:LinkButton>
                 </div>
 
                 <!-- Rechazo con motivo -->
@@ -227,7 +238,11 @@
                         <label class="form-label text-danger fw-bold">Motivo del rechazo (Obligatorio)</label>
                         <asp:TextBox ID="txtMotivoRechazo" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control mb-3 border-neutro rounded-3"></asp:TextBox>
                         <div class="text-end">
-                            <asp:Button ID="btnConfirmarRechazo" runat="server" Text="Confirmar Rechazo" CssClass="btn btn-danger fw-bold rounded-pill px-4" OnClick="btnConfirmarRechazo_Click" />
+                            <asp:LinkButton ID="btnConfirmarRechazo" runat="server" CssClass="btn btn-danger fw-bold rounded-pill px-4" OnClick="btnConfirmarRechazo_Click"> 
+                                <i class="bi bi-x-lg fg-danger fs-lg me-2"></i>
+                                Confirmar Rechazo
+                            </asp:LinkButton>
+                
                         </div>
                     </div>
                 </asp:Panel>

@@ -29,7 +29,10 @@
                 <h1 tabindex="0" class="text-indigo fw-bold">Gestión de vacantes</h1>
                 <p class="text-muted mb-0">Actualizá las vacantes disponibles de cada curso. Los padres, madres y tutores ven esta disponibilidad al buscar instituciones.</p>
             </div>
-            <asp:Button ID="btnNuevoCurso" runat="server" Text="Nuevo curso" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnNuevoCurso_Click" />
+            <asp:LinkButton ID="btnNuevoCurso" runat="server" CssClass="btn btn-indigo fw-bold rounded-pill px-4" OnClick="btnNuevoCurso_Click" > 
+                <i class="bi-journal-plus fs-xl"></i>
+                Nuevo Curso
+            </asp:LinkButton>
         </header>
 
         <!-- MENSAJE DE RESULTADO -->

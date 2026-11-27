@@ -71,6 +71,7 @@ namespace Presentacion
 
         protected void ddlEstado_SelectedIndexChanged(object sender, EventArgs e)
         {
+            dgvPostulaciones.PageIndex = 0;
             RegisterAsyncTask(new PageAsyncTask(() => CargarListadoAsync()));
         }
 
@@ -133,6 +134,13 @@ namespace Presentacion
                 lblRechazadas.Text = propias.Count(p => p.IdEstado == Rechazada).ToString();
                 pnlDashboard.Visible = true;
                 pnlListado.Visible = true;
+
+                int totalPaginas = (int)Math.Ceiling(filtradas.Count / (double)dgvPostulaciones.PageSize);
+                if(dgvPostulaciones.PageIndex >= totalPaginas)
+                {
+                    dgvPostulaciones.PageIndex = Math.Max(0, totalPaginas - 1);
+                }
+
                 dgvPostulaciones.DataSource = filtradas;
                 dgvPostulaciones.DataBind();
 
@@ -308,7 +316,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool exito)
         {
             pnlMensaje.Visible = true;
-            pnlMensaje.CssClass = exito ? "alert alert-success mb-4" : "alert alert-danger mb-4";
+            pnlMensaje.CssClass = exito ? "alert theme-success mb-4" : "alert theme-danger mb-4";
             litMensaje.Text = Server.HtmlEncode(texto);
         }
 
@@ -494,6 +502,12 @@ namespace Presentacion
         {
             public int Capacidad { get; set; }
             public int Inscriptos { get; set; }
+        }
+
+        protected void dgvPostulaciones_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvPostulaciones.PageIndex = e.NewPageIndex;
+            RegisterAsyncTask(new PageAsyncTask(() => CargarListadoAsync()));
         }
     }
 }
