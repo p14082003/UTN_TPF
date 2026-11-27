@@ -47,11 +47,11 @@
                                 <h4 class="text-indigo mb-3">DATOS PERSONALES</h4>
                                 <div class="mb-3">
                                     <label for="<%= txtNombre.ClientID %>" class="form-label text-indigo fw-semibold">Nombre</label>
-                                    <asp:TextBox ID="txtNombre" runat="server" placeholder="Nombre" CssClass="form-control" MaxLength="50" />
+                                    <asp:TextBox ID="txtNombre" runat="server" placeholder="Juan" CssClass="form-control" MaxLength="50" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtApellido.ClientID %>" class="form-label text-indigo fw-semibold">Apellido</label>
-                                    <asp:TextBox ID="txtApellido" runat="server" placeholder="Apellido" CssClass="form-control" MaxLength="50" />
+                                    <asp:TextBox ID="txtApellido" runat="server" placeholder="Pérez" CssClass="form-control" MaxLength="50" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtDocumento.ClientID %>" class="form-label text-indigo fw-semibold">Documento</label>
@@ -59,7 +59,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtDomicilio.ClientID %>" class="form-label text-indigo fw-semibold">Domicilio</label>
-                                    <asp:TextBox ID="txtDomicilio" runat="server" placeholder="Av. Rivadavia 1234" CssClass="form-control" MaxLength="100" />
+                                    <asp:TextBox ID="txtDomicilio" runat="server" placeholder="Av. Rivadavia 1234, CABA" CssClass="form-control" MaxLength="100" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtFechaNacimiento.ClientID %>" class="form-label text-indigo fw-semibold">Fecha de nacimiento</label>
@@ -67,21 +67,21 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtEmail.ClientID %>" class="form-label text-indigo fw-semibold">Correo electrónico</label>
-                                    <asp:TextBox ID="txtEmail" runat="server" placeholder="email@extension.com" CssClass="form-control" TextMode="Email" MaxLength="100" />
+                                    <asp:TextBox ID="txtEmail" runat="server" placeholder="nombre@ejemplo.com" CssClass="form-control" TextMode="Email" MaxLength="100" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtTelefono.ClientID %>" class="form-label text-indigo fw-semibold">Teléfono</label>
-                                    <asp:TextBox ID="txtTelefono" runat="server" placeholder="+54 11 1234-5678" CssClass="form-control" TextMode="Phone" MaxLength="30" />
+                                    <asp:TextBox ID="txtTelefono" runat="server" placeholder="+54 9 11 1234-5678" CssClass="form-control" TextMode="Phone" MaxLength="30" />
                                 </div>
 
                                 <div class="row g-2 mb-3">
                                     <div class="col-12 md:col-6">
                                         <label for="<%= txtClave.ClientID %>" class="form-label text-indigo fw-semibold">Contraseña</label>
-                                        <asp:TextBox ID="txtClave" runat="server" TextMode="Password" ValidateRequestMode="Disabled" MaxLength="20" CssClass="form-control" autocomplete="new-password" aria-describedby="requisitosClave" />
+                                        <asp:TextBox ID="txtClave" runat="server" TextMode="Password" placeholder="Contraseña" ValidateRequestMode="Disabled" MaxLength="20" CssClass="form-control" autocomplete="new-password" aria-describedby="requisitosClave" />
                                     </div>
                                     <div class="col-12 md:col-6">
                                         <label for="<%= txtClaveRepetida.ClientID %>" class="form-label text-indigo fw-semibold">Confirmar contraseña</label>
-                                        <asp:TextBox ID="txtClaveRepetida" runat="server" TextMode="Password" ValidateRequestMode="Disabled" MaxLength="20" CssClass="form-control" autocomplete="new-password" />
+                                        <asp:TextBox ID="txtClaveRepetida" runat="server" TextMode="Password" placeholder="Contraseña" ValidateRequestMode="Disabled" MaxLength="20" CssClass="form-control" autocomplete="new-password" />
                                     </div>
                                     <div id="requisitosClave" class="col-12 form-text mt-1">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>
                                 </div>
@@ -91,7 +91,7 @@
                                 <h4 class="text-indigo mb-3">DATOS DE LA INSTITUCIÓN</h4>
                                 <div class="mb-3">
                                     <label for="<%= txtNombreInstitucion.ClientID %>" class="form-label text-indigo fw-semibold">Nombre de la institución</label>
-                                    <asp:TextBox ID="txtNombreInstitucion" runat="server" placeholder="Institución" CssClass="form-control" MaxLength="100" />
+                                    <asp:TextBox ID="txtNombreInstitucion" runat="server" placeholder="Colegio de la Nación" CssClass="form-control" MaxLength="100" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="<%= txtCuit.ClientID %>" class="form-label text-indigo fw-semibold">CUIT</label>

@@ -28,15 +28,15 @@
                             
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblNombre" runat="server" Text="Nombre" AssociatedControlID="txtNombre" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtNombre" runat="server" placeholder="Nombre" MaxLength="50" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtNombre" runat="server" placeholder="Juan" MaxLength="50" CssClass="form-control"></asp:TextBox>
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblApellido" runat="server" Text="Apellido" AssociatedControlID="txtApellido" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtApellido" runat="server" placeholder="Apellido" MaxLength="50" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtApellido" runat="server" placeholder="Pérez" MaxLength="50" CssClass="form-control"></asp:TextBox>
                         </div>
                          <div class="col-12 md:col-6">
                             <asp:Label ID="lblDocumento" runat="server" Text="Documento" AssociatedControlID="txtDocumento" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtDocumento" runat="server" placeholder="35887625" MaxLength="8" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtDocumento" runat="server" placeholder="12345678" MaxLength="8" CssClass="form-control"></asp:TextBox>
                         </div>
                          <div class="col-12 md:col-6">
                             <asp:Label ID="lblFechaNacimiento" runat="server" Text="Fecha de Nacimiento" AssociatedControlID="txtFechaNacimiento" CssClass="form-label text-indigo"></asp:Label>
@@ -50,15 +50,15 @@
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblTelefono" runat="server" Text="Telefono" AssociatedControlID="txtTelefono" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtTelefono" runat="server" placeholder="2613333333" MaxLength="30" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtTelefono" runat="server" placeholder="+54 9 11 1234-5678" MaxLength="30" CssClass="form-control"></asp:TextBox>
                          </div>
                          <div class="col-12 md:col-6">
                             <asp:Label ID="lblEmail" runat="server" Text="Correo Electrónico" AssociatedControlID="txtEmail" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtEmail" runat="server" TextMode="Email" placeholder="tunombre@ejemplo.com" MaxLength="100" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtEmail" runat="server" TextMode="Email" placeholder="nombre@ejemplo.com" MaxLength="100" CssClass="form-control"></asp:TextBox>
                          </div>
                          <div class="col-12">
                              <asp:Label ID="lblDomicilio" runat="server" Text="Domicilio" AssociatedControlID="txtDomicilio" CssClass="form-label text-indigo"></asp:Label>
-                             <asp:TextBox ID ="txtDomicilio" runat="server" placeholder="Av.Rivadavia 123,Mza" MaxLength="100" CssClass="form-control"></asp:TextBox>
+                             <asp:TextBox ID ="txtDomicilio" runat="server" placeholder="Av. Rivadavia 1234, CABA" MaxLength="100" CssClass="form-control"></asp:TextBox>
                          </div>
                     </div>
                     <!--Datos de seguridad-->
@@ -68,11 +68,11 @@
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblClave" runat="server" Text="Contraseña" AssociatedControlID="txtClave" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtClave" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control" aria-describedby="requisitosClave"></asp:TextBox>
+                            <asp:TextBox ID ="txtClave" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="Contraseña" MaxLength="20" CssClass="form-control" aria-describedby="requisitosClave"></asp:TextBox>
                         </div>
                         <div class="col-12 md:col-6">
                             <asp:Label ID="lblClaveRepetida" runat="server" Text="Confirmar contraseña" AssociatedControlID="txtClaveRepetida" CssClass="form-label text-indigo"></asp:Label>
-                            <asp:TextBox ID ="txtClaveRepetida" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="********" MaxLength="20" CssClass="form-control"></asp:TextBox>
+                            <asp:TextBox ID ="txtClaveRepetida" runat="server" TextMode="Password" ValidateRequestMode="Disabled" placeholder="Contraseña" MaxLength="20" CssClass="form-control"></asp:TextBox>
                         </div>
                         <div id="requisitosClave" class="col-12 form-text mt-1">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>
                     </div>

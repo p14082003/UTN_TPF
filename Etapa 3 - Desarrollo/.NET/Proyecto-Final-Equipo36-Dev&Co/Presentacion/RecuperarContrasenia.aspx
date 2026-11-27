@@ -47,7 +47,7 @@
 
                             <%-- Correo electrónico --%>
                             <div class="input-group mb-3">
-                                <asp:TextBox runat="server" ID="txtEmail" TextMode="Email" MaxLength="100" CssClass="form-control form-control-lg bg-light fs-6" placeholder="Correo electrónico"  aria-label="Correo electrónico" autocomplete="username" />
+                                <asp:TextBox runat="server" ID="txtEmail" TextMode="Email" MaxLength="100" CssClass="form-control form-control-lg bg-light fs-6" placeholder="nombre@ejemplo.com"  aria-label="Correo electrónico" autocomplete="username" />
                             </div>
 
                             <%-- Mensaje de respuesta --%>

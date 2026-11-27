@@ -33,7 +33,7 @@
 
                         <div class="mb-4">
                             <label for="<%= txtEmail.ClientID %>" class="form-label text-indigo fw-semibold">Correo electrónico</label>
-                            <asp:TextBox ID="txtEmail" runat="server" placeholder="email@extension.com" CssClass="form-control" TextMode="Email" MaxLength="100" />
+                            <asp:TextBox ID="txtEmail" runat="server" placeholder="nombre@ejemplo.com" CssClass="form-control" TextMode="Email" MaxLength="100" />
                             <div class="form-text">Es el correo del administrador que realizó la postulación.</div>
                         </div>
 

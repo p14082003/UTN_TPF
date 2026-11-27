@@ -76,7 +76,7 @@
                             <div class="form-text mb-2">Podés tener hasta 2 teléfonos y como mínimo 1.</div>
                             <asp:Panel ID="pnlAgregarTelefono" runat="server">
                                 <asp:Label ID="lblTelefono" runat="server" Text="Agregar teléfono" CssClass="form-label text-indigo d-block"></asp:Label>
-                                <asp:TextBox ID="txtTelefono" runat="server" TextMode="Phone" placeholder="2617777777" MaxLength="30" CssClass="form-control"></asp:TextBox>
+                                <asp:TextBox ID="txtTelefono" runat="server" TextMode="Phone" placeholder="+54 9 11 1234-5678" MaxLength="30" CssClass="form-control"></asp:TextBox>
                             </asp:Panel>
                             <div class="d-flex flex-wrap gap-2 mt-3">
                                 <asp:Button ID="btnAgregarTelefono" runat="server" Text="Agregar" OnClick="btnAgregarTelefono_Click" CssClass="btn btn-lilaOscuro px-4 py-2" />
@@ -102,15 +102,15 @@
                             <div class="row g-3">
                                 <div class="col-12">
                                     <asp:Label ID="lblClaveActual" runat="server" Text="Contraseña actual" CssClass="form-label text-indigo d-block"></asp:Label>
-                                    <asp:TextBox ID="txtClaveActual" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="current-password" placeholder="********" MaxLength="255" CssClass="form-control"></asp:TextBox>
+                                    <asp:TextBox ID="txtClaveActual" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="current-password" placeholder="Contraseña" MaxLength="255" CssClass="form-control"></asp:TextBox>
                                 </div>
                                 <div class="col-12 md:col-6">
                                     <asp:Label ID="lblClaveNueva" runat="server" Text="Contraseña nueva" CssClass="form-label text-indigo d-block"></asp:Label>
-                                    <asp:TextBox ID="txtClaveNueva" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="new-password" placeholder="********" MaxLength="20" CssClass="form-control"></asp:TextBox>
+                                    <asp:TextBox ID="txtClaveNueva" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="new-password" placeholder="Contraseña" MaxLength="20" CssClass="form-control"></asp:TextBox>
                                 </div>
                                 <div class="col-12 md:col-6">
                                     <asp:Label ID="lblClaveRepetida" runat="server" Text="Repetir contraseña nueva" CssClass="form-label text-indigo d-block"></asp:Label>
-                                    <asp:TextBox ID="txtClaveRepetida" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="new-password" placeholder="********" MaxLength="20" CssClass="form-control"></asp:TextBox>
+                                    <asp:TextBox ID="txtClaveRepetida" runat="server" TextMode="Password" EnableViewState="false" ValidateRequestMode="Disabled" autocomplete="new-password" placeholder="Contraseña" MaxLength="20" CssClass="form-control"></asp:TextBox>
                                 </div>
                             </div>
                             <div class="form-text mt-2">Usá entre 8 y 20 caracteres e incluí una mayúscula, una minúscula, un número y un símbolo.</div>

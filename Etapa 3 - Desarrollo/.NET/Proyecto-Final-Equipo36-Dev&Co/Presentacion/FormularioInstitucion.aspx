@@ -121,7 +121,7 @@
                             <!-- NOMBRE (BD: VARCHAR(100)) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblNombre" runat="server" Text="Nombre de la institución" CssClass="form-label fw-semibold"></asp:Label>
-                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="100" ReadOnly="true" placeholder="Ej. Colegio de la Nación"></asp:TextBox>
+                                <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" MaxLength="100" ReadOnly="true" placeholder="Colegio de la Nación"></asp:TextBox>
                             </div>
                         </div>
 
@@ -129,7 +129,7 @@
                             <!-- CUIT (BD: VARCHAR(11), se guardan solo los 11 digitos, sin guiones) -->
                             <div class="mb-4">
                                 <asp:Label ID="lblCuit" runat="server" Text="CUIT de la institución" CssClass="form-label fw-semibold"> </asp:Label>
-                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" ReadOnly="true" placeholder="11 dígitos, sin guiones"></asp:TextBox>
+                                <asp:TextBox ID="txtCuit" runat="server" CssClass="form-control" MaxLength="11" ReadOnly="true" placeholder="30710000022"></asp:TextBox>
                             </div>
                         </div>
                     </div>
@@ -141,19 +141,19 @@
                     </div>
                     <div class="mb-4">
                         <asp:Label ID="lblEmail" runat="server" Text="Correo electrónico" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" required="required" placeholder="tuColegio@mail.com.ar"></asp:TextBox>
+                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" MaxLength="100" required="required" placeholder="nombre@ejemplo.com"></asp:TextBox>
                     </div>
 
                     <!-- TELEFONOS (opcionales. BD: VARCHAR(30)) -->
                     <div class="row">
                         <div class="col-6 mb-4">
                             <asp:Label ID="lblTelefono" runat="server" Text="Teléfono principal" CssClass="form-label fw-semibold"></asp:Label>
-                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 11 0000-0000"></asp:TextBox>
+                            <asp:TextBox ID="txtTelefono" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 9 11 1234-5678"></asp:TextBox>
                         </div>
                             
                         <div class="col-6 mb-4">
                             <asp:Label ID="lblTelefonoAlternativo" runat="server" Text="Télefono alternativo" CssClass="form-label fw-semibold"></asp:Label>
-                            <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 9 11 0000-0000"></asp:TextBox>
+                            <asp:TextBox ID="txtTelefonoAlternativo" runat="server" CssClass="form-control" TextMode="Phone" MaxLength="30" placeholder="+54 9 11 1234-5678"></asp:TextBox>
                         </div>
 
                     </div>
@@ -177,7 +177,7 @@
                     <div class="mb-4">
                         <asp:Label ID="lblDireccion" runat="server" Text="Dirección de la institución" CssClass="form-label fw-semibold"></asp:Label>
                         <div class="d-flex gap-4">
-                            <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" MaxLength="100" required="required" placeholder="Calle, número y localidad"></asp:TextBox>
+                            <asp:TextBox ID="txtDireccion" runat="server" CssClass="form-control" MaxLength="100" required="required" placeholder="Av. Rivadavia 1234, CABA"></asp:TextBox>
                             <button type="button" id="btnVerificarDireccion" class="btn-lilaOscuro">
                                 <i class="bi bi-search"></i>
                             </button>
