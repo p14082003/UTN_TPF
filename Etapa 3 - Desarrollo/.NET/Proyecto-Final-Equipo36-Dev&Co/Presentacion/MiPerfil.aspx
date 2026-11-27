@@ -65,7 +65,7 @@
                             <ItemTemplate>
                                 <li class="badge rounded-pill bg-fondo text-indigo border border-neutro fs-6 fw-semibold d-inline-flex align-items-center gap-2">
                                     <span><%# Server.HtmlEncode((string)Eval("Numero")) %></span>
-                                    <asp:LinkButton ID="btnQuitarTelefono" runat="server" Visible="false" CommandName="Quitar" CommandArgument='<%# Eval("Id") %>'
+                                    <asp:LinkButton ID="btnQuitarTelefono" runat="server" Visible="false" CommandName="Quitar" OnClientClick="return confirmarAccion(this, '¿Desea quitar este teléfono?', 'Aceptar');" CommandArgument='<%# Eval("Id") %>'
                                         CausesValidation="false" CssClass="btn btn-sm border-0 p-0 text-indigo" ToolTip="Quitar este teléfono"><i class="bi bi-x-lg"></i></asp:LinkButton>
                                 </li>
                             </ItemTemplate>

@@ -67,6 +67,14 @@ namespace Presentacion
             institucion = Session["institucion"] as Institucion;
             if (!IsPostBack)
             {
+                // "institucion" es un borrador que se guarda en la sesión mientras se edita el formulario.
+                // Si el usuario cambia algo (idiomas, accesibilidades, imágenes) y se va sin guardar, ese borrador
+                // seguía en la sesión y se mostraba de nuevo al volver. Por eso, al entrar a la pantalla
+                // (no es postback) se descarta y se vuelve a cargar desde la API.
+                Session.Remove("institucion");
+                Session.Remove("eliminadas");   // imágenes que estaban marcadas para borrar al guardar
+                institucion = null;             // así CargarFormularioAsync lo vuelve a leer de la API
+
                 btnGuardar.Enabled = false;
                 Ejecutar(CargarFormularioAsync);
             }
