@@ -90,6 +90,7 @@
             <div class="table-responsive">
                 <asp:GridView ID="dgvPostulaciones" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay postulaciones para mostrar." AllowPaging ="true" PageSize="10" OnPageIndexChanging="dgvPostulaciones_PageIndexChanging">
                     <HeaderStyle  CssClass="text-indigo border-bottom border-neutro" />
+                    <PagerStyle CssClass="text-indigo" HorizontalAlign="Center" />
                     <Columns>
                         <asp:BoundField DataField="Alumno" HeaderText="Alumno" />
                         <asp:BoundField DataField="Documento" HeaderText="Documento" />
@@ -117,6 +118,7 @@
             <div class="table-responsive">
                 <asp:GridView ID="dgvAlumnos" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="Todavía no registraste alumnos." OnRowDataBound="dgvAlumnos_RowDataBound">
                     <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                    <PagerStyle CssClass="text-indigo" HorizontalAlign="Center" />
                     <Columns>
                         <asp:BoundField DataField="NombreCompleto" HeaderText="Alumno" />
                         <asp:BoundField DataField="Documento" HeaderText="Documento" />

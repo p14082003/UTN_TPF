@@ -96,7 +96,7 @@
                         EmptyDataText="No hay cursos para mostrar con este filtro.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
-                        <PagerStyle CssClass="text-indigo" HorizontalAlign="Center" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="NombreCurso" HeaderText="Curso" />
                             <asp:BoundField DataField="CicloLectivo" HeaderText="Ciclo lectivo" />
