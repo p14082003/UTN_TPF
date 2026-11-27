@@ -113,6 +113,7 @@
 
         <!-- DATOS LEGALES E IDENTIFICACIÓN -->
         <div class="row m-4">
+            <asp:Label ID="lblMensaje" runat="server" Visible="false" role="status" CssClass="alert theme-success d-block mx-4 my-3"></asp:Label>
             <div class="col">
                 <div class="card p-5">
 

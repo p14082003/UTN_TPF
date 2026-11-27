@@ -65,6 +65,7 @@ namespace Presentacion
             Response.Cache.SetNoStore();
             Form.Enctype = "multipart/form-data";
             institucion = Session["institucion"] as Institucion;
+            lblMensaje.Visible = false;
             if (!IsPostBack)
             {
                 // "institucion" es un borrador que se guarda en la sesión mientras se edita el formulario.
@@ -545,6 +546,20 @@ namespace Presentacion
             ScriptManager.RegisterStartupScript(this, GetType(), "mensaje", script, true);
         }
 
+        private void MostrarExitoYRedirigir(string mensaje, string url)
+        {
+            lblMensaje.Text = HttpUtility.HtmlEncode(mensaje);
+            lblMensaje.CssClass = "alert theme-success d-block mx-4 my-3";
+            lblMensaje.Visible = true;
+            btnGuardar.Enabled = false;
+
+            string destino = HttpUtility.JavaScriptStringEncode(ResolveUrl(url));
+            string script =
+                "document.getElementById('" + lblMensaje.ClientID + "').scrollIntoView({ behavior: 'smooth', block: 'center' });" +
+                "setTimeout(function () { window.location.href = '" + destino + "'; }, 2500);";
+            ScriptManager.RegisterStartupScript(this, GetType(), "exitoRedireccion", script, true);
+        }
+
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             if (ValidarCampos())
@@ -564,6 +579,7 @@ namespace Presentacion
             // Se consulta el vínculo actual por si un envío anterior llegó a guardarse.
             var admin = await ObtenerAdministradorAsync();
             institucion.Id = admin.IdInstitucion.GetValueOrDefault();
+            bool eraNueva = institucion.Id == 0;
             var discapacidad = institucion.Discapacidad;
             var datos = new
             {
@@ -611,8 +627,10 @@ namespace Presentacion
 
             Session.Remove("institucion");
             Session.Remove("eliminadas");
-            Response.Redirect("~/DetalleInstitucion.aspx?id=" + institucion.Id, false);
-            Context.ApplicationInstance.CompleteRequest();
+            MostrarExitoYRedirigir(
+    eraNueva ? "La institución se registró correctamente."
+             : "Los cambios de la institución se guardaron correctamente.",
+    "~/DetalleInstitucion.aspx?id=" + institucion.Id);
         }
 
         private static void ValidarRespuesta(InstiRedApi.Respuesta respuesta)
