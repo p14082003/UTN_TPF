@@ -21,6 +21,12 @@ namespace Presentacion
         private int idInstitucion;
         private string nombreInstitucion;
         private string ClaveCursos => "cursosPostulacion:" + idInstitucion;
+        private int IdAlumnoAutogestor
+        {
+            get { return (int?)ViewState["IdAlumnoAutogestor"] ?? 0; }
+            set { ViewState["IdAlumnoAutogestor"] = value; }
+        }
+        private bool EsAutogestor => IdAlumnoAutogestor > 0 && ddlAlumnos.SelectedValue == IdAlumnoAutogestor.ToString();
 
         protected string CursosJson
         {
@@ -117,6 +123,8 @@ namespace Presentacion
 
         private void CargarAlumnos(List<AlumnoApi> alumnos)
         {
+            IdAlumnoAutogestor = alumnos?.FirstOrDefault(alumno =>
+                string.Equals(alumno.Rol, "Autogestor", StringComparison.OrdinalIgnoreCase))?.IdAlumno ?? 0;
             ddlAlumnos.Items.Clear();
             ddlAlumnos.Items.Add(new ListItem("Seleccionar alumno", ""));
 
@@ -130,6 +138,16 @@ namespace Presentacion
                 string nombreCompleto = alumno.NombreAlumno + " " + alumno.ApellidoAlumno;
 
                 ddlAlumnos.Items.Add(new ListItem(nombreCompleto, alumno.IdAlumno.ToString()));
+            }
+        }
+
+        private void ActualizarAlumnosAutogestor()
+        {
+            // Los atributos de ListItem no sobreviven al postback; se reconstruyen desde el ID guardado en ViewState.
+            foreach (ListItem alumno in ddlAlumnos.Items)
+            {
+                alumno.Attributes["data-autogestor"] = IdAlumnoAutogestor > 0 && alumno.Value == IdAlumnoAutogestor.ToString()
+                    ? "true" : "false";
             }
         }
 
@@ -283,16 +301,25 @@ namespace Presentacion
                 c.Anio == anioSeleccionado && c.Division == ddlDivision.SelectedValue && c.IdTurno == idTurno);
         }
 
-        protected void Page_PreRender(object sender, EventArgs e)
+        protected void Page_PreRenderComplete(object sender, EventArgs e)
         {
+            // Las tareas registradas con PageAsyncTask terminan después de PreRender.
+            // Preparar los requisitos aquí asegura que los alumnos ya estén cargados también en el primer ingreso.
             if (!pnlFormulario.Visible)
             {
                 return;
             }
+            ActualizarAlumnosAutogestor();
             var documentos = ObtenerDocumentos();
             rptDocumentos.DataSource = documentos;
             rptDocumentos.DataBind();
             MostrarFaltantes(documentos);
+            lblFaltantes.Attributes["data-documentos-postulacion"] = new JavaScriptSerializer()
+                .Serialize(documentos.Select(documento => documento.Tipo).ToList());
+            ddlTipoDocumento.Items.FindByValue("Partida de nacimiento").Text =
+                string.IsNullOrEmpty(ddlAlumnos.SelectedValue)
+                    ? "Partida de nacimiento (obligatoria salvo para autogestores)"
+                    : "Partida de nacimiento (" + (EsAutogestor ? "opcional" : "obligatoria") + ")";
             ActualizarTiposDocumento(documentos);
         }
 
@@ -316,11 +343,18 @@ namespace Presentacion
 
         private List<string> ObtenerFaltantes(List<DocumentoAdjunto> documentos)
         {
-            return Obligatorios.Where(o => !documentos.Any(d => d.Tipo == o)).ToList();
+            return Obligatorios.Where(o => !(EsAutogestor && o == "Partida de nacimiento") &&
+                !documentos.Any(d => d.Tipo == o)).ToList();
         }
 
         private void MostrarFaltantes(List<DocumentoAdjunto> documentos)
         {
+            if (string.IsNullOrEmpty(ddlAlumnos.SelectedValue))
+            {
+                lblFaltantes.Text = "Seleccioná el alumno para ver los documentos obligatorios.";
+                lblFaltantes.CssClass = "d-block mb-3 text-indigo";
+                return;
+            }
             List<string> faltantes = ObtenerFaltantes(documentos);
             if (faltantes.Count == 0)
             {
@@ -660,6 +694,7 @@ namespace Presentacion
             public int? IdAlumno { get; set; }
             public string NombreAlumno { get; set; }
             public string ApellidoAlumno { get; set; }
+            public string Rol { get; set; }
         }
 
         // NOTAS

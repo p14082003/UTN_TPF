@@ -67,5 +67,6 @@
             </div>
         </div>
     </form>
+    <script src="<%= ResolveUrl("~/Scripts/contrasenias.js") %>"></script>
 </body>
 </html>

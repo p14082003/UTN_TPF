@@ -18,6 +18,7 @@ namespace WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(SP_Login_out), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult Post([FromBody] SP_Login_in ingreso)
         {
@@ -30,6 +31,10 @@ namespace WebAPI.Controllers
                     return BadRequest(new { Ok = false });
                 }
                 return Ok(respuesta);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Ok = false, Message = ex.Message });
             }
             catch (ArgumentException)
             {

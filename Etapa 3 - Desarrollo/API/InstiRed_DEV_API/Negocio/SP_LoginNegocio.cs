@@ -69,6 +69,22 @@ namespace Negocio
                 {
                     respuesta.Apellido = (string)lector["Apellido"];
                 }
+                if (respuesta.IdTipoUsuario == 2 && respuesta.IdInstitucion.HasValue)
+                {
+                    // Se comprueba después de verificar la clave y también aplica a administradores adicionales.
+                    datos.setearConsulta("SELECT estado FROM Instituciones WHERE id = @idInstitucion");
+                    datos.setearParametro("@idInstitucion", respuesta.IdInstitucion.Value);
+                    datos.ejecutarLectura();
+                    var lectorInstitucion = datos.Lector;
+                    if (lectorInstitucion == null)
+                    {
+                        throw new InvalidOperationException("No se inicializó el lector de la institución.");
+                    }
+                    if (!lectorInstitucion.Read() || !Convert.ToBoolean(lectorInstitucion["estado"]))
+                    {
+                        throw new UnauthorizedAccessException("Tu institución está dada de baja. Contactate con DevCo para consultar su reactivación.");
+                    }
+                }
                 return respuesta;
             }
             catch (MySqlException ex)

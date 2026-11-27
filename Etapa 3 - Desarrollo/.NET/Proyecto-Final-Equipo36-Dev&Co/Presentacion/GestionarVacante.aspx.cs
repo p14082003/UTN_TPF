@@ -242,7 +242,12 @@ namespace Presentacion
             ddlAltaNivel.Items.Add(new ListItem("Seleccioná un nivel", "0"));
             foreach (var nivel in niveles.Where(n => NivelesPermitidos(institucion.IdTipoInstitucion).Contains(n.Id)))
             {
-                ddlAltaNivel.Items.Add(new ListItem(nivel.Descripcion, nivel.Id.ToString()));
+                int minimo, maximo;
+                RangoAnios(nivel.Id, out minimo, out maximo);
+                var opcion = new ListItem(nivel.Descripcion, nivel.Id.ToString());
+                opcion.Attributes["data-anio-min"] = minimo.ToString();
+                opcion.Attributes["data-anio-max"] = maximo.ToString();
+                ddlAltaNivel.Items.Add(opcion);
             }
         }
 

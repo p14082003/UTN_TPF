@@ -20,6 +20,35 @@
     }
     tipoDocumento.addEventListener('change', actualizarCargaDocumento);
     actualizarCargaDocumento();
+
+    var alumnos = document.querySelector('select[id$="ddlAlumnos"]');
+    var avisoDocumentos = document.querySelector('[data-documentos-postulacion]');
+    var documentosCargados = JSON.parse(avisoDocumentos.dataset.documentosPostulacion);
+
+    function actualizarDocumentacion() {
+        var alumno = alumnos.selectedOptions[0];
+        var alumnoSeleccionado = alumno && alumno.value !== '';
+        var esAutogestor = alumno && alumno.dataset.autogestor === 'true';
+        var faltantes = [];
+        Array.from(tipoDocumento.options).forEach(function (opcion) {
+            var obligatorio = opcion.dataset.obligatorio === 'true' &&
+                !(esAutogestor && opcion.dataset.exentoAutogestor === 'true');
+            if (opcion.dataset.exentoAutogestor === 'true') {
+                opcion.textContent = opcion.value + (!alumnoSeleccionado ? ' (obligatoria salvo para autogestores)' :
+                    obligatorio ? ' (obligatoria)' : ' (opcional)');
+            }
+            if (obligatorio && !documentosCargados.includes(opcion.value)) faltantes.push(opcion.value);
+        });
+        avisoDocumentos.textContent = !alumnoSeleccionado ? 'Seleccioná el alumno para ver los documentos obligatorios.' :
+            faltantes.length ? 'Falta adjuntar: ' + faltantes.join(', ') + '.' :
+            'Ya adjuntaste los documentos obligatorios.';
+        var completos = !!alumnoSeleccionado && faltantes.length === 0;
+        avisoDocumentos.classList.toggle('fg-success', completos);
+        avisoDocumentos.classList.toggle('text-indigo', !completos);
+    }
+
+    alumnos.addEventListener('change', actualizarDocumentacion);
+    actualizarDocumentacion();
     var campos = [ciclo, nivel, anio, division, turno];
     var opciones = new Map(campos.map(function (campo) {
         return [campo, Array.from(campo.options).map(function (opcion) { return opcion.cloneNode(true); })];

@@ -52,11 +52,16 @@ namespace Negocio
             {
                 throw new ArgumentException("El campo IdCurso debe ser mayor que cero.");
             }
-            validarDocumentos(registro.ListaDocumentos?.Select(documento => documento.Descripcion));
+            validarDocumentos(registro.ListaDocumentos?.Select(documento => documento.Descripcion),
+                registro.IdResponsable, registro.IdAlumno);
         }
 
-        public static void validarDocumentos(IEnumerable<string>? descripciones)
+        public static void validarDocumentos(IEnumerable<string>? descripciones, int idResponsable, int idAlumno)
         {
+            if (idResponsable <= 0 || idAlumno <= 0)
+            {
+                throw new ArgumentException("Debe indicar un responsable y un alumno válidos.");
+            }
             var documentos = (descripciones ?? Enumerable.Empty<string>())
                 .Select(descripcion => descripcion?.Trim() ?? "").ToList();
             if (documentos.Any(descripcion => descripcion.Length == 0 || descripcion.Length > 100))
@@ -72,9 +77,32 @@ namespace Negocio
                 throw new ArgumentException("Estos documentos solo se pueden adjuntar una vez: " + string.Join(", ", repetidos) + ".");
             }
             var faltantes = obligatorios.Where(tipo => !documentos.Contains(tipo, StringComparer.OrdinalIgnoreCase)).ToList();
+            if (faltantes.Contains("Partida de nacimiento") && EsAutogestor(idResponsable, idAlumno))
+            {
+                faltantes.Remove("Partida de nacimiento");
+            }
             if (faltantes.Count > 0)
             {
                 throw new ArgumentException("Faltan documentos obligatorios: " + string.Join(", ", faltantes) + ".");
+            }
+        }
+
+        private static bool EsAutogestor(int idResponsable, int idAlumno)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                // La exención depende de la identidad guardada en la BD, no de un dato enviado por el cliente.
+                datos.setearConsulta("SELECT a.idPersona = r.idPersona AS esAutogestor " +
+                    "FROM Alumnos a CROSS JOIN Responsables r WHERE a.id = @idAlumno AND r.id = @idResponsable");
+                datos.setearParametro("@idAlumno", idAlumno);
+                datos.setearParametro("@idResponsable", idResponsable);
+                datos.ejecutarLectura();
+                return datos.Lector != null && datos.Lector.Read() && Convert.ToBoolean(datos.Lector["esAutogestor"]);
+            }
+            finally
+            {
+                datos.cerrarConexion();
             }
         }
     }

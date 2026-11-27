@@ -2111,7 +2111,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/sp/Login",
-                "description": "Si la contraseña coincide, devuelve ok, idUsuario, email, idTipoUsuario, idPersona, nombre, apellido, idResponsable, idAlumno, idAdministradorInstitucion e idInstitucion. Los datos que no correspondan al usuario vienen en null. La contraseña y el hash no se incluyen en la respuesta."
+                "description": "Si la contraseña coincide, devuelve ok, idUsuario, email, idTipoUsuario, idPersona, nombre, apellido, idResponsable, idAlumno, idAdministradorInstitucion e idInstitucion. Los datos que no correspondan al usuario vienen en null. La contraseña y el hash no se incluyen en la respuesta. Para administradores con institución asignada, la API también exige que esté activa: si está dada de baja, devuelve HTTP 403 con ok=false y message, aunque las credenciales sean correctas. Aplica al administrador principal y a los adicionales. Un administrador aprobado que todavía no creó su institución puede ingresar normalmente."
               },
               "response": []
             },
@@ -3064,7 +3064,29 @@
                   ]
                 },
                 "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
-                "description": "Adjuntá tres archivos obligatorios, uno por cada descripción: DNI del alumno - Frente, DNI del alumno - Dorso y Partida de nacimiento. Cada tipo admite un solo archivo. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. Los índices deben ser consecutivos desde 0. No agregues Content-Type manualmente: Postman genera el boundary. Responde HTTP 201 con los datos y el código de la postulación. Si falta un documento obligatorio o se repite un tipo único, responde HTTP 400 con message antes de guardar archivos o ejecutar el SP."
+                "description": "Adjuntá DNI del alumno - Frente y DNI del alumno - Dorso. Partida de nacimiento también es obligatoria salvo para un autogestor: la API comprueba en la BD que responsable y alumno sean la misma persona; no se envía un indicador para obtener la exención. Cada tipo admite un solo archivo. Se admite PDF, JPG, JPEG o PNG de hasta 5 MB por archivo y 20 MB en total. Los índices deben ser consecutivos desde 0. No agregues Content-Type manualmente: Postman genera el boundary. Responde HTTP 201 con los datos y el código de la postulación. Si falta un documento obligatorio o se repite un tipo único, responde HTTP 400 con message antes de guardar archivos o ejecutar el SP."
+              },
+              "response": []
+            },
+            {
+              "name": "Registrar como autogestor sin partida",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/sp/RegistrarPostulacionAlumno",
+                "description": "Completá los IDs con un responsable que se representa a sí mismo, su propio alumno y un curso habilitado. Adjuntá frente y dorso del DNI. La API verifica que ambos registros tengan el mismo idPersona y permite omitir la partida de nacimiento; si postulás a otra persona, estos dos documentos solos responden HTTP 400 porque falta la partida. La partida sigue siendo opcional para autogestores y no puede repetirse. No agregues Content-Type manualmente.",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "IdResponsable", "value": "", "type": "text" },
+                    { "key": "IdAlumno", "value": "", "type": "text" },
+                    { "key": "IdCurso", "value": "", "type": "text" },
+                    { "key": "Documentos[0].Descripcion", "value": "DNI del alumno - Frente", "type": "text" },
+                    { "key": "Documentos[0].Archivo", "type": "file", "src": [] },
+                    { "key": "Documentos[1].Descripcion", "value": "DNI del alumno - Dorso", "type": "text" },
+                    { "key": "Documentos[1].Archivo", "type": "file", "src": [] }
+                  ]
+                }
               },
               "response": []
             },

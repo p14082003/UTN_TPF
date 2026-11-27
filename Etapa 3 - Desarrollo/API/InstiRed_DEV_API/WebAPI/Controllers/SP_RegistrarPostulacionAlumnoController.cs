@@ -40,7 +40,7 @@ namespace WebAPI.Controllers
             try
             {
                 SP_RegistrarPostulacionAlumnoNegocio.validarDocumentos(
-                    formulario.Documentos.Select(documento => documento.Descripcion));
+                    formulario.Documentos.Select(documento => documento.Descripcion), formulario.IdResponsable, formulario.IdAlumno);
                 archivos = new ArchivoHelper(configuracion["Archivos:DirectorioRaiz"], entorno.ContentRootPath);
                 SP_RegistrarPostulacionAlumno_in registro = new SP_RegistrarPostulacionAlumno_in
                 {

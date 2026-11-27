@@ -36,13 +36,33 @@
                 Inscribí a tu alumno
             </h1>
             <h5 class="text-center">
-                Elegí el curso de la institución y el alumno a cargo que querés inscribir, adjuntá la documentación
+                Elegí el alumno a cargo que querés inscribir y el curso de la institución, adjuntá la documentación
                 y enviá la postulación.
             </h5>
         </div>
 
         <asp:Label ID="lblMensaje" runat="server" Visible="false"></asp:Label>
         <asp:Panel ID="pnlFormulario" runat="server">
+        <!-- ALUMNO -->
+        <div class="row m-4">
+            <div class="col">
+                <div class="card p-5">
+
+                    <h4 class="text-indigo mb-4">
+                        <i class="bi bi-person mx-2"></i>
+                        Alumno a inscribir
+                    </h4>
+
+                    <!-- ALUMNOS A CARGO DEL RESPONSABLE -->
+                    <div class="mb-4">
+                        <asp:Label ID="lblAlumno" runat="server" Text="Alumno a cargo" CssClass="form-label fw-semibold"></asp:Label>
+                        <asp:DropDownList ID="ddlAlumnos" runat="server" CssClass="form-control" required="required"></asp:DropDownList>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <!-- CURSO -->
         <div class="row m-4">
             <div class="col">
@@ -119,26 +139,6 @@
             </div>
         </div>
 
-        <!-- ALUMNO -->
-        <div class="row m-4">
-            <div class="col">
-                <div class="card p-5">
-
-                    <h4 class="text-indigo mb-4">
-                        <i class="bi bi-person mx-2"></i>
-                        Alumno a inscribir
-                    </h4>
-
-                    <!-- ALUMNOS A CARGO DEL RESPONSABLE -->
-                    <div class="mb-4">
-                        <asp:Label ID="lblAlumno" runat="server" Text="Alumno a cargo" CssClass="form-label fw-semibold"></asp:Label>
-                        <asp:DropDownList ID="ddlAlumnos" runat="server" CssClass="form-control" required="required"></asp:DropDownList>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
         <!-- DOCUMENTACION -->
         <div class="row m-4">
             <div class="col">
@@ -151,14 +151,14 @@
 
                     <!-- CARGA DE DOCUMENTOS -->
                     <asp:Label ID="lblDocumentos" runat="server" Text="Documentos de la postulación (PDF, JPG o PNG, hasta 5 MB cada uno y 19 MB en total)" CssClass="form-label fw-semibold mb-3"></asp:Label>
-                    <p class="text-secondary small">El frente y el dorso del DNI del alumno, y la partida de nacimiento, son obligatorios. Subí cada lado del DNI por separado. Los tipos que admiten un solo archivo se deshabilitan al cargarlos y vuelven a habilitarse si los quitás.</p>
+                    <p class="text-secondary small">El frente y el dorso del DNI del alumno son obligatorios. La partida de nacimiento es obligatoria, salvo cuando te postulás a vos mismo como autogestor. Subí cada lado del DNI por separado. Los tipos que admiten un solo archivo se deshabilitan al cargarlos y vuelven a habilitarse si los quitás.</p>
                     <asp:Label ID="lblFaltantes" runat="server" CssClass="d-block mb-3"></asp:Label>
                     <div class="mb-3">
                         <asp:Label ID="lblTipoDocumento" runat="server" Text="Tipo de documento" CssClass="form-label fw-semibold"></asp:Label>
                         <asp:DropDownList ID="ddlTipoDocumento" runat="server" CssClass="form-control">
-                            <asp:ListItem Value="DNI del alumno - Frente" Text="DNI del alumno: frente (obligatorio)" data-unico="true"></asp:ListItem>
-                            <asp:ListItem Value="DNI del alumno - Dorso" Text="DNI del alumno: dorso (obligatorio)" data-unico="true"></asp:ListItem>
-                            <asp:ListItem Value="Partida de nacimiento" Text="Partida de nacimiento (obligatorio)" data-unico="true"></asp:ListItem>
+                            <asp:ListItem Value="DNI del alumno - Frente" Text="DNI del alumno: frente (obligatorio)" data-unico="true" data-obligatorio="true"></asp:ListItem>
+                            <asp:ListItem Value="DNI del alumno - Dorso" Text="DNI del alumno: dorso (obligatorio)" data-unico="true" data-obligatorio="true"></asp:ListItem>
+                            <asp:ListItem Value="Partida de nacimiento" Text="Partida de nacimiento (obligatoria salvo para autogestores)" data-unico="true" data-obligatorio="true" data-exento-autogestor="true"></asp:ListItem>
                             <asp:ListItem Value="Certificado de estudios" Text="Certificado de estudios (opcional)" data-unico="true"></asp:ListItem>
                             <asp:ListItem Value="Certificado de discapacidad" Text="Certificado de discapacidad (opcional, podés subir más de uno)"></asp:ListItem>
                             <asp:ListItem Value="Otro documento" Text="Otro documento (opcional)"></asp:ListItem>

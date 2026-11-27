@@ -199,7 +199,7 @@
                         </div>
                         <div class="col-12 col-md-6">
                             <label for="<%= txtAltaAnio.ClientID %>" class="form-label text-indigo fw-semibold">Año</label>
-                            <asp:TextBox ID="txtAltaAnio" runat="server" TextMode="Number" CssClass="form-control border-neutro" />
+                            <asp:TextBox ID="txtAltaAnio" runat="server" TextMode="Number" min="1" max="7" step="1" CssClass="form-control border-neutro" />
                             <div class="form-text">Preescolar: 3 a 5 · Primaria: 1 a 7 · Secundaria: 1 a 6.</div>
                         </div>
                     </div>
@@ -236,4 +236,20 @@
         </asp:Panel>
 
     </div>
+    <script>
+        (function () {
+            var nivel = document.getElementById('<%= ddlAltaNivel.ClientID %>');
+            var anio = document.getElementById('<%= txtAltaAnio.ClientID %>');
+            if (!nivel || !anio) return;
+
+            function actualizarLimitesAnio() {
+                var opcion = nivel.options[nivel.selectedIndex];
+                anio.min = opcion ? opcion.getAttribute('data-anio-min') || '1' : '1';
+                anio.max = opcion ? opcion.getAttribute('data-anio-max') || '7' : '7';
+            }
+
+            nivel.addEventListener('change', actualizarLimitesAnio);
+            actualizarLimitesAnio();
+        })();
+    </script>
 </asp:Content>

@@ -35,6 +35,12 @@ namespace Presentacion
             try
             {
                 var respuesta = await InstiRedApi.PostAsync("sp/Login", new { email, clave }, leerCuerpo: true);
+                if (respuesta.Estado == HttpStatusCode.Forbidden)
+                {
+                    Session.Remove(UsuarioSesion.Clave);
+                    MostrarError("Tu institución está dada de baja. Contactate con DevCo para consultar su reactivación.");
+                    return;
+                }
                 if (respuesta.Estado == HttpStatusCode.BadRequest)
                 {
                     MostrarError("Correo o contraseña incorrectos.");

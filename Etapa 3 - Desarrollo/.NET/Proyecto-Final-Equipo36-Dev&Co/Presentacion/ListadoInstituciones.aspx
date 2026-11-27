@@ -171,6 +171,10 @@
     <div id="busquedaInstituciones" class="container-fluid d-flex flex-column h-100 p-4"
         data-listado-url="<%= ResolveUrl("~/ListadoInstituciones.aspx") %>" data-avanzados-id="<%= hfFiltrosAvanzados.ClientID %>">
 
+        <header class="mb-4 ps-2 flex-shrink-0">
+            <h1 class="text-indigo fw-bold">Buscá tu institución</h1>
+        </header>
+
         <!-- FILTROS -->
         <div class="card flex-shrink-0 p-4 filtros-instituciones">
             <div class="filtros-principales">
