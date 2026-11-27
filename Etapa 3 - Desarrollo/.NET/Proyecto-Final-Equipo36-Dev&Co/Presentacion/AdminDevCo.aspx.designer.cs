@@ -165,7 +165,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnVolverSolicitud;
+        protected global::System.Web.UI.WebControls.LinkButton btnVolverSolicitud;
 
         /// <summary>
         /// Control litSolInstitucion.
@@ -399,7 +399,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnVolverInstitucion;
+        protected global::System.Web.UI.WebControls.LinkButton btnVolverInstitucion;
 
         /// <summary>
         /// Control litInstNombre.
@@ -471,7 +471,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnBajaInstitucion;
+        protected global::System.Web.UI.WebControls.LinkButton btnBajaInstitucion;
 
         /// <summary>
         /// Control pnlReactivarInstitucion.
@@ -489,7 +489,7 @@ namespace Presentacion
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnReactivarInstitucion;
+        protected global::System.Web.UI.WebControls.LinkButton btnReactivarInstitucion;
 
         /// <summary>
         /// Control dgvAdministradores.

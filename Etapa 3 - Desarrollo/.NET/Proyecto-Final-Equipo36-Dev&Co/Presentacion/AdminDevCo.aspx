@@ -152,9 +152,12 @@
         <asp:Panel ID="pnlDetalleSolicitud" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
             <div class="card-header bg-indigo text-white encabezado-postulacion">
                 <h2>Revisión de solicitud</h2>
-                <asp:Button ID="btnVolverSolicitud" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverSolicitud_Click" />
+                <asp:LinkButton ID="btnVolverSolicitud" runat="server" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverSolicitud_Click"> 
+                    <i class="bi bi-arrow-left fs-lg"></i> 
+                    Volver
+                </asp:LinkButton>
             </div>
-            <div class="card-body bg-white rounded-bottom-9">
+            <div class="card-body bg-white rounded-bottom-9">    
 
 
                 <!-- Institución seleccionada -->
@@ -283,7 +286,11 @@
         <asp:Panel ID="pnlDetalleInstitucion" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
             <div class="card-header bg-indigo text-white encabezado-postulacion">
                 <h2>Detalle de la institución</h2>
-                <asp:Button ID="btnVolverInstitucion" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverInstitucion_Click" />
+                <asp:LinkButton ID="btnVolverInstitucion" runat="server" CssClass ="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-postulacion" OnClick="btnVolverInstitucion_Click">
+                    <i class="bi bi-arrow-left fs-lg"></i> 
+                    Volver
+                </asp:LinkButton>
+   
             </div>
             <div class="card-body bg-white rounded-bottom-9">
 
@@ -314,8 +321,9 @@
 
                 <!-- Perfil público de la institución (solo activas: las dadas de baja no tienen perfil público) -->
                 <div class="mb-4">
-                    <asp:HyperLink ID="lnkVerPerfil" runat="server" Target="_blank" Text="Ver perfil" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold" />
+                    <asp:HyperLink ID="lnkVerPerfil" runat="server" Target="_blank" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"> <i class="bi bi-person fs-lg"></i>Ver Perfil</asp:HyperLink>
                 </div>
+
 
                 <!-- Baja / reactivación de la institución.
                      Si la institución está activa se muestra pnlBajaInstitucion; si está dada de baja, pnlReactivarInstitucion. -->
@@ -326,12 +334,15 @@
                             Las confirmadas se conservan. Si después se reactiva, las rechazadas no se restauran.
                         </p>
                        
-                        <asp:Button ID="btnBajaInstitucion" runat="server" Text="Dar de baja la institución" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4"
-                            OnClientClick="return confirmarAccion(this, '¿Desea dar de baja esta institución? Se rechazarán las postulaciones pendientes y aceptadas.', 'Aceptar');" OnClick="btnBajaInstitucion_Click" />
+                        <asp:LinkButton ID="btnBajaInstitucion" runat="server" CssClass="btn-outline theme-danger fw-bold rounded-pill px-4"
+                            OnClientClick="return confirmarAccion(this, '¿Desea dar de baja esta institución? Se rechazarán las postulaciones pendientes y aceptadas.', 'Aceptar');" OnClick="btnBajaInstitucion_Click"> <i class="bi bi-trash fg-danger fs-lg"></i>Dar de baja la institución</asp:LinkButton>
                     </asp:Panel>
                     <asp:Panel ID="pnlReactivarInstitucion" runat="server" Visible="false">
-                        <asp:Button ID="btnReactivarInstitucion" runat="server" Text="Reactivar institución" CssClass="btn btn-indigo fw-bold rounded-pill px-4"
-                            OnClientClick="return confirmarAccion(this, '¿Desea reactivar esta institución?', 'Aceptar');" OnClick="btnReactivarInstitucion_Click" />
+                        <asp:LinkButton ID="btnReactivarInstitucion" runat="server" CssClass="btn-outline theme-success fw-bold rounded-pill px-4"
+                            OnClientClick="return confirmarAccion(this, '¿Desea reactivar esta institución?', 'Aceptar');" OnClick="btnReactivarInstitucion_Click"> 
+                            <i class="bi bi-arrow-repeat fg-success fs-lg"></i> 
+                            Reactivar institución
+                        </asp:LinkButton>
                     </asp:Panel>
                 </div>
 
