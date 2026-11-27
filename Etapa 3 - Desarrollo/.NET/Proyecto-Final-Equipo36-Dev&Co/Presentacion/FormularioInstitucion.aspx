@@ -429,7 +429,8 @@
         // Mensaje de estado
         function mostrarMensaje(texto, esError) {
             mensaje.textContent = texto;
-            mensaje.className = 'form-text ' + (esError ? 'text-danger' : '');
+            mensaje.className = esError ? 'alert theme-danger my-3' : 'form-text';
+            mensaje.setAttribute('role', esError ? 'alert' : 'status');
         }
 
         // Latitud y longitud son NOT NULL en la BD y un HiddenField no admite "required",
