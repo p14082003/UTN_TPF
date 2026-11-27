@@ -419,6 +419,7 @@ BEGIN
 	DECLARE v_capacidad     INT DEFAULT NULL;
 	DECLARE v_idPostulacion INT DEFAULT NULL;
     DECLARE v_cicloLectivo INT DEFAULT NULL;
+    DECLARE v_idNivel INT DEFAULT NULL;
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION 
 	BEGIN
 		ROLLBACK;
@@ -426,7 +427,7 @@ BEGIN
 	END;
 	-- iniciamos transacción 
 	START TRANSACTION;
-	SELECT c.capacidad, c.inscriptos,p.id, c.cicloLectivo INTO v_capacidad, v_inscriptos,v_idPostulacion, v_cicloLectivo FROM Cursos c INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id WHERE p.id = p_idPostulacion FOR UPDATE;
+	SELECT c.capacidad, c.inscriptos, p.id, c.cicloLectivo, c.idNivel INTO v_capacidad, v_inscriptos, v_idPostulacion, v_cicloLectivo, v_idNivel FROM Cursos c INNER JOIN PostulacionesAlumnos p ON p.idCurso = c.id WHERE p.id = p_idPostulacion FOR UPDATE;
 
 	-- validamos que la postulacion exista 
 	IF v_idPostulacion IS NULL THEN
@@ -477,6 +478,12 @@ BEGIN
     -- validamos que el ciclo lectivo no sea antiguo 
     IF v_cicloLectivo < YEAR(CURDATE()) THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede aceptar una postulación a un curso de un ciclo lectivo anterior.';
+	END IF;
+    
+    -- plazo para cursos normalizados del ciclo actual: hasta el 20/02 inclusive
+	IF v_idNivel IS NOT NULL AND v_cicloLectivo = YEAR(CURDATE())
+	   AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-02-20'), '%Y-%m-%d') THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo para aceptar postulaciones de cursos normalizados del ciclo lectivo actual.';
 	END IF;
 
 	-- validar que el estado actual sea pendiente 
@@ -537,6 +544,8 @@ IN p_motivoRechazo                TEXT
 BEGIN
 
 	DECLARE v_motivoRechazo VARCHAR(255);
+    DECLARE v_cicloLectivo INT DEFAULT NULL;
+	DECLARE v_idNivel      INT DEFAULT NULL;
     
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN 
@@ -564,6 +573,15 @@ BEGIN
 		IF NOT EXISTS(SELECT 1 FROM PostulacionesAlumnos WHERE id = p_idPostulacion) THEN
 			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Postulación inexistente';
 		END IF;
+        
+        SELECT c.cicloLectivo, c.idNivel INTO v_cicloLectivo, v_idNivel FROM PostulacionesAlumnos p INNER JOIN Cursos c ON c.id = p.idCurso WHERE p.id = p_idPostulacion;
+
+		-- plazo para cursos normalizados del ciclo actual: hasta el 20/02 inclusive
+		IF v_idNivel IS NOT NULL AND v_cicloLectivo = YEAR(CURDATE())
+		   AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-02-20'), '%Y-%m-%d') THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo para rechazar postulaciones de cursos normalizados del ciclo lectivo actual.';
+		END IF;
+        
 		-- validamos usuario o administrador existente
 		IF NOT EXISTS(SELECT 1 FROM AdministradoresInstitucion a INNER JOIN Usuarios u ON u.id = a.idUsuario WHERE a.id = p_idAdministradorInstitucion) THEN 
 			SIGNAL SQLSTATE '45000' SET  MESSAGE_TEXT = 'Usuario o administrador inexistente.';
@@ -710,7 +728,12 @@ BEGIN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede confirmar una postulación a un curso de un ciclo lectivo anterior.';
 		END IF;
         
-	  
+        -- plazo para cursos normalizados del ciclo actual: hasta el 20/02 inclusive
+		IF v_idNivelCurso IS NOT NULL AND v_cicloLectivoCurso = YEAR(CURDATE())
+		   AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-02-20'), '%Y-%m-%d') THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo para confirmar postulaciones de cursos normalizados del ciclo lectivo actual.';
+		END IF;
+        
 		-- que haya cupo
 		IF (v_capacidad - v_inscriptos) <= 0 THEN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lo lamentamos. No quedan cupos disponibles para poder confirmar su postulación.';
@@ -1002,6 +1025,7 @@ BEGIN
 	DECLARE v_idCurso       INT DEFAULT NULL;
 	DECLARE v_idEstado      INT DEFAULT NULL;
 	DECLARE v_cicloLectivo  INT DEFAULT NULL;
+    DECLARE v_idNivel INT DEFAULT NULL;
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -1019,7 +1043,7 @@ BEGIN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La postulación no existe.';
 		END IF;
 
-		SELECT id, cicloLectivo INTO v_idCurso, v_cicloLectivo FROM Cursos WHERE id = v_idCurso FOR UPDATE;-- bloqueamos la fila del curso para que la devolución de la vacante no pise a otra confirmación concurrente
+		SELECT id, cicloLectivo, idNivel INTO v_idCurso, v_cicloLectivo, v_idNivel FROM Cursos WHERE id = v_idCurso FOR UPDATE;-- bloqueamos la fila del curso para que la devolución de la vacante no pise a otra confirmación concurrente
 
 		-- leemos el estado luego del bloqueo, para tener el valor vigente
 		SELECT idEstado INTO v_idEstado FROM PostulacionesAlumnos WHERE id = p_idPostulacion;
@@ -1057,6 +1081,12 @@ BEGIN
 		IF v_cicloLectivo < YEAR(CURDATE()) OR v_cicloLectivo > YEAR(CURDATE()) + 1 THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = 'Solo se pueden cancelar postulaciones del ciclo lectivo actual o del siguiente.';
+		END IF;
+        
+        -- plazo para cursos normalizados del ciclo actual: hasta el 20/02 inclusive
+		IF v_idNivel IS NOT NULL AND v_cicloLectivo = YEAR(CURDATE())
+		   AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-02-20'), '%Y-%m-%d') THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Finalizó el plazo para cancelar postulaciones de cursos normalizados del ciclo lectivo actual.';
 		END IF;
 
 		UPDATE PostulacionesAlumnos SET idEstado = 5 WHERE id = p_idPostulacion AND idEstado IN (1,2,3); -- cancelamos (1 Pendiente, 2 Aceptado, 3 Confirmado)
