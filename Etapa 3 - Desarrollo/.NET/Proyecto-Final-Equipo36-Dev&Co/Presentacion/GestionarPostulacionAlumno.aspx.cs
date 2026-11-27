@@ -49,11 +49,6 @@ namespace Presentacion
             }
 
             Response.Cache.SetNoStore();
-            if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
-            {
-                Response.Redirect("~/FormularioInstitucion.aspx");
-                return;
-            }
 
             if (!IsPostBack)
             {
