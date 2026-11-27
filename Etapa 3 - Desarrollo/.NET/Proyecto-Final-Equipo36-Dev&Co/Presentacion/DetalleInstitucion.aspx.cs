@@ -19,6 +19,9 @@ namespace Presentacion
         protected int ImagenesVisibles { get; private set; }
         protected string UrlFotoUnica { get; private set; }
         protected string DescripcionFotoUnica { get; private set; }
+        protected string MensajeSinResenias => usuario != null && usuario.IdTipoUsuario != UsuarioSesion.Responsable
+            ? "Todavía no hay reseñas."
+            : "Todavía no hay reseñas. ¡Sé el primero en opinar!";
         private int idInstitucion;
         private UsuarioSesion usuario;
         private const int ReseniasPorPagina = 10;
