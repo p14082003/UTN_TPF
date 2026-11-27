@@ -96,7 +96,7 @@
                 <div class="table-responsive">
                     <asp:GridView ID="dgvResenias" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" DataKeyNames="IdResenia"
-                        AllowPaging="true" PageSize="25" OnPageIndexChanging="dgvResenias_PageIndexChanging"
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvResenias_PageIndexChanging"
                         EmptyDataText="No hay reseñas para mostrar con este filtro.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />

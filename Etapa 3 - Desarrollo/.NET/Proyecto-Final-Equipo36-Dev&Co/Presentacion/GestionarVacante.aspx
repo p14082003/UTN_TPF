@@ -78,7 +78,7 @@
                 <!-- Filtros -->
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label for="<%= ddlCicloLectivo.ClientID %>" class="form-label text-indigo fw-semibold">Año calendario</label>
+                        <label for="<%= ddlCicloLectivo.ClientID %>" class="form-label text-indigo fw-semibold">Ciclo lectivo</label>
                         <asp:DropDownList ID="ddlCicloLectivo" runat="server" CssClass="form-select border-neutro" AutoPostBack="true"
                             OnSelectedIndexChanged="Filtro_SelectedIndexChanged" />
                     </div>
@@ -92,14 +92,14 @@
                 <div class="table-responsive">
                     <asp:GridView ID="dgvCursos" runat="server" CssClass="table table-hover align-middle border-neutro"
                         AutoGenerateColumns="False" GridLines="None" DataKeyNames="Id"
-                        AllowPaging="true" PageSize="25" OnPageIndexChanging="dgvCursos_PageIndexChanging"
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvCursos_PageIndexChanging"
                         EmptyDataText="No hay cursos para mostrar con este filtro.">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
                         <PagerStyle CssClass="text-indigo" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="NombreCurso" HeaderText="Curso" />
-                            <asp:BoundField DataField="CicloLectivo" HeaderText="Año calendario" />
+                            <asp:BoundField DataField="CicloLectivo" HeaderText="Ciclo lectivo" />
                             <asp:BoundField DataField="Turno" HeaderText="Turno" />
                             <asp:BoundField DataField="Capacidad" HeaderText="Capacidad" />
                             <asp:BoundField DataField="Inscriptos" HeaderText="Inscriptos" />
@@ -140,7 +140,7 @@
                             <asp:Label ID="lblCursoNombre" runat="server" CssClass="text-indigo fw-bold fs-5" />
                         </div>
                         <div class="col-md-6 mb-2">
-                            <span class="text-muted d-block small">Año calendario</span>
+                            <span class="text-muted d-block small">Ciclo lectivo</span>
                             <asp:Label ID="lblCicloLectivo" runat="server" CssClass="text-indigo fw-bold fs-5" />
                         </div>
                         <div class="col-md-6 mb-2">
@@ -181,7 +181,7 @@
 
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-6">
-                        <label for="<%= ddlAltaCiclo.ClientID %>" class="form-label text-indigo fw-semibold">Año calendario</label>
+                        <label for="<%= ddlAltaCiclo.ClientID %>" class="form-label text-indigo fw-semibold">Ciclo lectivo</label>
                         <asp:DropDownList ID="ddlAltaCiclo" runat="server" CssClass="form-select border-neutro" />
                     </div>
                     <div class="col-12 col-md-6">

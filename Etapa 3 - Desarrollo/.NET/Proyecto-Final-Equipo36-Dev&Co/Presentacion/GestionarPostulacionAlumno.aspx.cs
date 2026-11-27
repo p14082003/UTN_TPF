@@ -36,9 +36,15 @@ namespace Presentacion
         protected void Page_Load(object sender, EventArgs e)
         {
             usuario = UsuarioSesion.Obtener(Session);
-            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion)
+            if (usuario == null || usuario.IdTipoUsuario != UsuarioSesion.AdministradorInstitucion ||
+                usuario.IdAdministradorInstitucion.GetValueOrDefault() <= 0)
             {
                 Response.Redirect("~/Login.aspx");
+                return;
+            }
+            if (usuario.IdInstitucion.GetValueOrDefault() <= 0)
+            {
+                Response.Redirect("~/FormularioInstitucion.aspx");
                 return;
             }
 
