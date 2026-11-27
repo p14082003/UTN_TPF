@@ -26,12 +26,11 @@
                 min(7.5rem, 30%);
             gap: min(0.875rem, 4%);
         }
+       .idioma-y-botones { 
+           grid-template-columns: minmax(0, 1fr) auto auto; 
 
-        .btn-limpiar-filtros {
-            padding: 0;
-            font-size: 1.35rem;
-            line-height: 1;
-        }
+       }
+
         .table th {
         color: #373A72 !important;
         background-color: #F7F5FC;
@@ -43,6 +42,8 @@
        * {
             scrollbar-color: #373A72 transparent;
         }
+
+
     </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -79,8 +80,8 @@
                   <asp:DropDownList runat="server" ID="ddlEstadosPostulacion" CssClass="form-control h-100 w-100" AppendDataBoundItems="true">
                       <asp:ListItem Value="0">Todos los Estados</asp:ListItem>
                   </asp:DropDownList>
-                  <a href="ListadoPostulacionAlumnos.aspx" class="btn-lilaOscuro-invertido btn-limpiar-filtros d-flex align-items-center justify-content-center text-decoration-none" title="Limpiar filtros" aria-label="Limpiar filtros">X</a>
                   <asp:Button runat="server" ID="btnFiltrar" CssClass="btn-lilaOscuro h-100 w-100 px-0" Text="Filtrar" OnClick="btnFiltrar_Click" />
+                  <a href="ListadoPostulacionAlumnos.aspx" class="btn btn-lilaClaro text-decoration-none">Limpiar filtros</a>
               </div>
           </div>
        </div>
@@ -89,9 +90,10 @@
             <div class="table-responsive">
                 <asp:GridView ID="dgvPostulaciones" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay postulaciones para mostrar." AllowPaging ="true" PageSize="10" OnPageIndexChanging="dgvPostulaciones_PageIndexChanging">
                     <HeaderStyle  CssClass="text-indigo border-bottom border-neutro" />
+                    <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                     <Columns>
                         <asp:BoundField DataField="Alumno" HeaderText="Alumno" />
-                        <asp:BoundField DataField="Documento" HeaderText="Docum" />
+                        <asp:BoundField DataField="Documento" HeaderText="Documento" />
                         <asp:BoundField DataField="Institucion" HeaderText="Institución" />
                         <asp:BoundField  DataField="CicloLectivo" HeaderText="Ciclo lectivo" />
                         <asp:BoundField DataField="Estado" HeaderText="Estado" />
@@ -116,6 +118,7 @@
             <div class="table-responsive">
                 <asp:GridView ID="dgvAlumnos" runat="server" CssClass="table table-hover align-middle border-neutro mb-0" AutoGenerateColumns="False" GridLines="None" EmptyDataText="Todavía no registraste alumnos." OnRowDataBound="dgvAlumnos_RowDataBound">
                     <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                    <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                     <Columns>
                         <asp:BoundField DataField="NombreCompleto" HeaderText="Alumno" />
                         <asp:BoundField DataField="Documento" HeaderText="Documento" />

@@ -35,8 +35,10 @@
             <div class="card-body">
                 <div class="table-responsive text-center">
                     <asp:GridView ID="dgvAdministradores" runat="server" CssClass="table table-hover align-middle border-neutro"
-                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores.">
+                        AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores."
+                        AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvAdministradores_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="NombreCompleto" HeaderText="Administrador" />
                             <asp:BoundField DataField="Documento" HeaderText="Documento" />

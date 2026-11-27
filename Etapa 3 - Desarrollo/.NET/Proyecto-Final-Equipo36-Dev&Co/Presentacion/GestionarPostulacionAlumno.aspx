@@ -108,6 +108,7 @@
                         EmptyDataText="No hay postulaciones para mostrar con este filtro." AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvPostulaciones_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
                         <EmptyDataRowStyle CssClass="text-muted text-center py-4" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="Alumno" HeaderText="Alumno" />
                             <asp:BoundField DataField="Curso" HeaderText="Curso" />

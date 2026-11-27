@@ -130,6 +130,10 @@ namespace Presentacion
             }
             // Un alumno con postulaciones no se puede eliminar: se oculta el botón y se avisa
             var alumno = (AlumnoResponsable)e.Row.DataItem;
+            if (alumno.Rol == "Autogestor")
+            {
+                e.Row.Cells[0].Text += " (yo)"; //Agrega (Yo) luego del nombre del autogestor
+            }
             bool tienePostulaciones = ListaPostulaciones != null && ListaPostulaciones.Any(p => p.IdAlumno == alumno.IdAlumno);
             e.Row.FindControl("btnEliminarAlumno").Visible = !tienePostulaciones;
             e.Row.FindControl("lblConPostulaciones").Visible = tienePostulaciones;

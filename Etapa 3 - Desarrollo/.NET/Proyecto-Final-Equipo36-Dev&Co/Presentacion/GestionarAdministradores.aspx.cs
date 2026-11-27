@@ -86,6 +86,12 @@ namespace Presentacion
             dgvAdministradores.DataBind();
         }
 
+        protected void dgvAdministradores_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            dgvAdministradores.PageIndex = e.NewPageIndex;
+            Ejecutar(CargarAdministradoresAsync);
+        }
+
         protected void btnAgregarAdministrador_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/FormularioAdministradorAdicional.aspx");

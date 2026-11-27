@@ -128,6 +128,7 @@
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay solicitudes para mostrar." 
                         AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvSolicitudes_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="Fecha" HeaderText="Fecha" DataFormatString="{0:dd/MM/yyyy}" />
                             <asp:BoundField DataField="NombreInstitucion" HeaderText="Institución" />
@@ -263,6 +264,7 @@
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="No hay instituciones para mostrar."
                         AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvInstituciones_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="Nombre" HeaderText="Institución" />
                             <asp:BoundField DataField="Cuit" HeaderText="CUIT" />
@@ -353,6 +355,7 @@
                         AutoGenerateColumns="False" GridLines="None" EmptyDataText="La institución no tiene administradores."
                         AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvAdministradores_PageIndexChanging">
                         <HeaderStyle CssClass="text-indigo border-bottom border-neutro" />
+                        <PagerStyle CssClass="paginador-grilla" HorizontalAlign="Center" />
                         <Columns>
                             <asp:BoundField DataField="NombreCompleto" HeaderText="Administrador" />
                             <asp:BoundField DataField="DocAdministrador" HeaderText="Documento" />
