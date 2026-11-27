@@ -137,7 +137,7 @@
         <asp:Panel ID="pnlDetalle" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
             <div class="card-header bg-indigo text-white encabezado-resenia">
                 <h2>Reseña</h2>
-                <asp:Button ID="btnCerrarDetalle" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-resenia" OnClick="btnCerrarDetalle_Click" />
+                <asp:LinkButton ID="btnCerrarDetalle" runat="server" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3 volver-resenia" OnClick="btnCerrarDetalle_Click"><i class="bi bi-arrow-left fs-lg"></i>Volver</asp:LinkButton>
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
@@ -191,7 +191,7 @@
                         <asp:Label ID="lblRespuestaExistente" runat="server" CssClass="text-indigo d-block" />
                     </div>
                     <div class="d-flex justify-content-end mt-3">
-                        <asp:Button ID="btnEliminarRespuesta" runat="server" Text="Eliminar respuesta" CssClass="btn btn-outline-danger rounded-pill px-4"
+                        <asp:Button ID="btnEliminarRespuesta" runat="server" Text="Eliminar respuesta" CssClass="btn btn-outline-danger rounded-pill px-4 fg-danger"
                             OnClick="btnEliminarRespuesta_Click" CausesValidation="false"
                             OnClientClick="return confirmarAccion(this, '¿Querés eliminar la respuesta de tu institución? La reseña y la puntuación del responsable se conservarán.' , 'Aceptar');" />
                     </div>

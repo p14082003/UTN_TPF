@@ -265,7 +265,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool exito)
         {
             pnlMensaje.Visible = true;
-            pnlMensaje.CssClass = exito ? "alert alert-success mb-4" : "alert alert-danger mb-4";
+            pnlMensaje.CssClass = exito ? "alert theme-success mb-4" : "alert theme-danger mb-4";
             litMensaje.Text = Server.HtmlEncode(texto);
         }
 

@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <asp:GridView ID="dgvCursos" runat="server" CssClass="table table-hover align-middle border-neutro"
+                    <asp:GridView ID="dgvCursos" runat="server" CssClass="table table-hover align-middle border-neutro text-center"
                         AutoGenerateColumns="False" GridLines="None" DataKeyNames="Id"
                         AllowPaging="true" PageSize="10" OnPageIndexChanging="dgvCursos_PageIndexChanging"
                         EmptyDataText="No hay cursos para mostrar con este filtro.">
@@ -114,6 +114,7 @@
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnEditar" runat="server" CssClass="btn btn-sm btn-outline-lavanda rounded-pill px-3 fw-bold"
                                         CommandArgument='<%# Eval("Id") %>' OnClick="btnEditar_Click">
+                                        <i class="bi bi-pencil-square fs-lg"></i>
                                         Actualizar vacantes
                                     </asp:LinkButton>
                                 </ItemTemplate>
@@ -128,7 +129,7 @@
         <asp:Panel ID="pnlEdicion" runat="server" CssClass="card shadow border-neutro mb-5" Visible="false">
             <div class="card-header bg-indigo text-white encabezado-curso">
                 <h5 class="mb-0">Actualizar vacantes</h5>
-                <asp:Button ID="btnCerrarEdicion" runat="server" Text="Volver" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCerrarEdicion_Click" />
+                <asp:LinkButton ID="btnCerrarEdicion" runat="server" CssClass="btn btn-sm bg-fondo text-indigo fw-bold rounded-pill px-3" OnClick="btnCerrarEdicion_Click"><i class="bi bi-arrow-left fs-lg"></i> Volver</asp:LinkButton>
             </div>
             <div class="card-body bg-white rounded-bottom-4">
 
