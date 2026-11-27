@@ -314,7 +314,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSinResenias" runat="server" Visible="false">
-                        <p class="text-muted mb-0">Todavía no hay reseñas. ¡Sé el primero en opinar!</p>
+                        <p class="text-muted mb-0"><%= MensajeSinResenias %></p>
                     </asp:Panel>
                 </div>
             </div>
