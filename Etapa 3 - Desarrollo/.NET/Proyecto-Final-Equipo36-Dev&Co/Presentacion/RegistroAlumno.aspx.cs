@@ -126,6 +126,8 @@ namespace Presentacion
             {
                 LimpiarCampos();
                 MostrarMensaje("Alumno registrado correctamente.", true);
+                ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='ListadoPostulacionAlumnos.aspx',3000);", true);
+
                 return;
             }
 
@@ -220,7 +222,7 @@ namespace Presentacion
         private void MostrarMensaje(string texto, bool ok)
         {
             lblMensaje.Text = Server.HtmlEncode(texto);
-            lblMensaje.CssClass = ok ? "d-block mb-3 fg-success" : "d-block mb-3 fg-danger";
+            lblMensaje.CssClass = ok ? "alert theme-success mb-3" : "alert theme-danger mb-3";
             lblMensaje.Visible = true;
         }
 

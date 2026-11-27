@@ -67,7 +67,7 @@ namespace Presentacion
 
                         // Enviar al mail el codigo de seguimiento
                         EnviarCorreo(txtEmail.Text.Trim(), txtNombre.Text.Trim(), txtApellido.Text.Trim(), txtNombreInstitucion.Text.Trim(), registro.CodigoSeguimiento);
-
+                        ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='Login.aspx',3000);", true);
                         return;
                     }
 
