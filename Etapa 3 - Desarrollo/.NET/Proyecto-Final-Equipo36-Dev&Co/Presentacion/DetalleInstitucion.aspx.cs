@@ -15,7 +15,6 @@ namespace Presentacion
 {
     public partial class DetalleInstitucion : Page
     {
-        protected string InstitucionJson { get; private set; } = "null";
         protected int ImagenesVisibles { get; private set; }
         protected string UrlFotoUnica { get; private set; }
         protected string DescripcionFotoUnica { get; private set; }
@@ -115,7 +114,7 @@ namespace Presentacion
             rptAccesibilidades.DataSource = discapacidad.ObtenerAccesibilidades();
             rptAccesibilidades.DataBind();
 
-            InstitucionJson = new JavaScriptSerializer().Serialize(
+            mapa.Attributes["data-institucion"] = new JavaScriptSerializer().Serialize(
                 new { institucion.Nombre, institucion.Direccion, institucion.Latitud, institucion.Longitud });
         }
 
@@ -135,6 +134,7 @@ namespace Presentacion
             btnReseniasSiguiente.Enabled = PaginaResenias < totalPaginas - 1;
             lblPaginaResenias.Text = "Página " + (PaginaResenias + 1) + " de " + totalPaginas;
             pnlSinResenias.Visible = resenias.Count == 0;
+            pnlSinResenias.DataBind();
             bool yaPublico = usuario != null && usuario.IdResponsable.HasValue &&
                 resenias.Any(r => r.IdResponsable == usuario.IdResponsable.Value);
             btnReseña.Visible = usuario != null && usuario.IdTipoUsuario == UsuarioSesion.Responsable &&
@@ -359,9 +359,11 @@ namespace Presentacion
             {
                 UrlFotoUnica = imagenesInstitucion[0].UrlPublica;
                 DescripcionFotoUnica = imagenesInstitucion[0].Descripcion;
+                pnlImagenes.DataBind();
                 return;
             }
 
+            pnlImagenes.DataBind();
             rptImagenes.DataSource = imagenesInstitucion.Concat(imagenesInstitucion.Take(ImagenesVisibles - 1));
             rptImagenes.DataBind();
             rptIndicadores.DataSource = imagenesInstitucion;
@@ -375,7 +377,6 @@ namespace Presentacion
 
         private void MostrarError(string mensaje, int estado)
         {
-            InstitucionJson = "null";
             pnlDetalle.Visible = false;
             pnlError.Visible = true;
             lblError.Text = mensaje;

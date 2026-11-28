@@ -283,5 +283,10 @@ namespace Presentacion
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSinResenias;
+
+        /// <summary>
+        /// Control mapa.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl mapa;
     }
 }

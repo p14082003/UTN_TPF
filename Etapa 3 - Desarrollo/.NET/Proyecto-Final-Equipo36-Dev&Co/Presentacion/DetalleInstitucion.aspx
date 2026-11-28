@@ -96,14 +96,15 @@
         <asp:Panel ID="pnlImagenes" runat="server" Visible="false">
             <div class="row m-4">
                 <div class="col-12">
-                    <% if (ImagenesVisibles == 1) { %>
+                    <asp:PlaceHolder runat="server" Visible="<%# ImagenesVisibles == 1 %>">
                         <div class="card galeria-fotos">
-                            <img src="<%: UrlFotoUnica %>" alt="<%: DescripcionFotoUnica %>" class="foto-unica">
+                            <img src="<%#: UrlFotoUnica %>" alt="<%#: DescripcionFotoUnica %>" class="foto-unica">
                         </div>
-                    <% } else { %>
+                    </asp:PlaceHolder>
+                    <asp:PlaceHolder runat="server" Visible="<%# ImagenesVisibles > 1 %>">
                     <div class="card galeria-fotos">
 
-                        <div id="carouselMultiple" class="carousel slide h-100 d-flex flex-column" data-bs-autoplay="true" data-bs-ends="wrap" style="--bs-carousel-items: <%= ImagenesVisibles %>; --bs-carousel-items-gap: var(--separacion-fotos);">
+                        <div id="carouselMultiple" class="carousel slide h-100 d-flex flex-column" data-bs-autoplay="true" data-bs-ends="wrap" data-imagenes-visibles="<%#: ImagenesVisibles %>" style="--bs-carousel-items: <%#: ImagenesVisibles %>; --bs-carousel-items-gap: var(--separacion-fotos);">
 
                             <!-- Controles -->
                             <div class="galeria-controles d-flex justify-content-between align-items-center mb-2">
@@ -155,7 +156,7 @@
                             </div>
                         </div>
                     </div>
-                    <% } %>
+                    </asp:PlaceHolder>
                 </div>
             </div>
         </asp:Panel>
@@ -314,7 +315,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSinResenias" runat="server" Visible="false">
-                        <p class="text-muted mb-0"><%= MensajeSinResenias %></p>
+                        <p class="text-muted mb-0"><%#: MensajeSinResenias %></p>
                     </asp:Panel>
                 </div>
             </div>
@@ -323,7 +324,7 @@
         <!-- Mapa -->
         <div class="row m-4">
             <div class="p-5" style="height: 25dvh; min-height: 250px;">
-                <div id="mapa"></div>
+                <div id="mapa" runat="server" ClientIDMode="Static"></div>
             </div>
         </div>
         </asp:Panel>
@@ -332,7 +333,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var institucion = <%= InstitucionJson %>;
+        var contenedorMapa = document.getElementById('mapa');
+        var institucion = contenedorMapa && JSON.parse(contenedorMapa.dataset.institucion);
         if (institucion && typeof L !== 'undefined') {
             var ubicacion = [institucion.Latitud, institucion.Longitud];
             var mapa = L.map('mapa').setView(ubicacion, 12);
@@ -355,7 +357,7 @@
             var carrusel = document.getElementById('carouselMultiple');
             if (!carrusel) return;
             var inner = carrusel.querySelector('.carousel-inner');
-            var visibles = <%= ImagenesVisibles %>;
+            var visibles = Number(carrusel.dataset.imagenesVisibles);
             var ultimo = carrusel.querySelectorAll('.carousel-item').length - visibles;
 
             carrusel.addEventListener('slide.bs.carousel', function (e) {
