@@ -531,6 +531,7 @@ namespace Presentacion
 
                             //Enviar email
                             EnviarCorreo(usuario.Email, usuario.Nombre, usuario.Apellido, ddlAlumnos.SelectedItem.Text, nombreInstitucion, cursos.FirstOrDefault(c => c.IdCurso == idCurso && c.IdInstitucion == idInstitucion), registro.CodigoSeguimiento);
+                            ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='ListadoPostulacionAlumnos.aspx',3000);", true);
                         }
                         return;
                     }
@@ -561,7 +562,7 @@ namespace Presentacion
         private void MostrarMensaje(string mensaje, bool exito)
         {
             lblMensaje.Visible = true;
-            lblMensaje.CssClass = exito ? "alert alert-success d-block m-4" : "alert alert-danger d-block m-4";
+            lblMensaje.CssClass = exito ? "alert theme-success d-block m-4" : "alert theme-danger d-block m-4";
             lblMensaje.Text = HttpUtility.HtmlEncode(mensaje);
         }
 
