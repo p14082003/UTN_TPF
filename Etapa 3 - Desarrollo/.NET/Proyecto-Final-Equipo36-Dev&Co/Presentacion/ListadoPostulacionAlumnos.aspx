@@ -18,18 +18,40 @@
             color: #FFFFFF !important;
         }
 
-        .idioma-y-botones {
+        .acciones-filtros-postulaciones {
             display: grid;
-            grid-template-columns:
-                minmax(0, 1fr)
-                min(2rem, 12%)
-                min(7.5rem, 30%);
-            gap: min(0.875rem, 4%);
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 0.5rem;
+            align-items: stretch;
         }
-       .idioma-y-botones { 
-           grid-template-columns: minmax(0, 1fr) auto auto; 
 
-       }
+        #contenido .acciones-filtros-postulaciones > input,
+        #contenido .acciones-filtros-postulaciones > a {
+            min-width: 0;
+            min-height: 2.75rem;
+            padding: 0.625rem 0.875rem;
+            white-space: nowrap;
+            overflow-wrap: normal;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 767px) {
+            .acciones-filtros-postulaciones {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .acciones-filtros-postulaciones > select {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 359px) {
+            .acciones-filtros-postulaciones {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
 
         .table th {
         color: #373A72 !important;
@@ -76,11 +98,11 @@
                       <asp:ListItem Value="0">Todos los Alumnos</asp:ListItem>
                   </asp:DropDownList>
               </div>
-              <div class="col-6 idioma-y-botones">
+              <div class="col-6 acciones-filtros-postulaciones">
                   <asp:DropDownList runat="server" ID="ddlEstadosPostulacion" CssClass="form-control h-100 w-100" AppendDataBoundItems="true">
                       <asp:ListItem Value="0">Todos los Estados</asp:ListItem>
                   </asp:DropDownList>
-                  <asp:Button runat="server" ID="btnFiltrar" CssClass="btn-lilaOscuro h-100 w-100 px-0" Text="Filtrar" OnClick="btnFiltrar_Click" />
+                  <asp:Button runat="server" ID="btnFiltrar" CssClass="btn btn-lilaOscuro w-100" Text="Filtrar" OnClick="btnFiltrar_Click" />
                   <a href="ListadoPostulacionAlumnos.aspx" class="btn btn-lilaClaro text-decoration-none">Limpiar filtros</a>
               </div>
           </div>
