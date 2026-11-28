@@ -19,6 +19,7 @@ namespace Presentacion
         private const int Rechazado = 4;
         private const string BotonActivo = "btn btn-indigo fw-bold rounded-pill px-4";
         private const string BotonInactivo = "btn btn-outline-lavanda fw-bold rounded-pill px-4";
+        private string mensajeOperacionGuardada;
 
         protected override void OnInit(EventArgs e)
         {
@@ -108,7 +109,9 @@ namespace Presentacion
                 catch (Exception ex)
                 {
                     Trace.Warn("AdminDevCo", "Error al comunicarse con InstiRed.", ex);
-                    MostrarMensaje("No se pudo actualizar el panel. Intentá nuevamente.", false);
+                    MostrarMensaje(mensajeOperacionGuardada == null
+                        ? "No se pudo actualizar el panel. Intentá nuevamente."
+                        : mensajeOperacionGuardada + " No pudimos actualizar el panel. Volvé a abrirlo para consultar el estado; no hace falta repetir la operación.", false);
                 }
             }));
         }
@@ -240,10 +243,13 @@ namespace Presentacion
             {
                 if (await GuardarAsync(ruta, datos))
                 {
+                    mensajeOperacionGuardada = mensaje;
+                    bool correoEnviado = await NotificarSolicitudAsync(idPostulacion, motivo);
+                    mensajeOperacionGuardada = MensajeConNotificacion(mensaje, correoEnviado);
                     dgvSolicitudes.PageIndex = 0;
                     MostrarVista("solicitudes");
                     await CargarSolicitudesAsync();
-                    MostrarMensaje(mensaje, true);
+                    MostrarMensaje(mensajeOperacionGuardada, correoEnviado);
                 }
             });
         }
@@ -310,10 +316,13 @@ namespace Presentacion
             {
                 if (await GuardarAsync(ruta, new { idInstitucion, idUsuarioDevCo }))
                 {
+                    mensajeOperacionGuardada = mensaje;
+                    bool correoEnviado = await NotificarEstadoInstitucionAsync(idInstitucion, ruta == "sp/ReactivarInstitucion");
+                    mensajeOperacionGuardada = MensajeConNotificacion(mensaje, correoEnviado);
                     await CargarDetalleInstitucionAsync(idInstitucion);
                     dgvInstituciones.PageIndex = 0;
                     await CargarInstitucionesAsync();
-                    MostrarMensaje(mensaje, true);
+                    MostrarMensaje(mensajeOperacionGuardada, correoEnviado);
                 }
             });
         }
@@ -335,9 +344,15 @@ namespace Presentacion
             int idUsuarioActor = UsuarioSesion.Obtener(Session).IdUsuario;
             Ejecutar(async () =>
             {
+                var administradores = await ListarAdministradoresAsync(idInstitucion);
+                var administrador = administradores.FirstOrDefault(a => a.IdAdministrador == idAdministrador);
+                if (administrador == null)
+                {
+                    MostrarMensaje("El administrador ya no está disponible en esta institución.", false);
+                    return;
+                }
                 if (darDeBaja)
                 {
-                    var administradores = await ListarAdministradoresAsync(idInstitucion);
                     var activos = administradores.Where(a => a.UsuarioActivo).ToList();
                     if (activos.Count == 1 && activos[0].IdAdministrador == idAdministrador)
                     {
@@ -349,10 +364,111 @@ namespace Presentacion
                 string ruta = darDeBaja ? "sp/DarDeBajaAdministradorInstitucion" : "sp/ReactivarAdministradorInstitucion";
                 if (await GuardarAsync(ruta, new { idAdministrador, idUsuarioActor }))
                 {
+                    string mensaje = darDeBaja ? "Administrador dado de baja." : "Administrador reactivado.";
+                    mensajeOperacionGuardada = mensaje;
+                    bool correoEnviado = NotificarEstadoAdministrador(administrador, !darDeBaja);
+                    mensajeOperacionGuardada = MensajeConNotificacion(mensaje, correoEnviado);
                     await CargarDetalleInstitucionAsync(idInstitucion);
-                    MostrarMensaje(darDeBaja ? "Administrador dado de baja." : "Administrador reactivado.", true);
+                    MostrarMensaje(mensajeOperacionGuardada, correoEnviado);
                 }
             });
+        }
+
+        private static string MensajeConNotificacion(string mensaje, bool correoEnviado)
+        {
+            return correoEnviado ? mensaje : mensaje + " El cambio quedó guardado, pero no pudimos enviar todos los correos de aviso. No repitas la operación.";
+        }
+
+        private bool EnviarNotificacion(NotificacionEmail correo)
+        {
+            return correo.IntentarEnviar(ex => Trace.Warn("AdminDevCo", "Error al enviar un correo de notificación.", ex));
+        }
+
+        private async Task<bool> NotificarSolicitudAsync(int idPostulacion, string motivo)
+        {
+            try
+            {
+                var solicitud = await InstiRedApi.GetAsync<SolicitudApi>(RutaSolicitudes + "/" + idPostulacion);
+                bool aprobada = string.IsNullOrWhiteSpace(motivo);
+                return EnviarNotificacion(new NotificacionEmail
+                {
+                    Destinatario = solicitud.EmailAdministrador,
+                    NombreDestinatario = solicitud.Administrador,
+                    Asunto = aprobada ? "Solicitud de administrador aprobada - InstiRed" : "Solicitud de administrador rechazada - InstiRed",
+                    Titulo = aprobada ? "Tu solicitud fue aprobada" : "Tu solicitud fue rechazada",
+                    Mensaje = aprobada ? "DevCo aprobó tu solicitud de administrador de institución. Tu cuenta quedó habilitada."
+                        : "DevCo revisó tu solicitud de administrador de institución y la rechazó por el motivo indicado a continuación.",
+                    Datos = new Dictionary<string, string>
+                    {
+                        { "Institución", solicitud.NombreInstitucion },
+                        { "Código de seguimiento", solicitud.CodigoSeguimiento },
+                        { "Motivo del rechazo", motivo }
+                    },
+                    Indicaciones = aprobada ? "Ingresá a InstiRed con el correo y la contraseña de tu registro para completar el alta de tu institución."
+                        : "Si querés volver a postularte, enviá una solicitud nueva con la documentación correspondiente."
+                });
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("AdminDevCo", "No se pudieron obtener los datos para notificar la resolución de la solicitud.", ex);
+                return false;
+            }
+        }
+
+        private bool NotificarEstadoAdministrador(AdministradorApi administrador, bool activo)
+        {
+            return EnviarNotificacion(new NotificacionEmail
+            {
+                Destinatario = administrador.EmailAdministrador,
+                NombreDestinatario = administrador.NombreCompleto,
+                Asunto = activo ? "Administrador reactivado - InstiRed" : "Baja de administrador - InstiRed",
+                Titulo = activo ? "Tu cuenta fue reactivada" : "Tu cuenta fue dada de baja",
+                Mensaje = activo ? "DevCo reactivó tu cuenta de administrador de institución."
+                    : "DevCo dio de baja tu cuenta de administrador de institución. Ya no podrás iniciar sesión con esta cuenta.",
+                Indicaciones = activo ? "Podés ingresar con tus credenciales habituales siempre que tu institución esté activa."
+                    : "Para consultar sobre la baja de tu cuenta, contactate con DevCo."
+            });
+        }
+
+        private async Task<bool> NotificarEstadoInstitucionAsync(int idInstitucion, bool activa)
+        {
+            try
+            {
+                var institucion = await InstiRedApi.GetAsync<InstitucionApi>(RutaInstituciones + "/" + idInstitucion);
+                var administradores = await ListarAdministradoresAsync(idInstitucion);
+                var destinatarios = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrWhiteSpace(institucion.Email))
+                    destinatarios[institucion.Email.Trim()] = institucion.Nombre;
+                foreach (var administrador in administradores.Where(a => a.UsuarioActivo && !string.IsNullOrWhiteSpace(a.EmailAdministrador)))
+                    destinatarios[administrador.EmailAdministrador.Trim()] = administrador.NombreCompleto;
+
+                if (destinatarios.Count == 0)
+                    throw new InvalidOperationException("La institución no tiene correos de contacto ni administradores activos con email.");
+
+                bool enviados = true;
+                foreach (var destinatario in destinatarios)
+                {
+                    if (!EnviarNotificacion(new NotificacionEmail
+                    {
+                        Destinatario = destinatario.Key,
+                        NombreDestinatario = destinatario.Value,
+                        Asunto = activa ? "Institución reactivada - InstiRed" : "Baja de institución - InstiRed",
+                        Titulo = activa ? "La institución fue reactivada" : "La institución fue dada de baja",
+                        Mensaje = activa ? "DevCo reactivó la institución. Vuelve a estar disponible en la búsqueda y puede gestionar su oferta educativa."
+                            : "DevCo dio de baja la institución. Dejó de aparecer en la búsqueda y sus administradores no podrán iniciar sesión mientras permanezca inactiva.",
+                        Datos = new Dictionary<string, string> { { "Institución", institucion.Nombre }, { "CUIT", institucion.Cuit } },
+                        Indicaciones = activa ? "Los administradores con cuenta activa pueden volver a ingresar. Las postulaciones rechazadas por la baja no se restauran; las familias deben postularse nuevamente."
+                            : "Las postulaciones pendientes y aceptadas quedaron rechazadas. Las confirmadas se conservan. Para consultar sobre la baja, contactate con DevCo."
+                    }))
+                        enviados = false;
+                }
+                return enviados;
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("AdminDevCo", "No se pudieron completar los avisos del cambio de estado de la institución.", ex);
+                return false;
+            }
         }
 
         private async Task<bool> GuardarAsync(string ruta, object datos)

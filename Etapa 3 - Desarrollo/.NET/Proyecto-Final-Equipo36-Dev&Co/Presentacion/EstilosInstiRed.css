@@ -139,6 +139,7 @@ select.form-select {
 
 select.form-control:focus,
 select.form-select:focus,
+input.form-control[type="date"]:focus,
 .campo-instired:focus {
     outline: none;
     border-color: #8D91D5 !important;
@@ -147,12 +148,73 @@ select.form-select:focus,
 
 select.form-control:disabled,
 select.form-select:disabled,
+input.form-control[type="date"]:disabled,
 .campo-instired:disabled {
     background-color: #e9ecef;
     color: #6c757d;
     cursor: not-allowed;
     opacity: 1;
     box-shadow: none;
+}
+
+/* Fechas: edición y calendario nativos, con el formato visual de InstiRed. */
+input.form-control[type="date"] {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 2.375rem;
+    padding: 0.375rem 3rem 0.375rem 0.875rem;
+    font: inherit;
+    line-height: 1.5;
+    color: #373A72;
+    background-color: #FFFFFF;
+    border: 1px solid #E4E0F0;
+    border-radius: 15px;
+    box-shadow: none;
+    color-scheme: light;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input.form-control[type="date"]:not(:disabled):not([readonly]):hover {
+    border-color: #8D91D5;
+}
+
+input.form-control[type="date"]::-webkit-datetime-edit,
+input.form-control[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+input.form-control[type="date"]::-webkit-date-and-time-value {
+    min-height: 1.5em;
+    text-align: left;
+}
+
+input.form-control[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 50%;
+    right: 0.25rem;
+    transform: translateY(-50%);
+    box-sizing: content-box;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    padding: 0.4rem;
+    border-radius: 9px;
+    background-color: #F7F5FC;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23373A72' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='3'/%3E%3Cpath d='M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2M8 18h2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1rem;
+    opacity: 1;
+    cursor: pointer;
+}
+
+input.form-control[type="date"]:disabled::-webkit-calendar-picker-indicator,
+input.form-control[type="date"][readonly]::-webkit-calendar-picker-indicator {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 /* Campos de solo lectura (ej: datos del autogestor) */

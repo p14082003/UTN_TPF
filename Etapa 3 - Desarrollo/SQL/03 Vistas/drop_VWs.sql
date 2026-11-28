@@ -9,3 +9,4 @@ DROP VIEW IF EXISTS vw_Instituciones;
 DROP VIEW IF EXISTS vw_Administradores_Por_Institucion;
 DROP VIEW IF EXISTS vw_Perfil_Usuario;
 DROP VIEW IF EXISTS vw_Telefonos_Por_Usuario;
+DROP VIEW IF EXISTS vw_Cursos;

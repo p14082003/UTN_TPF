@@ -1,34 +1,66 @@
--- =====================================================================
--- InstiRed - Datos de prueba (SOLO DEV, no cargar en PRD)
---
--- Correr UNA vez, sobre la base DEV vacia, despues de create_tables.sql.
---
--- Tipos de usuario de ejemplo: Responsable (1-10), Administrador (11-22) y
--- DevCo (23-24).
--- Todos los usuarios tienen clave 'test1234' (texto plano, temporal).
--- Los ids van explicitos para que las referencias se puedan leer a ojo.
--- Los telefonos, emails y URLs son ficticios.
--- =====================================================================
-
--- Los datos llevan acentos y enie: esto hace que se guarden bien aunque el
--- cliente que corra el script no use utf8mb4 por defecto.
+-- INSTIRED: SEED COMPLETO PARA DEV (MySQL 8.0).
+-- Ejecutar completo UNA VEZ tras crear tablas, SP y vistas, sobre tablas vacías.
+-- Cuentas y archivos ficticios. Clave común de pruebas: InstiRed2026!
+-- No borra ni modifica archivos existentes. Adjuntos: 04 Extras/Seed/archivos_seed.zip.
+-- Fechas relativas al año de ejecución: anterior, actual y siguiente.
+-- Detalles y casos: 04 Extras/Seed/LEEME_seed.txt.
+USE InstiRed_DEV;
 SET NAMES utf8mb4;
 
--- ---------------------------------------------------------------------
--- 1. Catalogos
--- ---------------------------------------------------------------------
+DELIMITER $$
+DROP PROCEDURE IF EXISTS seed_20261127_cargar$$
+CREATE PROCEDURE seed_20261127_cargar()
+BEGIN
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
 
+  -- Evita mezclar el seed con datos anteriores, incluso en tablas sin usuarios.
+  IF EXISTS (SELECT 1 FROM TipoUsuario LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Roles LIMIT 1)
+     OR EXISTS (SELECT 1 FROM TipoInstitucion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Idiomas LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Turnos LIMIT 1)
+     OR EXISTS (SELECT 1 FROM EstadosPostulacion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM NivelesEscolares LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Personas LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Usuarios LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Instituciones LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Discapacidades LIMIT 1)
+     OR EXISTS (SELECT 1 FROM IdiomaInstitucion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Cursos LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Imagenes LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Alumnos LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Responsables LIMIT 1)
+     OR EXISTS (SELECT 1 FROM AdministradoresInstitucion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM ResponsablesPorAlumno LIMIT 1)
+     OR EXISTS (SELECT 1 FROM PostulacionesAlumnos LIMIT 1)
+     OR EXISTS (SELECT 1 FROM DocumentosPostulacion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM PostulacionesAdminInstitucion LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Resenias LIMIT 1)
+     OR EXISTS (SELECT 1 FROM Telefonos LIMIT 1) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El seed requiere las 23 tablas vacías. No se insertó ningún dato.';
+  END IF;
+
+  SET @seed_anio = YEAR(CURDATE());
+  START TRANSACTION;
+
+  -- TipoUsuario
 INSERT INTO TipoUsuario (id, descripcion) VALUES
   (1, 'Responsable'),
   (2, 'Administrador'),
   (3, 'DevCo');
 
+  -- Roles
 INSERT INTO Roles (id, descripcion) VALUES
   (1, 'Padre'),
   (2, 'Madre'),
   (3, 'Tutor legal'),
   (4, 'Familiar a cargo');
 
+  -- TipoInstitucion
 INSERT INTO TipoInstitucion (id, tipoInstitucion) VALUES
   (1, 'Jardín'),
   (2, 'Primaria'),
@@ -39,6 +71,7 @@ INSERT INTO TipoInstitucion (id, tipoInstitucion) VALUES
   (7, 'Jardín-Primaria-Secundaria'),
   (8, 'Jardín-Secundaria');
 
+  -- Idiomas
 INSERT INTO Idiomas (id, idioma) VALUES
   (1, 'Español'),
   (2, 'Inglés'),
@@ -46,12 +79,14 @@ INSERT INTO Idiomas (id, idioma) VALUES
   (4, 'Francés'),
   (5, 'Italiano');
 
+  -- Turnos
 INSERT INTO Turnos (id, descripcion) VALUES
   (1, 'Mañana'),
   (2, 'Tarde'),
   (3, 'Noche'),
   (4, 'Jornada completa');
 
+  -- EstadosPostulacion
 INSERT INTO EstadosPostulacion (id, descripcion) VALUES
   (1, 'Pendiente'),
   (2, 'Aceptado'),
@@ -59,430 +94,765 @@ INSERT INTO EstadosPostulacion (id, descripcion) VALUES
   (4, 'Rechazado'),
   (5, 'Cancelado');
 
+  -- NivelesEscolares
 INSERT INTO NivelesEscolares (id, descripcion) VALUES
   (1, 'Preescolar'),
   (2, 'Primaria'),
   (3, 'Secundaria');
 
--- ---------------------------------------------------------------------
--- 2. Personas (33)
---    1-10  responsables (el 6 tambien es alumno; el 7 tambien administra)
---    11-19 administradores
---    20-31 alumnos menores
---    32    administrador nuevo, todavia sin institucion (solicitud pendiente)
---    33    administradora adicional de una institucion que ya existe (la 3),
---          dada de alta por un administrador activo (sin solicitud)
--- ---------------------------------------------------------------------
-
+  -- Personas
 INSERT INTO Personas (id, nombre, apellido, documento, domicilio, fechaNacimiento) VALUES
-  (1,  'Laura',    'Benítez',    '33456872', 'Calle Italia 450, General Pacheco',      '1987-02-11'),
-  (2,  'Carlos',   'Benítez',    '31892345', 'Calle Italia 450, General Pacheco',      '1985-09-23'),
-  (3,  'Andrea',   'Ruiz',       '32654108', 'Av. Sarmiento 1820, Tigre',              '1986-04-05'),
-  (4,  'Pablo',    'Fernández',  '28123907', 'Calle Los Ceibos 735, Don Torcuato',     '1980-12-17'),
-  (5,  'Marcela',  'Domínguez',  '35478216', 'Calle Mitre 288, Garín',                 '1990-07-30'),
-  (6,  'Marcos',   'Acosta',     '36215874', 'Calle Lavalle 1105, General Pacheco',    '1991-08-12'),
-  (7,  'Gabriela', 'Torres',     '34087532', 'Av. Libertador 2740, Boulogne',          '1988-03-19'),
-  (8,  'Rosa',     'Silva',      '13245790', 'Calle Alvear 96, Benavídez',             '1957-10-08'),
-  (9,  'Julián',   'Gómez',      '34912063', 'Calle Rivadavia 640, Escobar',           '1989-01-26'),
-  (10, 'Valeria',  'Castro',     '35330481', 'Calle Rivadavia 640, Escobar',           '1990-05-14'),
+  (1, 'Laura', 'Fernández', '30000001', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 38, '-05-12'))),
+  (2, 'Diego', 'Pereyra', '30000002', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 40, '-05-12'))),
+  (3, 'Sofía', 'Giménez', '30000003', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 23, '-05-12'))),
+  (4, 'Martina', 'Sosa', '30000004', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 31, '-05-12'))),
+  (5, 'Pablo', 'Díaz', '30000005', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 42, '-05-12'))),
+  (6, 'Carla', 'Núñez', '30000006', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 39, '-05-12'))),
+  (7, 'Gabriela', 'Romero', '30000007', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 45, '-05-12'))),
+  (101, 'Ana', 'Torres', '30000101', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 36, '-05-12'))),
+  (102, 'Marcos', 'Vega', '30000102', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 37, '-05-12'))),
+  (103, 'Paula', 'Ibarra', '30000103', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 38, '-05-12'))),
+  (104, 'Lucía', 'Acosta', '30000104', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 39, '-05-12'))),
+  (105, 'Andrés', 'Ramos', '30000105', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 40, '-05-12'))),
+  (106, 'Elena', 'Costa', '30000106', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 41, '-05-12'))),
+  (107, 'Florencia', 'Silva', '30000107', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 42, '-05-12'))),
+  (108, 'Javier', 'Molina', '30000108', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 35, '-05-12'))),
+  (109, 'Carolina', 'Rivas', '30000109', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 36, '-05-12'))),
+  (110, 'Gustavo', 'Ferrer', '30000110', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 37, '-05-12'))),
+  (111, 'Natalia', 'Paz', '30000111', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 38, '-05-12'))),
+  (112, 'Federico', 'Luna', '30000112', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 39, '-05-12'))),
+  (113, 'Rocío', 'Medina', '30000113', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 40, '-05-12'))),
+  (201, 'Mateo', 'Fernández', '50000201', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (202, 'Valentina', 'Fernández', '50000202', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 11, '-05-12'))),
+  (204, 'Tomás', 'Pereyra', '50000204', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (205, 'Camila', 'Pereyra', '50000205', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (206, 'Bruno', 'Núñez', '50000206', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (207, 'Lucía', 'Fernández', '50000207', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 3, '-05-12'))),
+  (208, 'Julia', 'Núñez', '50000208', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 11, '-05-12'))),
+  (209, 'Agustín', 'Romero', '50000209', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 19, '-05-12'))),
+  (210, 'Nicolás', 'Fernández', '50000210', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (240, 'Alma', 'Fernández', '50000240', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (241, 'Benjamín', 'Fernández', '50000241', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (242, 'Catalina', 'Fernández', '50000242', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (243, 'Dante', 'Fernández', '50000243', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (244, 'Emma', 'Fernández', '50000244', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (245, 'Felipe', 'Fernández', '50000245', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (246, 'Guillermina', 'Fernández', '50000246', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (247, 'Ignacio', 'Fernández', '50000247', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (248, 'Josefina', 'Fernández', '50000248', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (249, 'Lautaro', 'Fernández', '50000249', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (250, 'Malena', 'Fernández', '50000250', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (301, 'Adriana', 'Alonso', '30000301', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 31, '-05-12'))),
+  (302, 'Brenda', 'Benítez', '30000302', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 32, '-05-12'))),
+  (303, 'Claudio', 'Castro', '30000303', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 33, '-05-12'))),
+  (304, 'Daniela', 'Domínguez', '30000304', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 34, '-05-12'))),
+  (305, 'Esteban', 'Espíndola', '30000305', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 35, '-05-12'))),
+  (306, 'Fabiana', 'Fuentes', '30000306', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 36, '-05-12'))),
+  (307, 'Germán', 'Godoy', '30000307', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 37, '-05-12'))),
+  (308, 'Helena', 'Herrera', '30000308', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 38, '-05-12'))),
+  (309, 'Iván', 'Ibáñez', '30000309', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 39, '-05-12'))),
+  (310, 'Jimena', 'Juárez', '30000310', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 40, '-05-12'))),
+  (311, 'Kevin', 'Ledesma', '30000311', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 41, '-05-12'))),
+  (312, 'Lorena', 'Méndez', '30000312', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 42, '-05-12'))),
+  (313, 'Manuel', 'Navarro', '30000313', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 43, '-05-12'))),
+  (314, 'Nora', 'Ortega', '30000314', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 44, '-05-12'))),
+  (315, 'Oscar', 'Ponce', '30000315', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 45, '-05-12'))),
+  (316, 'Patricia', 'Quiroga', '30000316', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 30, '-05-12'))),
+  (317, 'Ramiro', 'Roldán', '30000317', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 31, '-05-12'))),
+  (318, 'Silvana', 'Suárez', '30000318', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 32, '-05-12'))),
+  (319, 'Teresa', 'Toledo', '30000319', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 33, '-05-12'))),
+  (320, 'Ulises', 'Urrutia', '30000320', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 34, '-05-12'))),
+  (321, 'Verónica', 'Valdez', '30000321', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 35, '-05-12'))),
+  (322, 'Walter', 'Villalba', '30000322', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 36, '-05-12'))),
+  (323, 'Ximena', 'Ávila', '30000323', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 37, '-05-12'))),
+  (324, 'Yamila', 'Barrionuevo', '30000324', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 38, '-05-12'))),
+  (325, 'Zoe', 'Cabrera', '30000325', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 39, '-05-12'))),
+  (326, 'Alicia', 'Delgado', '30000326', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 40, '-05-12'))),
+  (327, 'Cecilia', 'Escobar', '30000327', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 41, '-05-12'))),
+  (401, 'Alma', 'Alonso', '50000401', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (402, 'Benjamín', 'Benítez', '50000402', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (403, 'Catalina', 'Castro', '50000403', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (404, 'Dante', 'Domínguez', '50000404', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (405, 'Emma', 'Espíndola', '50000405', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (406, 'Felipe', 'Fuentes', '50000406', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (407, 'Guillermina', 'Godoy', '50000407', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (408, 'Ignacio', 'Herrera', '50000408', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (409, 'Josefina', 'Ibáñez', '50000409', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (410, 'Lautaro', 'Juárez', '50000410', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (411, 'Malena', 'Ledesma', '50000411', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (412, 'Alma', 'Méndez', '50000412', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (413, 'Benjamín', 'Navarro', '50000413', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (414, 'Catalina', 'Ortega', '50000414', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (415, 'Dante', 'Ponce', '50000415', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (416, 'Emma', 'Quiroga', '50000416', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (417, 'Felipe', 'Roldán', '50000417', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (418, 'Guillermina', 'Suárez', '50000418', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (419, 'Ignacio', 'Toledo', '50000419', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (420, 'Josefina', 'Urrutia', '50000420', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (421, 'Lautaro', 'Valdez', '50000421', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (422, 'Malena', 'Villalba', '50000422', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (423, 'Alma', 'Ávila', '50000423', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (424, 'Benjamín', 'Barrionuevo', '50000424', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (425, 'Catalina', 'Cabrera', '50000425', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (426, 'Dante', 'Delgado', '50000426', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12'))),
+  (427, 'Emma', 'Escobar', '50000427', 'Av. San Martín 2450, CABA', DATE(CONCAT(@seed_anio - 5, '-05-12')));
 
-  (11, 'Silvia',   'Maidana',    '22876540', 'Calle San Martín 310, General Pacheco',  '1972-06-02'),
-  (12, 'Roberto',  'Salinas',    '21934107', 'Calle Colón 785, Tigre',                 '1970-11-21'),
-  (13, 'Mónica',   'Peralta',    '24561893', 'Calle Urquiza 1450, Don Torcuato',       '1975-02-28'),
-  (14, 'Natalia',  'Ocampo',     '30441275', 'Calle Pellegrini 220, San Fernando',     '1983-09-09'),
-  (15, 'Daniel',   'Quiroga',    '26705319', 'Calle Paraná 905, Boulogne',             '1978-08-15'),
-  (16, 'Verónica', 'Luna',       '28998604', 'Calle Dorrego 512, Benavídez',           '1981-04-04'),
-  (17, 'Héctor',   'Giménez',    '20187462', 'Calle Moreno 77, Escobar',               '1968-12-12'),
-  (18, 'Lorena',   'Sosa',       '30972158', 'Calle Las Heras 1330, Del Viso',         '1984-03-03'),
-  (19, 'Alberto',  'Rojas',      '23640897', 'Calle Güemes 468, General Pacheco',      '1974-07-27'),
-
-  (20, 'Sofía',    'Benítez',    '57412086', 'Calle Italia 450, General Pacheco',      '2022-03-14'),
-  (21, 'Mateo',    'Benítez',    '56730915', 'Calle Italia 450, General Pacheco',      '2021-07-02'),
-  (22, 'Valentina','Ruiz',       '56084327', 'Av. Sarmiento 1820, Tigre',              '2020-05-21'),
-  (23, 'Joaquín',  'Ruiz',       '54218603', 'Av. Sarmiento 1820, Tigre',              '2017-09-09'),
-  (24, 'Camila',   'Fernández',  '52561478', 'Calle Los Ceibos 735, Don Torcuato',     '2014-02-27'),
-  (25, 'Tomás',    'Fernández',  '50934762', 'Calle Los Ceibos 735, Don Torcuato',     '2012-11-30'),
-  (26, 'Lucas',    'Domínguez',  '54967120', 'Calle Mitre 288, Garín',                 '2018-04-18'),
-  (27, 'Emma',     'Acosta',     '59103846', 'Calle Lavalle 1105, General Pacheco',    '2024-01-25'),
-  (28, 'Benjamín', 'Torres',     '55402981', 'Av. Libertador 2740, Boulogne',          '2019-06-06'),
-  (29, 'Martina',  'Silva',      '51027384', 'Calle Alvear 96, Benavídez',             '2012-10-03'),
-  (30, 'Santino',  'Gómez',      '56812074', 'Calle Rivadavia 640, Escobar',           '2021-04-15'),
-  (31, 'Delfina',  'Gómez',      '59460213', 'Calle Rivadavia 640, Escobar',           '2024-09-17'),
-
-  (32, 'Ramiro',   'Villalba',   '27318450', 'Calle Sarmiento 530, Escobar',           '1979-05-22'),
-  (33, 'Claudia',  'Montenegro', '25874310', 'Calle Belgrano 1220, Don Torcuato',      '1977-11-03');
-
--- ---------------------------------------------------------------------
--- 3. Usuarios (24): 1-10 responsables, 11-22 administradores, 23-24 DevCo
---    Gabriela (persona 7) tiene dos cuentas: una como responsable (7)
---    y otra como administradora (14), cada una con su email (UNIQUE).
---    Tipos: 1 Responsable, 2 Administrador, 3 DevCo. Los usuarios DevCo
---    (equipo de desarrollo) no tienen Persona ni fila en otra tabla.
---    El usuario 22 (administrador adicional) esta activo porque lo creo
---    un administrador ya activo, sin pasar por DevCo.
---    No hay nombre de usuario: se ingresa con el email (UNIQUE).
--- ---------------------------------------------------------------------
-
+  -- Usuarios
 INSERT INTO Usuarios (id, clave, email, activo, idTipoUsuario) VALUES
-  (1,  'test1234', 'lbenitez@mail.test', TRUE,  1),
-  (2,  'test1234', 'cbenitez@mail.test', TRUE,  1),
-  (3,  'test1234', 'aruiz@mail.test', TRUE,  1),
-  (4,  'test1234', 'pfernandez@mail.test', TRUE,  1),
-  (5,  'test1234', 'mdominguez@mail.test', TRUE,  1),
-  (6,  'test1234', 'macosta@mail.test', TRUE,  1),
-  (7,  'test1234', 'gtorres@mail.test', TRUE,  1),
-  (8,  'test1234', 'rsilva@mail.test', FALSE, 1),
-  (9,  'test1234', 'jgomez@mail.test', TRUE,  1),
-  (10, 'test1234', 'vcastro@mail.test', TRUE,  1),
-  (11, 'test1234', 'smaidana@mail.test', TRUE,  2),
-  (12, 'test1234', 'rsalinas@mail.test', TRUE,  2),
-  (13, 'test1234', 'mperalta@mail.test', TRUE,  2),
-  (14, 'test1234', 'gtorres.adm@mail.test', TRUE,  2),
-  (15, 'test1234', 'nocampo@mail.test', TRUE,  2),
-  (16, 'test1234', 'dquiroga@mail.test', TRUE,  2),
-  (17, 'test1234', 'vluna@mail.test', TRUE,  2),
-  (18, 'test1234', 'hgimenez@mail.test', FALSE, 2),
-  (19, 'test1234', 'lsosa@mail.test', TRUE,  2),
-  (20, 'test1234', 'arojas@mail.test', TRUE,  2),
-  (21, 'test1234', 'rvillalba@mail.test', FALSE, 2),
-  (22, 'test1234', 'cmontenegro@mail.test', TRUE,  2),
-  (23, 'test1234', 'devco.admin@devco.test', TRUE,  3),
-  (24, 'test1234', 'devco.dev@devco.test', TRUE,  3);
+  (1, 'AQAAAAIAA1tgAAAAEOSf/shShqOx+G4zkBOCcD+VQtjoPVeqY+IP5UqQMWQCpNBt1pVLL2AYXvGgB0EPbg==', 'devco@instired.test', 1, 3),
+  (10, 'AQAAAAIAA1tgAAAAEOir5lf488HTgTVpvGZt6n+SW80uuSVgVZaiXKhkN2UpIq5H8pFletVrxT33xkWuCg==', 'admin.horizonte@instired.test', 1, 2),
+  (11, 'AQAAAAIAA1tgAAAAEOvz7lVus7PLkdnUrkFexk29Svxx6vOlG+UAytgBz/fIF73hJKdPnxnedbHBjWuOtQ==', 'admin.adicional@instired.test', 1, 2),
+  (12, 'AQAAAAIAA1tgAAAAEDHYPoZFL+6b6fU44+tWo+X3Ft8uy/2oeWTCxMVjIbXAVIjaauotc5buZ4vXwFaueg==', 'admin.baja@instired.test', 0, 2),
+  (13, 'AQAAAAIAA1tgAAAAELmJcE2r0V98DrhudYhbILCQOZBY8EKUIax/ZFQ68suwLeWjyQ8tQow7p6e17iyjAA==', 'admin.rio@instired.test', 1, 2),
+  (14, 'AQAAAAIAA1tgAAAAEETP0F+oKMCD8lsLBvos9Rptj+8ApnZ7G6ywg2pyx2IdqSWU/G37hpfDrJ6r8PIQnA==', 'admin.parque@instired.test', 1, 2),
+  (15, 'AQAAAAIAA1tgAAAAEATeLes4Ap7+vitsBhg6RfhVV8jdW+3Zk2ojnX8sQVOjmB82W2JLbujLyzeqWRusoQ==', 'admin.idiomas@instired.test', 1, 2),
+  (16, 'AQAAAAIAA1tgAAAAEPzKo0ZlnMWK878AYc0f7yO7J1vSQ+1zGDoqNWT4Yw6Qn/wuAhFZalroNoXOpz6LCA==', 'admin.rayuela@instired.test', 1, 2),
+  (17, 'AQAAAAIAA1tgAAAAEDI8mG+OYrsxdMoHMtlHrdp3H27ozCxdC76PDDh0ovesAm6himX5PFdoSzqJwoPoBw==', 'admin.sur@instired.test', 1, 2),
+  (18, 'AQAAAAIAA1tgAAAAENo6jsGgidwQba/9iDF76y0szV1AhQd2hVtErhIlJYf1xQoh2fDtqZzw5XC8KIdW8Q==', 'admin.amanecer@instired.test', 1, 2),
+  (19, 'AQAAAAIAA1tgAAAAEPDz70I9YOy09aYTBzIPxAVDDXDvCBSIXWHCbHOxXmB+DIqisSYXpcpxe/VXtnXHKA==', 'admin.institucion.baja@instired.test', 1, 2),
+  (20, 'AQAAAAIAA1tgAAAAEMbyyTYF2Nk+xv7/+Za4/tFUnxWaZlGC5m2TXCe80AlZVPuJoNP/C66vJ4tCIlDYgw==', 'admin.aprobado@instired.test', 1, 2),
+  (21, 'AQAAAAIAA1tgAAAAEJxyJ90GpbPD1d3vY3m4epyohv73eMtmBIJR0bQWSnnujeucOf5DW+pNT4haytjXJg==', 'admin.pendiente@instired.test', 0, 2),
+  (22, 'AQAAAAIAA1tgAAAAEOmp0JAgIJoly96PZz2RImOGDjlX7epToQkM5SQoaBy6UsXUEc3CTfSB+v8IusYeOw==', 'admin.rechazado@instired.test', 0, 2),
+  (101, 'AQAAAAIAA1tgAAAAEIQ0ZDEPRWCrDyypOaDfBb5twJEhGicQ7OS8fQaGSmeLjVhAAp5faAKHdfMh/yeM+Q==', 'laura@instired.test', 1, 1),
+  (102, 'AQAAAAIAA1tgAAAAEP+mPQX+9TDQfxsj9I7XY291W8KHEVKkZSoeREwsQsDYNSlcjxaVeSQ6s+o7gOoBfg==', 'diego@instired.test', 1, 1),
+  (103, 'AQAAAAIAA1tgAAAAEEDt6mjlMrX5rUlYlhBY58UKZohcxiNFeQbiHVPn7Uj9Y6q4D/T7HP1a1o1+e/9F4A==', 'sofia@instired.test', 1, 1),
+  (104, 'AQAAAAIAA1tgAAAAEJiEZDre8hYRgcTgrWFn7lmZC2/7F9PfK+mLTG7qlnbDixIVtxOSyjcsKO51RFawUg==', 'martina@instired.test', 1, 1),
+  (105, 'AQAAAAIAA1tgAAAAEJmnIZll9I5tHEnp7VJPYYcnpLtJV1Wyl8AUsiVrUaBcED9TLmU7VTY+o+AyECn7aw==', 'responsable.baja@instired.test', 0, 1),
+  (106, 'AQAAAAIAA1tgAAAAEEztpa5NMTcINzibqsReY6aPPVPpE/SLqT0uXfEf1EFjm/uZ2ZeT5Yy+gD9oZZ3mdw==', 'carla@instired.test', 1, 1),
+  (107, 'AQAAAAIAA1tgAAAAEEtHd7v4OJ9lygP15HMwJAzEYmufH7/ZwRiTZL4BkxmitvF2UAyUNa8xipi4AsZaAQ==', 'gabriela@instired.test', 1, 1),
+  (201, 'AQAAAAIAA1tgAAAAECMEbqBiZnt+PShLuJqIkxvnv2c2gz5jSIo/N2ZvgHpLX0vR3izyM8fUx4nkjZ1aEA==', 'familia.01@instired.test', 1, 1),
+  (202, 'AQAAAAIAA1tgAAAAEHD1wo+F71Aly7iHzJah8wWixmqW9pvHS5RpxMTz4OqBwquzmk7gMAB5vdmHB/tmxQ==', 'familia.02@instired.test', 1, 1),
+  (203, 'AQAAAAIAA1tgAAAAEO7T7x6aJ4Vic8p1bww18bT9IqCtvJkTGYoqHqKuwOBxb+5JcxaBk3Da1hmJ68DxWA==', 'familia.03@instired.test', 1, 1),
+  (204, 'AQAAAAIAA1tgAAAAEOYNnEgkm5U+sgQkxZ1NsgLCzdWCzlSrnf9oif4fjdE2MiB3+pk5x02YZGPePlsCQg==', 'familia.04@instired.test', 1, 1),
+  (205, 'AQAAAAIAA1tgAAAAEJsb20Rpv3HMAwOSeJmmLATPpg7WIVykh4w8/aAot8QoVTozm5EgAQy2SB/AM3dKZg==', 'familia.05@instired.test', 1, 1),
+  (206, 'AQAAAAIAA1tgAAAAEGUWUZkM3P87I6RHcZSucybWWFfVJqZyzF5IK9+KA9VbOkfe0546Cgq0uu/CDOzEdw==', 'familia.06@instired.test', 1, 1),
+  (207, 'AQAAAAIAA1tgAAAAEDc0eg49ooRtNS8yeH/i6/+1BErVQkMmhUDzWZuwYyaEg20lJJPMWeXRol5E4g5+iA==', 'familia.07@instired.test', 1, 1),
+  (208, 'AQAAAAIAA1tgAAAAEAaWytPSPHd1WS4nhHcRNcgmW5Gzq/CYVp0wKvVHX6XqFIIAgeIHqjedfqO1/25ADA==', 'familia.08@instired.test', 1, 1),
+  (209, 'AQAAAAIAA1tgAAAAEDlyRKxe5aAmF+6L6h4I8ciLASvKBV2+8J8rdYuY41qUW/UnRsFccK+hS1HN43h5cg==', 'familia.09@instired.test', 1, 1),
+  (210, 'AQAAAAIAA1tgAAAAEMHloPI/Kwj2xgBJYSiJ5LRIkK1n1/aHWgaXHY922dIlYP8S6K19rz0cxPJf5d0ePg==', 'familia.10@instired.test', 1, 1),
+  (211, 'AQAAAAIAA1tgAAAAEC4PKnuzF2eXkYuvLvuO3zM2cn6q9tNbiccKDgN8ctjxlVBPMXUz8BIBGigBG1PaNQ==', 'familia.11@instired.test', 1, 1),
+  (212, 'AQAAAAIAA1tgAAAAEIankxH5V7JtQnZ8dT/0FgtpYNV+xas22ImvdT7Z3m81ZH6R4jGinT0FKzE+9nuyHg==', 'familia.12@instired.test', 1, 1),
+  (213, 'AQAAAAIAA1tgAAAAECPH4INnWs7EHW3t2EUmEz4xU2GH0bjQMq55F3TGy5qv7v9PNyVrAsX+bPz72g179g==', 'familia.13@instired.test', 1, 1),
+  (214, 'AQAAAAIAA1tgAAAAEOyoCr1ubsJzm6gyD98FEorkLeTUxWoj3nTTp8D8TEOELHD5iYRUtj7LnBe6S30GjQ==', 'familia.14@instired.test', 1, 1),
+  (215, 'AQAAAAIAA1tgAAAAEBDhUZViGTExso2y7hgLtUH5QTzqXGAFsxMTxYC/PfXWlAMQtIHQZnCdRH+5MieyuA==', 'familia.15@instired.test', 1, 1),
+  (216, 'AQAAAAIAA1tgAAAAEENA84JjXMPIj/k3CAKv4S0FQitcBy6FE7CilRlMAdyRNZDTFB4L809xMigc0FllRg==', 'familia.16@instired.test', 1, 1),
+  (217, 'AQAAAAIAA1tgAAAAEMMvExt4hannTCajWPlKWRu+9myp2eba2+w3VnFrNEZoYYFiuZlfM3X18mrOQ+ENtg==', 'familia.17@instired.test', 1, 1),
+  (218, 'AQAAAAIAA1tgAAAAEEISfKdMQq9+C0mzDyRAU/t9JJdX0KwHc4AMJzoS92HxFzdy/AXtQIzHtq/YmIc8pw==', 'familia.18@instired.test', 1, 1),
+  (219, 'AQAAAAIAA1tgAAAAECoeLyX78DrV7GzSReoy5+8Ax9Wds3OBAFIirlvk8/Tnnt8vtrBPea95G9a7SxvZ9g==', 'familia.19@instired.test', 1, 1),
+  (220, 'AQAAAAIAA1tgAAAAEIwg4y8L/AYbUmUuhdBENSeaDGfYXOEWbOufQaFvmyVjItL/Tte5aviDo8s8VZaCEQ==', 'familia.20@instired.test', 1, 1),
+  (221, 'AQAAAAIAA1tgAAAAEOU4uNrxnwP88bsjMD2bOX1Laq2DEWWoeu4kny93cX2E8mcNSl2li+uya0XfvZRhrw==', 'familia.21@instired.test', 1, 1),
+  (222, 'AQAAAAIAA1tgAAAAEIPVkWSUAPz6y8ikBWKyIa57KcuvZjvDGAYfY1SUYaAwqgMy/yTBFpHmutf/m1jwGg==', 'familia.22@instired.test', 1, 1),
+  (223, 'AQAAAAIAA1tgAAAAEBU+ye5pTgr57D1H2f8v6KlP2xAO9uzfTe8AAUMPQOMHhplnbH2UD/RZZr73m4JZuQ==', 'familia.23@instired.test', 1, 1),
+  (224, 'AQAAAAIAA1tgAAAAEJXhQAqc4rrUZkWluf+0IfPZowUJ4nW2vKinmCEI0Mc0EvlU9VuM5fMIeSFdSU2MGw==', 'familia.24@instired.test', 1, 1),
+  (225, 'AQAAAAIAA1tgAAAAECSMZbtEM4mZYHprPJw/HRhByLdMNlNrlpKrffj9Id83iKmGrvkQiBZZ79bVuN3Ngg==', 'familia.25@instired.test', 1, 1),
+  (226, 'AQAAAAIAA1tgAAAAEARew0UGcamO2+NfjPqQXdp3QASrkkvbyKU2S/rbg5qWy5VhW3A5Z2Gl17EOu2VRGQ==', 'familia.26@instired.test', 1, 1),
+  (227, 'AQAAAAIAA1tgAAAAEAh9IvlCBq/TEfSxo5+6fPpnJXWxEd1YeDevMT5u7gRuI/izvRHZQsGMSbyghL6Q2w==', 'familia.27@instired.test', 1, 1);
 
--- ---------------------------------------------------------------------
--- 4. Instituciones (10) - zona norte del GBA
---    estado = TRUE: institucion habilitada y visible para las familias
---    (la columna nace en FALSE por defecto, por eso va explicita).
--- ---------------------------------------------------------------------
-
+  -- Instituciones
 INSERT INTO Instituciones (id, nombre, cuit, direccion, email, latitud, longitud, descripcion, idTipoInstitucion, estado) VALUES
-  (1,  'Jardín de Infantes N° 902 Arco Iris',      '30710000014', 'Av. Hipólito Yrigoyen 1250, Gral. Pacheco', 'jardin902@instired.test',                  -34.4586, -58.6431,
-   'Jardín de infantes público con salas de 4 y 5 años. Propuesta centrada en el juego y la expresión artística, con patio propio y talleres de música semanales.',
-   1, TRUE),
-  (2,  'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022','Calle Cazón 456, Tigre',                      'primaria14@instired.test',                -34.4264, -58.5791,
-   'Escuela primaria de jornada simple con doble turno. Proyecto institucional basado en la lectoescritura y la convivencia, con biblioteca y huerta escolar.',
-   2, TRUE),
-  (3,  'Escuela Secundaria N° 6 Manuel Belgrano',  '30710000030', 'Av. Constituyentes 2300, Don Torcuato',    'secundaria6@instired.test',               -34.4999, -58.6169,
-   'Escuela secundaria con orientación en ciencias naturales. Cuenta con laboratorio equipado, sala de informática y programa de tutorías para ingresantes.',
-   3, TRUE),
-  (4,  'Instituto de Idiomas Lingua Norte',        '30710000049', 'Av. San Martín 800, Garín',                'info@linguanorte.instired.test',          -34.4256, -58.7447,
-   'Instituto de idiomas con cursos para niños y adultos en inglés, portugués, francés e italiano. Grupos reducidos y preparación para exámenes internacionales.',
-   4, TRUE),
-  (5,  'Jardín Maternal Pequeños Pasos',           '30710000057', 'Calle Moreno 345, San Fernando',           'maternal@pequenospasos.instired.test',    -34.4421, -58.5594,
-   'Jardín maternal con salas desde los 45 días hasta los 2 años. Personal especializado en primera infancia y comunicación diaria con las familias.',
-   1, TRUE),
-  (6,  'Escuela Primaria Bilingüe St. Patrick',    '30710000065', 'Av. del Libertador 3100, Boulogne',        'admisiones@stpatrick.instired.test',      -34.4950, -58.5550,
-   'Escuela primaria bilingüe con enseñanza en español e inglés en jornada completa. Biblioteca bilingüe, campo de deportes y orientación a la inclusión.',
-   2, TRUE),
-  (7,  'Instituto Técnico San Martín',             '30710000073', 'Colectora Panamericana 4200, Benavídez',   'secretaria@itsanmartin.instired.test',    -34.4097, -58.6857,
-   'Instituto técnico con orientación en electrónica y programación. Talleres con prácticas profesionalizantes y convenios con empresas de la zona.',
-   3, TRUE),
-  (8,  'Escuela Primaria N° 31 Juana Manso',       '30710000081', 'Calle Belgrano 120, Escobar',              'primaria31@instired.test',                -34.3496, -58.7918,
-   'Escuela primaria de barrio con trayectoria de más de 40 años. Sala de computación, comedor escolar y actividades deportivas después del horario de clase.',
-   2, TRUE),
-  (9,  'Jardín de Infantes N° 915 Mundo Mágico',   '30710000103', 'Av. Eva Perón 980, Del Viso',              'jardin915@instired.test',                 -34.4559, -58.7992,
-   'Jardín de infantes con salas de 3 a 5 años. Cuenta con equipo de apoyo a la integración y espacios sensoriales para el trabajo con niños con discapacidad.',
-   1, TRUE),
-  (10, 'Escuela Secundaria para Adultos N° 703',   '30710000111', 'Av. Hipólito Yrigoyen 1800, Gral. Pacheco','adultos703@instired.test',                -34.4540, -58.6380,
-   'Escuela secundaria para jóvenes y adultos en turno noche. Plan de tres años con tutorías, régimen de asistencia flexible y orientación laboral.',
-   3, TRUE);
+  (1, 'Colegio Horizonte', '30790001016', 'Av. San Martín 2450, CABA', 'contacto.1@instired.test', -34.6022, -58.4712, 'Jardín, primaria y secundaria. Talleres de ciencias, biblioteca y acompañamiento a las familias.', 7, 1),
+  (2, 'Escuela Río de la Plata', '30790000028', 'Av. Cabildo 2850, CABA', 'contacto.2@instired.test', -34.5548, -58.4631, 'Educación primaria con proyectos de lectura, arte y cuidado del ambiente.', 2, 1),
+  (3, 'Secundaria del Parque', '30790000036', 'Av. Rivadavia 6200, CABA', 'contacto.3@instired.test', -34.6258, -58.4546, 'Nivel secundario con orientación en comunicación y talleres de tecnología.', 3, 1),
+  (4, 'Instituto de Idiomas Puentes', '30790000044', 'Av. Corrientes 1850, CABA', 'contacto.4@instired.test', -34.6042, -58.3935, 'Inglés, francés y portugués para jóvenes y adultos. Grupos por nivel y horarios de tarde y noche.', 4, 1),
+  (5, 'Jardín Rayuela', '30790000052', 'Av. Directorio 1450, CABA', 'contacto.5@instired.test', -34.6296, -58.4383, 'Salas de 3, 4 y 5 años. Juego, música y expresión corporal.', 1, 1),
+  (6, 'Colegio del Sur', '30790000060', 'Av. Montes de Oca 1450, CABA', 'contacto.6@instired.test', -34.649, -58.3745, 'Primaria y secundaria con actividades deportivas y proyectos comunitarios.', 6, 1),
+  (7, 'Instituto Amanecer', '30790000079', 'Av. Álvarez Jonte 3400, CABA', 'contacto.7@instired.test', -34.6118, -58.4903, 'Jardín y primaria con jornada completa y espacios de acompañamiento pedagógico.', 5, 1),
+  (8, 'Colegio Encuentro', '30790000087', 'Av. Córdoba 5100, CABA', 'contacto.8@instired.test', -34.59, -58.4364, 'Institución dada de baja para comprobar la búsqueda pública, la reactivación y el bloqueo de login.', 8, 0);
 
--- Discapacidades: 1 fila por institucion (TRUE = la institucion cuenta con
--- acceso o apoyo para esa condicion). El id coincide con Instituciones.id.
+  -- Discapacidades
 INSERT INTO Discapacidades (idInstitucion, movilidad, visual, auditiva, verbal, intelectual, sindromeDown, autismo) VALUES
-  (1,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (2,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE),
-  (3,  TRUE,  FALSE, TRUE,  TRUE,  FALSE, FALSE, FALSE),
-  (4,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (5,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (6,  TRUE,  FALSE, FALSE, TRUE,  TRUE,  FALSE, TRUE),
-  (7,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (8,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  (9,  TRUE,  FALSE, FALSE, TRUE,  TRUE,  TRUE,  TRUE),
-  (10, TRUE,  TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE);
-  
-  
+  (1, 1, 1, 1, 1, 1, 1, 1),
+  (2, 1, 0, 0, 0, 0, 1, 0),
+  (3, 0, 1, 0, 0, 0, 0, 1),
+  (4, 1, 0, 1, 0, 0, 0, 0),
+  (5, 0, 0, 0, 1, 1, 1, 1),
+  (6, 0, 0, 1, 0, 0, 0, 0),
+  (7, 1, 1, 0, 0, 1, 0, 1),
+  (8, 0, 0, 0, 0, 0, 0, 0);
+
+  -- IdiomaInstitucion
 INSERT INTO IdiomaInstitucion (idInstitucion, idIdioma) VALUES
-  (1, 1), (2, 1), (3, 1), (3, 2),
-  (4, 2), (4, 3), (4, 4), (4, 5),
-  (5, 1), (6, 1), (6, 2), (7, 1), (7, 2),
-  (8, 1), (9, 1), (10, 1);
+  (1, 1),
+  (1, 2),
+  (1, 3),
+  (2, 1),
+  (2, 2),
+  (3, 1),
+  (3, 2),
+  (4, 2),
+  (4, 3),
+  (4, 4),
+  (5, 1),
+  (6, 1),
+  (6, 2),
+  (7, 1),
+  (7, 5),
+  (8, 1),
+  (8, 2);
 
--- ---------------------------------------------------------------------
--- 5. Cursos (15). inscriptos arranca en 0 y se recalcula al final
---    (cuenta las postulaciones Confirmado de cada curso).
---    Los cursos 12, 13 y 15 son del ciclo 2027 (postulaciones en curso).
---    El curso 15 tiene capacidad 1 a proposito: sirve para probar el caso
---    de cupo completo.
--- ---------------------------------------------------------------------
-
+  -- Cursos
 INSERT INTO Cursos (id, idInstitucion, idTurno, cicloLectivo, idNivel, anio, nivelPersonalizado, division, capacidad, inscriptos) VALUES
-  (1,  1,  1, 2026, 1, NULL, 'Sala de 4',        'Azul',              20, 0),
-  (2,  1,  2, 2026, 1, NULL, 'Sala de 5',        'Roja',              22, 0),
-  (3,  2,  1, 2026, 2, 1,    NULL,               'A',                 28, 0),
-  (4,  2,  2, 2026, 2, 4,    NULL,               'B',                 28, 0),
-  (5,  3,  1, 2026, 3, 1,    NULL,               'A',                 35, 0),
-  (6,  3,  2, 2026, 3, 3,    NULL,               'C',                 35, 0),
-  (7,  4,  2, 2026, NULL, NULL, 'Kids 2',        '1',                 15, 0),
-  (8,  4,  3, 2026, NULL, NULL, 'Adults Beginner','Lunes y Miércoles', 12, 0),
-  (9,  5,  4, 2026, 1, NULL, 'Sala de 2',        'Amarilla',          12, 0),
-  (10, 6,  4, 2026, 2, 2,    '2nd Grade',        'A',                 24, 0),
-  (11, 7,  1, 2026, 3, 3,    NULL,               'B',                 30, 0),
-  (12, 8,  1, 2027, 2, 1,    NULL,               'A',                 26, 0),
-  (13, 9,  2, 2027, 1, NULL, 'Sala de 3',        'Verde',             18, 0),
-  (14, 10, 3, 2026, 3, 1,    NULL,               '1',                 25, 0),
-  (15, 9,  1, 2027, 1, NULL, 'Sala de 3',        'Naranja',           1,  0);
+  (1, 1, 1, @seed_anio + 1, 2, 1, NULL, 'A', 35, 31),
+  (2, 1, 1, @seed_anio + 1, 2, 1, NULL, 'B', 1, 1),
+  (3, 1, 1, @seed_anio + 1, 2, 1, NULL, 'C', 1, 0),
+  (4, 1, 1, @seed_anio + 1, 3, 1, NULL, 'A', 25, 5),
+  (5, 1, 1, @seed_anio + 1, 1, 5, NULL, 'A', 20, 18),
+  (6, 1, 1, @seed_anio - 1, 1, 4, NULL, 'A', 25, 3),
+  (7, 1, 1, @seed_anio, 1, 5, NULL, 'A', 25, 4),
+  (8, 1, 1, @seed_anio + 1, 2, 2, NULL, 'A', 30, 29),
+  (9, 2, 1, @seed_anio + 1, 2, 1, NULL, 'A', 25, 2),
+  (10, 3, 1, @seed_anio + 1, 3, 1, NULL, 'A', 25, 3),
+  (11, 4, 3, @seed_anio, NULL, NULL, 'Inglés A1', 'Lunes y miércoles', 20, 1),
+  (12, 4, 2, @seed_anio + 1, NULL, NULL, 'Inglés A2', 'Martes y jueves', 15, 0),
+  (13, 5, 1, @seed_anio + 1, 1, 5, NULL, 'Azul', 20, 16),
+  (14, 6, 1, @seed_anio + 1, 2, 1, NULL, 'A', 25, 4),
+  (15, 7, 4, @seed_anio + 1, 1, 4, NULL, 'Verde', 20, 0),
+  (16, 8, 1, @seed_anio + 1, 3, 1, NULL, 'A', 25, 5),
+  (17, 4, 1, @seed_anio, NULL, NULL, 'Francés A1', 'Sábados', 12, 0),
+  (30, 1, 2, @seed_anio + 1, 3, 1, NULL, 'B', 20, 20),
+  (31, 1, 1, @seed_anio + 1, 3, 2, NULL, 'B', 21, 1),
+  (32, 1, 2, @seed_anio + 1, 3, 3, NULL, 'B', 22, 2),
+  (33, 1, 1, @seed_anio + 1, 3, 4, NULL, 'B', 23, 3),
+  (34, 1, 2, @seed_anio + 1, 3, 5, NULL, 'B', 24, 4),
+  (35, 1, 1, @seed_anio + 1, 3, 6, NULL, 'B', 25, 5),
+  (36, 1, 2, @seed_anio + 1, 3, 1, NULL, 'C', 26, 6),
+  (37, 1, 1, @seed_anio + 1, 3, 2, NULL, 'C', 27, 7),
+  (38, 1, 2, @seed_anio + 1, 3, 3, NULL, 'C', 20, 0),
+  (39, 1, 1, @seed_anio + 1, 3, 4, NULL, 'C', 21, 1),
+  (40, 1, 2, @seed_anio + 1, 3, 5, NULL, 'C', 22, 2),
+  (41, 1, 1, @seed_anio + 1, 3, 6, NULL, 'C', 23, 3),
+  (42, 1, 2, @seed_anio + 1, 3, 1, NULL, 'D', 24, 4),
+  (43, 1, 1, @seed_anio + 1, 3, 2, NULL, 'D', 25, 25),
+  (44, 1, 2, @seed_anio + 1, 3, 3, NULL, 'D', 26, 6),
+  (45, 1, 1, @seed_anio + 1, 3, 4, NULL, 'D', 27, 7),
+  (46, 1, 2, @seed_anio + 1, 3, 5, NULL, 'D', 20, 0),
+  (47, 1, 1, @seed_anio + 1, 3, 6, NULL, 'D', 21, 1),
+  (48, 1, 2, @seed_anio + 1, 3, 1, NULL, 'E', 22, 2),
+  (49, 1, 1, @seed_anio + 1, 3, 2, NULL, 'E', 23, 3),
+  (50, 1, 2, @seed_anio + 1, 3, 3, NULL, 'E', 24, 4),
+  (51, 1, 1, @seed_anio + 1, 3, 4, NULL, 'E', 25, 5),
+  (52, 1, 2, @seed_anio + 1, 3, 5, NULL, 'E', 26, 6),
+  (53, 1, 1, @seed_anio + 1, 3, 6, NULL, 'E', 27, 7),
+  (54, 1, 2, @seed_anio + 1, 3, 1, NULL, 'F', 20, 0),
+  (55, 1, 1, @seed_anio + 1, 3, 2, NULL, 'F', 21, 1);
 
+  -- Imagenes
 INSERT INTO Imagenes (id, idInstitucion, urlImagen, descripcion) VALUES
-  (1,  1,  'https://instired.test/img/inst1/fachada.jpg',      'Fachada del jardín'),
-  (2,  1,  'https://instired.test/img/inst1/patio.jpg',        'Patio de juegos'),
-  (3,  2,  'https://instired.test/img/inst2/fachada.jpg',      'Frente de la escuela'),
-  (4,  2,  'https://instired.test/img/inst2/aula.jpg',         'Aula de primer grado'),
-  (5,  3,  'https://instired.test/img/inst3/fachada.jpg',      'Entrada principal'),
-  (6,  3,  'https://instired.test/img/inst3/laboratorio.jpg',  'Laboratorio de ciencias'),
-  (7,  4,  'https://instired.test/img/inst4/fachada.jpg',      'Sede del instituto'),
-  (8,  5,  'https://instired.test/img/inst5/sala.jpg',         'Sala de 2'),
-  (9,  6,  'https://instired.test/img/inst6/fachada.jpg',      'Fachada de la escuela'),
-  (10, 6,  'https://instired.test/img/inst6/biblioteca.jpg',   'Biblioteca bilingüe'),
-  (11, 7,  'https://instired.test/img/inst7/taller.jpg',       'Taller de electrónica'),
-  (12, 8,  'https://instired.test/img/inst8/fachada.jpg',      'Frente de la escuela'),
-  (13, 9,  'https://instired.test/img/inst9/patio.jpg',        'Patio del jardín'),
-  (14, 10, 'https://instired.test/img/inst10/fachada.jpg',     'Ingreso al turno noche');
+  (1, 1, 'imagenes-instituciones/5d5eb895788ae7dd3d74259a909b8327/imagen.png', 'Fachada ilustrada'),
+  (2, 1, 'imagenes-instituciones/835987fd446e1b3b4dc9bcdbbdd65987/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (3, 2, 'imagenes-instituciones/02e9952aa5c510604294256e8dd6963c/imagen.png', 'Fachada ilustrada'),
+  (4, 2, 'imagenes-instituciones/6677665089efa19a2a36782fc32d7b32/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (5, 3, 'imagenes-instituciones/12c92d1a87d572f664e65948dd7c541a/imagen.png', 'Fachada ilustrada'),
+  (6, 3, 'imagenes-instituciones/ae7f22437442c55c6e2068096f1e7b4b/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (7, 4, 'imagenes-instituciones/6d451084a59954c214daef5f1beac827/imagen.png', 'Fachada ilustrada'),
+  (8, 4, 'imagenes-instituciones/4d449f682b2b8c01f9edf5a96ce2f538/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (9, 5, 'imagenes-instituciones/4599de6406e3c7f9d1d5761bfcc7cb8a/imagen.png', 'Fachada ilustrada'),
+  (10, 5, 'imagenes-instituciones/344706124e2ae9a71172543bcb97c128/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (11, 6, 'imagenes-instituciones/7d471a903a6d2808b3fb9382f26d338e/imagen.png', 'Fachada ilustrada'),
+  (12, 6, 'imagenes-instituciones/87a525bc118cc05d1012481fb218d549/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (13, 7, 'imagenes-instituciones/59be8627181fa286a96c2d7daa179ff6/imagen.png', 'Fachada ilustrada'),
+  (14, 7, 'imagenes-instituciones/e9406d55be5084a7576973e639f9c4fe/imagen.png', 'Espacio de aprendizaje ilustrado'),
+  (15, 8, 'imagenes-instituciones/cfc2a910bcd6e9727f57d6f6c5a46f6c/imagen.png', 'Fachada ilustrada'),
+  (16, 8, 'imagenes-instituciones/cb83c611318f0eb1d96bd3728678ebe0/imagen.png', 'Espacio de aprendizaje ilustrado');
 
--- ---------------------------------------------------------------------
--- 6. Alumnos (13), Responsables (10), Administradores (12), ResponsablesPorAlumno (12)
---    Alumno 8 es Marcos (adulto, secundaria nocturna) y a la vez
---    responsable de Emma; no tiene responsable propio a proposito (es su
---    propio autogestor, mayor de edad).
---    Un alumno no tiene curso propio: sus cursos son las postulaciones en
---    estado Confirmado (PostulacionesAlumnos -> Cursos -> Instituciones).
---    Puede tener varios (el alumno 3 tiene dos).
--- ---------------------------------------------------------------------
-
+  -- Alumnos
 INSERT INTO Alumnos (id, idPersona) VALUES
-  (1,  20),
-  (2,  21),
-  (3,  22),
-  (4,  23),
-  (5,  24),
-  (6,  25),
-  (7,  26),
-  (8,  6),
-  (9,  27),
-  (10, 28),
-  (11, 29),
-  (12, 30),
-  (13, 31);
+  (1, 201),
+  (2, 202),
+  (3, 3),
+  (4, 204),
+  (5, 205),
+  (6, 206),
+  (7, 207),
+  (8, 208),
+  (9, 209),
+  (10, 210),
+  (20, 240),
+  (21, 241),
+  (22, 242),
+  (23, 243),
+  (24, 244),
+  (25, 245),
+  (26, 246),
+  (27, 247),
+  (28, 248),
+  (29, 249),
+  (30, 250),
+  (101, 401),
+  (102, 402),
+  (103, 403),
+  (104, 404),
+  (105, 405),
+  (106, 406),
+  (107, 407),
+  (108, 408),
+  (109, 409),
+  (110, 410),
+  (111, 411),
+  (112, 412),
+  (113, 413),
+  (114, 414),
+  (115, 415),
+  (116, 416),
+  (117, 417),
+  (118, 418),
+  (119, 419),
+  (120, 420),
+  (121, 421),
+  (122, 422),
+  (123, 423),
+  (124, 424),
+  (125, 425),
+  (126, 426),
+  (127, 427);
 
+  -- Responsables
 INSERT INTO Responsables (id, idPersona, idUsuario) VALUES
-  (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
-  (6, 6, 6), (7, 7, 7), (8, 8, 8), (9, 9, 9), (10, 10, 10);
+  (1, 1, 101),
+  (2, 2, 102),
+  (3, 3, 103),
+  (4, 4, 104),
+  (5, 5, 105),
+  (6, 6, 106),
+  (7, 7, 107),
+  (101, 301, 201),
+  (102, 302, 202),
+  (103, 303, 203),
+  (104, 304, 204),
+  (105, 305, 205),
+  (106, 306, 206),
+  (107, 307, 207),
+  (108, 308, 208),
+  (109, 309, 209),
+  (110, 310, 210),
+  (111, 311, 211),
+  (112, 312, 212),
+  (113, 313, 213),
+  (114, 314, 214),
+  (115, 315, 215),
+  (116, 316, 216),
+  (117, 317, 217),
+  (118, 318, 218),
+  (119, 319, 219),
+  (120, 320, 220),
+  (121, 321, 221),
+  (122, 322, 222),
+  (123, 323, 223),
+  (124, 324, 224),
+  (125, 325, 225),
+  (126, 326, 226),
+  (127, 327, 227);
 
---    Administrador 11: nuevo, sin institucion (solicitud pendiente).
---    Administrador 12: adicional de la institucion 3, creado por un
---    administrador activo (no tiene solicitud).
+  -- AdministradoresInstitucion
 INSERT INTO AdministradoresInstitucion (id, idPersona, idUsuario, idInstitucion) VALUES
-  (1,  11, 11, 1),
-  (2,  12, 12, 2),
-  (3,  13, 13, 3),
-  (4,  7,  14, 4),
-  (5,  14, 15, 5),
-  (6,  15, 16, 6),
-  (7,  16, 17, 7),
-  (8,  17, 18, 8),
-  (9,  18, 19, 9),
-  (10, 19, 20, 10),
-  (11, 32, 21, NULL),
-  (12, 33, 22, 3);
+  (1, 101, 10, 1),
+  (2, 102, 11, 1),
+  (3, 103, 12, 1),
+  (4, 104, 13, 2),
+  (5, 105, 14, 3),
+  (6, 106, 15, 4),
+  (7, 107, 16, 5),
+  (8, 108, 17, 6),
+  (9, 109, 18, 7),
+  (10, 110, 19, 8),
+  (11, 111, 20, NULL),
+  (12, 112, 21, NULL),
+  (13, 113, 22, NULL);
 
--- Un solo responsable por alumno. El alumno 8 (Marcos) no tiene ninguno: es su propio autogestor.
--- Roles: 1 Padre, 2 Madre, 3 Tutor legal, 4 Familiar a cargo (en este seed no se usa el 3).
--- Laura (1) y Carlos (2) tienen un hijo cada uno; Andrea (3) y Julian (9) / Valeria (10) tambien se reparten asi.
--- Rosa (8) es la abuela de Martina (alumno 11): Familiar a cargo.
+  -- ResponsablesPorAlumno
 INSERT INTO ResponsablesPorAlumno (id, idResponsable, idAlumno, idRol) VALUES
-  (1,  1,  1,  2),
-  (2,  2,  2,  1),
-  (3,  3,  3,  2),
-  (4,  3,  4,  2),
-  (5,  4,  5,  1),
-  (6,  4,  6,  1),
-  (7,  5,  7,  2),
-  (8,  6,  9,  1),
-  (9,  7,  10, 2),
-  (10, 8,  11, 4),
-  (11, 9,  12, 1),
-  (12, 10, 13, 2);
+  (1, 1, 1, 2),
+  (2, 1, 2, 2),
+  (3, 2, 4, 1),
+  (4, 2, 5, 1),
+  (5, 6, 6, 2),
+  (6, 1, 7, 2),
+  (7, 6, 8, 2),
+  (8, 7, 9, 3),
+  (9, 1, 10, 2),
+  (10, 1, 20, 2),
+  (11, 1, 21, 2),
+  (12, 1, 22, 2),
+  (13, 1, 23, 2),
+  (14, 1, 24, 2),
+  (15, 1, 25, 2),
+  (16, 1, 26, 2),
+  (17, 1, 27, 2),
+  (18, 1, 28, 2),
+  (19, 1, 29, 2),
+  (20, 1, 30, 2),
+  (21, 101, 101, 1),
+  (22, 102, 102, 2),
+  (23, 103, 103, 1),
+  (24, 104, 104, 2),
+  (25, 105, 105, 1),
+  (26, 106, 106, 2),
+  (27, 107, 107, 1),
+  (28, 108, 108, 2),
+  (29, 109, 109, 1),
+  (30, 110, 110, 2),
+  (31, 111, 111, 1),
+  (32, 112, 112, 2),
+  (33, 113, 113, 1),
+  (34, 114, 114, 2),
+  (35, 115, 115, 1),
+  (36, 116, 116, 2),
+  (37, 117, 117, 1),
+  (38, 118, 118, 2),
+  (39, 119, 119, 1),
+  (40, 120, 120, 2),
+  (41, 121, 121, 1),
+  (42, 122, 122, 2),
+  (43, 123, 123, 1),
+  (44, 124, 124, 2),
+  (45, 125, 125, 1),
+  (46, 126, 126, 2),
+  (47, 127, 127, 1);
 
--- ---------------------------------------------------------------------
--- 7. Postulaciones de alumnos a cursos (18)
---    Estados: 1 Pendiente (espera a la escuela), 2 Aceptado (la escuela
---    acepto y espera que el responsable confirme), 3 Confirmado (el
---    responsable confirmo: recien ahi se ocupa un lugar del curso),
---    4 Rechazado.
---    motivoRechazo se completa en las rechazadas.
---    - 1 a 11: confirmadas (los alumnos que ya cursan).
---    - 12, 13: pendientes de respuesta de la escuela.
---    - 14: rechazada por la escuela (falta documentacion).
---    - 15: aceptada por la escuela, esperando la confirmacion del responsable.
---    - 16: el alumno 3 cursa tambien un segundo curso (confirmada).
---    - 17 y 18: curso 15 (cupo 1). La 17 se confirmo y completo el cupo; la 18
---      estaba aceptada y se rechazo sola por cupo completo.
--- ---------------------------------------------------------------------
-
+  -- PostulacionesAlumnos
 INSERT INTO PostulacionesAlumnos (id, fecha, codigoSeguimiento, idCurso, idAlumno, idEstado, motivoRechazo) VALUES
-  (1,  '2025-11-12', 'PST-20251112-0001', 1,  1,  3, NULL),
-  (2,  '2025-11-12', 'PST-20251112-0002', 2,  2,  3, NULL),
-  (3,  '2025-11-20', 'PST-20251120-0003', 3,  3,  3, NULL),
-  (4,  '2025-11-20', 'PST-20251120-0004', 4,  4,  3, NULL),
-  (5,  '2025-12-03', 'PST-20251203-0005', 5,  5,  3, NULL),
-  (6,  '2025-12-03', 'PST-20251203-0006', 6,  6,  3, NULL),
-  (7,  '2026-02-10', 'PST-20260210-0007', 7,  7,  3, NULL),
-  (8,  '2026-02-16', 'PST-20260216-0008', 14, 8,  3, NULL),
-  (9,  '2025-12-15', 'PST-20251215-0009', 9,  9,  3, NULL),
-  (10, '2025-11-28', 'PST-20251128-0010', 10, 10, 3, NULL),
-  (11, '2025-12-09', 'PST-20251209-0011', 11, 11, 3, NULL),
-  (12, '2026-10-02', 'PST-20261002-0012', 12, 12, 1, NULL),
-  (13, '2026-10-05', 'PST-20261005-0013', 13, 13, 1, NULL),
-  (14, '2026-09-18', 'PST-20260918-0014', 11, 6,  4, 'Falta la partida de nacimiento del alumno.'),
-  (15, '2026-10-07', 'PST-20261007-0015', 13, 9,  2, NULL),
-  (16, '2026-02-25', 'PST-20260225-0016', 7,  3,  3, NULL),
-  (17, '2026-10-20', 'PST-20261020-0017', 15, 13, 3, NULL),
-  (18, '2026-10-12', 'PST-20261012-0018', 15, 9,  4, 'Cupo completo: el curso alcanzó su capacidad antes de que el responsable confirmara.');
+  (1, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000001', 1, 1, 3, NULL),
+  (2, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000002', 9, 1, 1, NULL),
+  (3, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000003', 14, 1, 4, 'La entrevista de admisión no fue aprobada.'),
+  (4, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000004', 4, 2, 1, NULL),
+  (5, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000005', 10, 2, 2, NULL),
+  (6, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000006', 11, 3, 3, NULL),
+  (7, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000007', 12, 3, 1, NULL),
+  (8, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000008', 2, 4, 3, NULL),
+  (9, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000009', 9, 4, 2, NULL),
+  (10, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000010', 13, 5, 1, NULL),
+  (11, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000011', 5, 5, 5, NULL),
+  (12, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000012', 1, 6, 3, NULL),
+  (13, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000013', 16, 8, 3, NULL),
+  (14, LEAST(CURDATE(), DATE(CONCAT(@seed_anio, '-02-10'))), 'PST-000014', 7, 1, 3, NULL),
+  (15, DATE(CONCAT(@seed_anio - 1, '-02-10')), 'PST-000015', 6, 1, 3, NULL),
+  (16, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000016', 11, 9, 2, NULL),
+  (17, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000017', 3, 20, 2, NULL),
+  (18, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000018', 3, 5, 2, NULL),
+  (19, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000019', 3, 21, 2, NULL),
+  (20, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000020', 1, 22, 1, NULL),
+  (21, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000021', 1, 23, 1, NULL),
+  (22, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000022', 1, 24, 1, NULL),
+  (23, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000023', 1, 25, 1, NULL),
+  (24, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000024', 1, 26, 1, NULL),
+  (25, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000025', 1, 27, 1, NULL),
+  (26, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000026', 1, 28, 1, NULL),
+  (27, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000027', 1, 29, 1, NULL),
+  (28, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000028', 1, 30, 1, NULL),
+  (29, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 'PST-000029', 4, 8, 1, NULL),
+  (101, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000101', 1, 101, 3, NULL),
+  (102, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000102', 1, 102, 3, NULL),
+  (103, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000103', 1, 103, 3, NULL),
+  (104, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000104', 1, 104, 3, NULL),
+  (105, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000105', 1, 105, 3, NULL),
+  (106, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000106', 1, 106, 3, NULL),
+  (107, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000107', 1, 107, 3, NULL),
+  (108, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000108', 1, 108, 3, NULL),
+  (109, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000109', 1, 109, 3, NULL),
+  (110, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000110', 1, 110, 3, NULL),
+  (111, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000111', 1, 111, 3, NULL),
+  (112, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000112', 1, 112, 3, NULL),
+  (113, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000113', 1, 113, 3, NULL),
+  (114, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000114', 1, 114, 3, NULL),
+  (115, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000115', 1, 115, 3, NULL),
+  (116, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000116', 1, 116, 3, NULL),
+  (117, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000117', 1, 117, 3, NULL),
+  (118, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000118', 1, 118, 3, NULL),
+  (119, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000119', 1, 119, 3, NULL),
+  (120, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000120', 1, 120, 3, NULL),
+  (121, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000121', 1, 121, 3, NULL),
+  (122, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000122', 1, 122, 3, NULL),
+  (123, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000123', 1, 123, 3, NULL),
+  (124, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000124', 1, 124, 3, NULL),
+  (125, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000125', 1, 125, 3, NULL),
+  (126, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000126', 1, 126, 3, NULL),
+  (127, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 12 DAY)), 'PST-000127', 1, 127, 3, NULL);
 
--- ---------------------------------------------------------------------
--- 7b. DocumentosPostulacion (9): archivos que adjunta el responsable al
---     postular. Cada postulacion puede tener cantidad distinta de documentos (por certificados de discapacidad por ejemplo)
---     - Las rutas son nombres de archivo ficticios: no existen en disco.
---     - La 14 (rechazada) solo tiene el DNI: le falta la partida de nacimiento
---       y ese es el motivo de rechazo.
--- ---------------------------------------------------------------------
-
+  -- DocumentosPostulacion
 INSERT INTO DocumentosPostulacion (id, idPostulacionAlumnos, descripcion, ruta) VALUES
-  (1, 1,  'DNI del alumno',          'post1_dni.pdf'),
-  (2, 1,  'Partida de nacimiento',   'post1_partida.pdf'),
-  (3, 12, 'DNI del alumno',          'post12_dni.pdf'),
-  (4, 12, 'Partida de nacimiento',   'post12_partida.pdf'),
-  (5, 13, 'DNI del alumno',          'post13_dni.pdf'),
-  (6, 13, 'Certificado de estudios', 'post13_certificado.pdf'),
-  (7, 14, 'DNI del alumno',          'post14_dni.pdf'),
-  (8, 15, 'DNI del alumno',          'post15_dni.pdf'),
-  (9, 15, 'Certificado de estudios', 'post15_certificado.pdf');
-  
--- ---------------------------------------------------------------------
--- 8. PostulacionesAdminInstitucion (12): solicitudes de alta de administrador
---    que DevCo aprueba o rechaza. Usa el mismo catalogo de estados
---    (Pendiente; Confirmado cuando DevCo la acepta; Rechazado).
---    - El administrador se postula primero como usuario y declara el nombre
---      y el CUIT de su institucion junto con tres documentos (constancia
---      fiscal, habilitacion y constancia laboral). DevCo los compara a mano y recien cuando
---      acepta, el administrador carga la institucion. Por eso la tabla no
---      tiene idInstitucion: el vinculo queda en
---      AdministradoresInstitucion.idInstitucion.
---    - En las aceptadas, nombreInstitucion y cuitInstitucion coinciden con
---      los de la fila de Instituciones que se creo despues.
---    - Las rutas son nombres de archivo ficticios: no existen en disco.
---    - 9: rechazada por DevCo (con motivo). El administrador 10 la volvio
---      a enviar y es la 11 (fila nueva; la 9 conserva su motivo).
---    - 12: pendiente del administrador 11 (usuario inactivo y sin
---      institucion todavia; la institucion declarada aun no existe).
---    - El administrador 8 (usuario inactivo) es un admin dado de baja
---      despues de ser aceptado.
---    - Los administradores adicionales (como el 12) no tienen solicitud, 
---      los crea un administrador activo y quedan activos de inmediato
--- ---------------------------------------------------------------------
+  (1, 1, 'DNI del alumno - Frente', 'postulaciones-alumnos/6653257c528de7040015aba1a6ba5895/documento-0.pdf'),
+  (2, 1, 'DNI del alumno - Dorso', 'postulaciones-alumnos/6653257c528de7040015aba1a6ba5895/documento-1.pdf'),
+  (3, 1, 'Partida de nacimiento', 'postulaciones-alumnos/6653257c528de7040015aba1a6ba5895/documento-2.pdf'),
+  (4, 2, 'DNI del alumno - Frente', 'postulaciones-alumnos/300ed2e39c4225460ed5dfb005483dec/documento-0.pdf'),
+  (5, 2, 'DNI del alumno - Dorso', 'postulaciones-alumnos/300ed2e39c4225460ed5dfb005483dec/documento-1.pdf'),
+  (6, 2, 'Partida de nacimiento', 'postulaciones-alumnos/300ed2e39c4225460ed5dfb005483dec/documento-2.pdf'),
+  (7, 3, 'DNI del alumno - Frente', 'postulaciones-alumnos/366cb6bc87f91024bb20720631fbc917/documento-0.pdf'),
+  (8, 3, 'DNI del alumno - Dorso', 'postulaciones-alumnos/366cb6bc87f91024bb20720631fbc917/documento-1.pdf'),
+  (9, 3, 'Partida de nacimiento', 'postulaciones-alumnos/366cb6bc87f91024bb20720631fbc917/documento-2.pdf'),
+  (10, 4, 'DNI del alumno - Frente', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-0.pdf'),
+  (11, 4, 'DNI del alumno - Dorso', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-1.pdf'),
+  (12, 4, 'Partida de nacimiento', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-2.pdf'),
+  (13, 4, 'Certificado de estudios', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-3.pdf'),
+  (14, 4, 'Certificado de discapacidad', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-4.pdf'),
+  (15, 4, 'Certificado de discapacidad', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-5.pdf'),
+  (16, 4, 'Otro documento: Informe de adaptación', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-6.pdf'),
+  (17, 4, 'Otro documento: Autorización de retiro', 'postulaciones-alumnos/c236719fd7b512b61763549b23c92ce8/documento-7.pdf'),
+  (18, 5, 'DNI del alumno - Frente', 'postulaciones-alumnos/d88f648089d39f8ba34ff106c8b2690a/documento-0.pdf'),
+  (19, 5, 'DNI del alumno - Dorso', 'postulaciones-alumnos/d88f648089d39f8ba34ff106c8b2690a/documento-1.pdf'),
+  (20, 5, 'Partida de nacimiento', 'postulaciones-alumnos/d88f648089d39f8ba34ff106c8b2690a/documento-2.pdf'),
+  (21, 6, 'DNI del alumno - Frente', 'postulaciones-alumnos/677f3b04ea6cce42dda083fb4ccb2839/documento-0.pdf'),
+  (22, 6, 'DNI del alumno - Dorso', 'postulaciones-alumnos/677f3b04ea6cce42dda083fb4ccb2839/documento-1.pdf'),
+  (23, 7, 'DNI del alumno - Frente', 'postulaciones-alumnos/0e40b9e8bd0cbc4e9ffacbaa44b3e79c/documento-0.pdf'),
+  (24, 7, 'DNI del alumno - Dorso', 'postulaciones-alumnos/0e40b9e8bd0cbc4e9ffacbaa44b3e79c/documento-1.pdf'),
+  (25, 8, 'DNI del alumno - Frente', 'postulaciones-alumnos/76ea7d5aad23e3d628773b7bbe8abe4c/documento-0.pdf'),
+  (26, 8, 'DNI del alumno - Dorso', 'postulaciones-alumnos/76ea7d5aad23e3d628773b7bbe8abe4c/documento-1.pdf'),
+  (27, 8, 'Partida de nacimiento', 'postulaciones-alumnos/76ea7d5aad23e3d628773b7bbe8abe4c/documento-2.pdf'),
+  (28, 9, 'DNI del alumno - Frente', 'postulaciones-alumnos/30f74aa5db1abb1b60345f8b3edb0c7e/documento-0.pdf'),
+  (29, 9, 'DNI del alumno - Dorso', 'postulaciones-alumnos/30f74aa5db1abb1b60345f8b3edb0c7e/documento-1.pdf'),
+  (30, 9, 'Partida de nacimiento', 'postulaciones-alumnos/30f74aa5db1abb1b60345f8b3edb0c7e/documento-2.pdf'),
+  (31, 10, 'DNI del alumno - Frente', 'postulaciones-alumnos/c9379d89c82fd3b51c15eea7f5bd690d/documento-0.pdf'),
+  (32, 10, 'DNI del alumno - Dorso', 'postulaciones-alumnos/c9379d89c82fd3b51c15eea7f5bd690d/documento-1.pdf'),
+  (33, 10, 'Partida de nacimiento', 'postulaciones-alumnos/c9379d89c82fd3b51c15eea7f5bd690d/documento-2.pdf'),
+  (34, 11, 'DNI del alumno - Frente', 'postulaciones-alumnos/8cae6b7b7748f377e4cff8369f32b4a7/documento-0.pdf'),
+  (35, 11, 'DNI del alumno - Dorso', 'postulaciones-alumnos/8cae6b7b7748f377e4cff8369f32b4a7/documento-1.pdf'),
+  (36, 11, 'Partida de nacimiento', 'postulaciones-alumnos/8cae6b7b7748f377e4cff8369f32b4a7/documento-2.pdf'),
+  (37, 12, 'DNI del alumno - Frente', 'postulaciones-alumnos/ee7b7f445f9d5a20da4189644b50a7cf/documento-0.pdf'),
+  (38, 12, 'DNI del alumno - Dorso', 'postulaciones-alumnos/ee7b7f445f9d5a20da4189644b50a7cf/documento-1.pdf'),
+  (39, 12, 'Partida de nacimiento', 'postulaciones-alumnos/ee7b7f445f9d5a20da4189644b50a7cf/documento-2.pdf'),
+  (40, 13, 'DNI del alumno - Frente', 'postulaciones-alumnos/d3349ab0cab4749337abecaac3f631c1/documento-0.pdf'),
+  (41, 13, 'DNI del alumno - Dorso', 'postulaciones-alumnos/d3349ab0cab4749337abecaac3f631c1/documento-1.pdf'),
+  (42, 13, 'Partida de nacimiento', 'postulaciones-alumnos/d3349ab0cab4749337abecaac3f631c1/documento-2.pdf'),
+  (43, 14, 'DNI del alumno - Frente', 'postulaciones-alumnos/1533748e0fe7949f23d077c9cdc5014d/documento-0.pdf'),
+  (44, 14, 'DNI del alumno - Dorso', 'postulaciones-alumnos/1533748e0fe7949f23d077c9cdc5014d/documento-1.pdf'),
+  (45, 14, 'Partida de nacimiento', 'postulaciones-alumnos/1533748e0fe7949f23d077c9cdc5014d/documento-2.pdf'),
+  (46, 15, 'DNI del alumno - Frente', 'postulaciones-alumnos/96596eb1a6e243e71ce6e4da65cc2f1d/documento-0.pdf'),
+  (47, 15, 'DNI del alumno - Dorso', 'postulaciones-alumnos/96596eb1a6e243e71ce6e4da65cc2f1d/documento-1.pdf'),
+  (48, 15, 'Partida de nacimiento', 'postulaciones-alumnos/96596eb1a6e243e71ce6e4da65cc2f1d/documento-2.pdf'),
+  (49, 16, 'DNI del alumno - Frente', 'postulaciones-alumnos/640873bb2ea2ae758ba47de7b2381eff/documento-0.pdf'),
+  (50, 16, 'DNI del alumno - Dorso', 'postulaciones-alumnos/640873bb2ea2ae758ba47de7b2381eff/documento-1.pdf'),
+  (51, 16, 'Partida de nacimiento', 'postulaciones-alumnos/640873bb2ea2ae758ba47de7b2381eff/documento-2.pdf'),
+  (52, 17, 'DNI del alumno - Frente', 'postulaciones-alumnos/8cf01fa8b2ddd2be2148d20076356477/documento-0.pdf'),
+  (53, 17, 'DNI del alumno - Dorso', 'postulaciones-alumnos/8cf01fa8b2ddd2be2148d20076356477/documento-1.pdf'),
+  (54, 17, 'Partida de nacimiento', 'postulaciones-alumnos/8cf01fa8b2ddd2be2148d20076356477/documento-2.pdf'),
+  (55, 18, 'DNI del alumno - Frente', 'postulaciones-alumnos/1014dfa00732dd50b2fc1f604fe6ef94/documento-0.pdf'),
+  (56, 18, 'DNI del alumno - Dorso', 'postulaciones-alumnos/1014dfa00732dd50b2fc1f604fe6ef94/documento-1.pdf'),
+  (57, 18, 'Partida de nacimiento', 'postulaciones-alumnos/1014dfa00732dd50b2fc1f604fe6ef94/documento-2.pdf'),
+  (58, 19, 'DNI del alumno - Frente', 'postulaciones-alumnos/4d9dae88c2b637bfea0f9dd634fc9f06/documento-0.pdf'),
+  (59, 19, 'DNI del alumno - Dorso', 'postulaciones-alumnos/4d9dae88c2b637bfea0f9dd634fc9f06/documento-1.pdf'),
+  (60, 19, 'Partida de nacimiento', 'postulaciones-alumnos/4d9dae88c2b637bfea0f9dd634fc9f06/documento-2.pdf'),
+  (61, 20, 'DNI del alumno - Frente', 'postulaciones-alumnos/18ab922dc576acdccaf5a5748d2a251c/documento-0.pdf'),
+  (62, 20, 'DNI del alumno - Dorso', 'postulaciones-alumnos/18ab922dc576acdccaf5a5748d2a251c/documento-1.pdf'),
+  (63, 20, 'Partida de nacimiento', 'postulaciones-alumnos/18ab922dc576acdccaf5a5748d2a251c/documento-2.pdf'),
+  (64, 21, 'DNI del alumno - Frente', 'postulaciones-alumnos/e76e99975abbb96cb3ddd4c88c450996/documento-0.pdf'),
+  (65, 21, 'DNI del alumno - Dorso', 'postulaciones-alumnos/e76e99975abbb96cb3ddd4c88c450996/documento-1.pdf'),
+  (66, 21, 'Partida de nacimiento', 'postulaciones-alumnos/e76e99975abbb96cb3ddd4c88c450996/documento-2.pdf'),
+  (67, 22, 'DNI del alumno - Frente', 'postulaciones-alumnos/d2cc304c806a13bc5d21f244193273f4/documento-0.pdf'),
+  (68, 22, 'DNI del alumno - Dorso', 'postulaciones-alumnos/d2cc304c806a13bc5d21f244193273f4/documento-1.pdf'),
+  (69, 22, 'Partida de nacimiento', 'postulaciones-alumnos/d2cc304c806a13bc5d21f244193273f4/documento-2.pdf'),
+  (70, 23, 'DNI del alumno - Frente', 'postulaciones-alumnos/5d6b42cb3fe9451b8f652adff5458b4b/documento-0.pdf'),
+  (71, 23, 'DNI del alumno - Dorso', 'postulaciones-alumnos/5d6b42cb3fe9451b8f652adff5458b4b/documento-1.pdf'),
+  (72, 23, 'Partida de nacimiento', 'postulaciones-alumnos/5d6b42cb3fe9451b8f652adff5458b4b/documento-2.pdf'),
+  (73, 24, 'DNI del alumno - Frente', 'postulaciones-alumnos/1c30db478b16b474768aa9e8690ff524/documento-0.pdf'),
+  (74, 24, 'DNI del alumno - Dorso', 'postulaciones-alumnos/1c30db478b16b474768aa9e8690ff524/documento-1.pdf'),
+  (75, 24, 'Partida de nacimiento', 'postulaciones-alumnos/1c30db478b16b474768aa9e8690ff524/documento-2.pdf'),
+  (76, 25, 'DNI del alumno - Frente', 'postulaciones-alumnos/68e5c4f8d9b8f7e49a4768655908e81f/documento-0.pdf'),
+  (77, 25, 'DNI del alumno - Dorso', 'postulaciones-alumnos/68e5c4f8d9b8f7e49a4768655908e81f/documento-1.pdf'),
+  (78, 25, 'Partida de nacimiento', 'postulaciones-alumnos/68e5c4f8d9b8f7e49a4768655908e81f/documento-2.pdf'),
+  (79, 26, 'DNI del alumno - Frente', 'postulaciones-alumnos/9090fc8d5eac1534dd3a0ede643030fb/documento-0.pdf'),
+  (80, 26, 'DNI del alumno - Dorso', 'postulaciones-alumnos/9090fc8d5eac1534dd3a0ede643030fb/documento-1.pdf'),
+  (81, 26, 'Partida de nacimiento', 'postulaciones-alumnos/9090fc8d5eac1534dd3a0ede643030fb/documento-2.pdf'),
+  (82, 27, 'DNI del alumno - Frente', 'postulaciones-alumnos/950be21d8e08e0dc6ba486356b545929/documento-0.pdf'),
+  (83, 27, 'DNI del alumno - Dorso', 'postulaciones-alumnos/950be21d8e08e0dc6ba486356b545929/documento-1.pdf'),
+  (84, 27, 'Partida de nacimiento', 'postulaciones-alumnos/950be21d8e08e0dc6ba486356b545929/documento-2.pdf'),
+  (85, 28, 'DNI del alumno - Frente', 'postulaciones-alumnos/84b1d259cf00cd6c529842f28f0204ab/documento-0.pdf'),
+  (86, 28, 'DNI del alumno - Dorso', 'postulaciones-alumnos/84b1d259cf00cd6c529842f28f0204ab/documento-1.pdf'),
+  (87, 28, 'Partida de nacimiento', 'postulaciones-alumnos/84b1d259cf00cd6c529842f28f0204ab/documento-2.pdf'),
+  (88, 29, 'DNI del alumno - Frente', 'postulaciones-alumnos/58d3dc597f291d3bfbe227cdad8bd195/documento-0.pdf'),
+  (89, 29, 'DNI del alumno - Dorso', 'postulaciones-alumnos/58d3dc597f291d3bfbe227cdad8bd195/documento-1.pdf'),
+  (90, 29, 'Partida de nacimiento', 'postulaciones-alumnos/58d3dc597f291d3bfbe227cdad8bd195/documento-2.pdf'),
+  (91, 101, 'DNI del alumno - Frente', 'postulaciones-alumnos/0d7979ea9629fc6a2da5d3a9db836c32/documento-0.pdf'),
+  (92, 101, 'DNI del alumno - Dorso', 'postulaciones-alumnos/0d7979ea9629fc6a2da5d3a9db836c32/documento-1.pdf'),
+  (93, 101, 'Partida de nacimiento', 'postulaciones-alumnos/0d7979ea9629fc6a2da5d3a9db836c32/documento-2.pdf'),
+  (94, 102, 'DNI del alumno - Frente', 'postulaciones-alumnos/29167532a74eec6ade3d15e66d3e680e/documento-0.pdf'),
+  (95, 102, 'DNI del alumno - Dorso', 'postulaciones-alumnos/29167532a74eec6ade3d15e66d3e680e/documento-1.pdf'),
+  (96, 102, 'Partida de nacimiento', 'postulaciones-alumnos/29167532a74eec6ade3d15e66d3e680e/documento-2.pdf'),
+  (97, 103, 'DNI del alumno - Frente', 'postulaciones-alumnos/cc05d8a3b0b9f823d87fea851951f489/documento-0.pdf'),
+  (98, 103, 'DNI del alumno - Dorso', 'postulaciones-alumnos/cc05d8a3b0b9f823d87fea851951f489/documento-1.pdf'),
+  (99, 103, 'Partida de nacimiento', 'postulaciones-alumnos/cc05d8a3b0b9f823d87fea851951f489/documento-2.pdf'),
+  (100, 104, 'DNI del alumno - Frente', 'postulaciones-alumnos/48dc7822558eaeb88fd139ecef79a547/documento-0.pdf'),
+  (101, 104, 'DNI del alumno - Dorso', 'postulaciones-alumnos/48dc7822558eaeb88fd139ecef79a547/documento-1.pdf'),
+  (102, 104, 'Partida de nacimiento', 'postulaciones-alumnos/48dc7822558eaeb88fd139ecef79a547/documento-2.pdf'),
+  (103, 105, 'DNI del alumno - Frente', 'postulaciones-alumnos/59f7b67a1567ed7d377a128b7db468ec/documento-0.pdf'),
+  (104, 105, 'DNI del alumno - Dorso', 'postulaciones-alumnos/59f7b67a1567ed7d377a128b7db468ec/documento-1.pdf'),
+  (105, 105, 'Partida de nacimiento', 'postulaciones-alumnos/59f7b67a1567ed7d377a128b7db468ec/documento-2.pdf'),
+  (106, 106, 'DNI del alumno - Frente', 'postulaciones-alumnos/8413790d5d4aa0ba3b7964e5604f6839/documento-0.pdf'),
+  (107, 106, 'DNI del alumno - Dorso', 'postulaciones-alumnos/8413790d5d4aa0ba3b7964e5604f6839/documento-1.pdf'),
+  (108, 106, 'Partida de nacimiento', 'postulaciones-alumnos/8413790d5d4aa0ba3b7964e5604f6839/documento-2.pdf'),
+  (109, 107, 'DNI del alumno - Frente', 'postulaciones-alumnos/11caf75f3f810971671fa534310ae5f4/documento-0.pdf'),
+  (110, 107, 'DNI del alumno - Dorso', 'postulaciones-alumnos/11caf75f3f810971671fa534310ae5f4/documento-1.pdf'),
+  (111, 107, 'Partida de nacimiento', 'postulaciones-alumnos/11caf75f3f810971671fa534310ae5f4/documento-2.pdf'),
+  (112, 108, 'DNI del alumno - Frente', 'postulaciones-alumnos/13ec571e6e85889040fc3a1a9ce793a4/documento-0.pdf'),
+  (113, 108, 'DNI del alumno - Dorso', 'postulaciones-alumnos/13ec571e6e85889040fc3a1a9ce793a4/documento-1.pdf'),
+  (114, 108, 'Partida de nacimiento', 'postulaciones-alumnos/13ec571e6e85889040fc3a1a9ce793a4/documento-2.pdf'),
+  (115, 109, 'DNI del alumno - Frente', 'postulaciones-alumnos/e1dbd33507d98866fc72d89a1722cd11/documento-0.pdf'),
+  (116, 109, 'DNI del alumno - Dorso', 'postulaciones-alumnos/e1dbd33507d98866fc72d89a1722cd11/documento-1.pdf'),
+  (117, 109, 'Partida de nacimiento', 'postulaciones-alumnos/e1dbd33507d98866fc72d89a1722cd11/documento-2.pdf'),
+  (118, 110, 'DNI del alumno - Frente', 'postulaciones-alumnos/77075a1847638de780c72bda1021f448/documento-0.pdf'),
+  (119, 110, 'DNI del alumno - Dorso', 'postulaciones-alumnos/77075a1847638de780c72bda1021f448/documento-1.pdf'),
+  (120, 110, 'Partida de nacimiento', 'postulaciones-alumnos/77075a1847638de780c72bda1021f448/documento-2.pdf'),
+  (121, 111, 'DNI del alumno - Frente', 'postulaciones-alumnos/2374b79d09ce2c2fa36c82aeee9b4e8a/documento-0.pdf'),
+  (122, 111, 'DNI del alumno - Dorso', 'postulaciones-alumnos/2374b79d09ce2c2fa36c82aeee9b4e8a/documento-1.pdf'),
+  (123, 111, 'Partida de nacimiento', 'postulaciones-alumnos/2374b79d09ce2c2fa36c82aeee9b4e8a/documento-2.pdf'),
+  (124, 112, 'DNI del alumno - Frente', 'postulaciones-alumnos/754528ca6111335d5dfe8139883bd3bb/documento-0.pdf'),
+  (125, 112, 'DNI del alumno - Dorso', 'postulaciones-alumnos/754528ca6111335d5dfe8139883bd3bb/documento-1.pdf'),
+  (126, 112, 'Partida de nacimiento', 'postulaciones-alumnos/754528ca6111335d5dfe8139883bd3bb/documento-2.pdf'),
+  (127, 113, 'DNI del alumno - Frente', 'postulaciones-alumnos/b04559b1ca2bff1ca868efc21bc91fa6/documento-0.pdf'),
+  (128, 113, 'DNI del alumno - Dorso', 'postulaciones-alumnos/b04559b1ca2bff1ca868efc21bc91fa6/documento-1.pdf'),
+  (129, 113, 'Partida de nacimiento', 'postulaciones-alumnos/b04559b1ca2bff1ca868efc21bc91fa6/documento-2.pdf'),
+  (130, 114, 'DNI del alumno - Frente', 'postulaciones-alumnos/1c8da53f24b302d726b27be1ba6f2220/documento-0.pdf'),
+  (131, 114, 'DNI del alumno - Dorso', 'postulaciones-alumnos/1c8da53f24b302d726b27be1ba6f2220/documento-1.pdf'),
+  (132, 114, 'Partida de nacimiento', 'postulaciones-alumnos/1c8da53f24b302d726b27be1ba6f2220/documento-2.pdf'),
+  (133, 115, 'DNI del alumno - Frente', 'postulaciones-alumnos/96faff0ee56022a92478075e5cd033c5/documento-0.pdf'),
+  (134, 115, 'DNI del alumno - Dorso', 'postulaciones-alumnos/96faff0ee56022a92478075e5cd033c5/documento-1.pdf'),
+  (135, 115, 'Partida de nacimiento', 'postulaciones-alumnos/96faff0ee56022a92478075e5cd033c5/documento-2.pdf'),
+  (136, 116, 'DNI del alumno - Frente', 'postulaciones-alumnos/b60ccf5e79d2289357b55a986f3bb420/documento-0.pdf'),
+  (137, 116, 'DNI del alumno - Dorso', 'postulaciones-alumnos/b60ccf5e79d2289357b55a986f3bb420/documento-1.pdf'),
+  (138, 116, 'Partida de nacimiento', 'postulaciones-alumnos/b60ccf5e79d2289357b55a986f3bb420/documento-2.pdf'),
+  (139, 117, 'DNI del alumno - Frente', 'postulaciones-alumnos/90fe8e695a7229e84eda1c90e10e5089/documento-0.pdf'),
+  (140, 117, 'DNI del alumno - Dorso', 'postulaciones-alumnos/90fe8e695a7229e84eda1c90e10e5089/documento-1.pdf'),
+  (141, 117, 'Partida de nacimiento', 'postulaciones-alumnos/90fe8e695a7229e84eda1c90e10e5089/documento-2.pdf'),
+  (142, 118, 'DNI del alumno - Frente', 'postulaciones-alumnos/99876d7d3769756e670d7d05982322fa/documento-0.pdf'),
+  (143, 118, 'DNI del alumno - Dorso', 'postulaciones-alumnos/99876d7d3769756e670d7d05982322fa/documento-1.pdf'),
+  (144, 118, 'Partida de nacimiento', 'postulaciones-alumnos/99876d7d3769756e670d7d05982322fa/documento-2.pdf'),
+  (145, 119, 'DNI del alumno - Frente', 'postulaciones-alumnos/bfc4bf1ee5cac4156ee47285a86103f4/documento-0.pdf'),
+  (146, 119, 'DNI del alumno - Dorso', 'postulaciones-alumnos/bfc4bf1ee5cac4156ee47285a86103f4/documento-1.pdf'),
+  (147, 119, 'Partida de nacimiento', 'postulaciones-alumnos/bfc4bf1ee5cac4156ee47285a86103f4/documento-2.pdf'),
+  (148, 120, 'DNI del alumno - Frente', 'postulaciones-alumnos/3861e73ee0f0a67d7b839245bcb46cff/documento-0.pdf'),
+  (149, 120, 'DNI del alumno - Dorso', 'postulaciones-alumnos/3861e73ee0f0a67d7b839245bcb46cff/documento-1.pdf'),
+  (150, 120, 'Partida de nacimiento', 'postulaciones-alumnos/3861e73ee0f0a67d7b839245bcb46cff/documento-2.pdf'),
+  (151, 121, 'DNI del alumno - Frente', 'postulaciones-alumnos/ea236e4f40390bc9b7ec614f2901315a/documento-0.pdf'),
+  (152, 121, 'DNI del alumno - Dorso', 'postulaciones-alumnos/ea236e4f40390bc9b7ec614f2901315a/documento-1.pdf'),
+  (153, 121, 'Partida de nacimiento', 'postulaciones-alumnos/ea236e4f40390bc9b7ec614f2901315a/documento-2.pdf'),
+  (154, 122, 'DNI del alumno - Frente', 'postulaciones-alumnos/3d1f96021867a132570eca12f4bb867a/documento-0.pdf'),
+  (155, 122, 'DNI del alumno - Dorso', 'postulaciones-alumnos/3d1f96021867a132570eca12f4bb867a/documento-1.pdf'),
+  (156, 122, 'Partida de nacimiento', 'postulaciones-alumnos/3d1f96021867a132570eca12f4bb867a/documento-2.pdf'),
+  (157, 123, 'DNI del alumno - Frente', 'postulaciones-alumnos/3f7636a8b4b8ef74cc72e52573b4fba9/documento-0.pdf'),
+  (158, 123, 'DNI del alumno - Dorso', 'postulaciones-alumnos/3f7636a8b4b8ef74cc72e52573b4fba9/documento-1.pdf'),
+  (159, 123, 'Partida de nacimiento', 'postulaciones-alumnos/3f7636a8b4b8ef74cc72e52573b4fba9/documento-2.pdf'),
+  (160, 124, 'DNI del alumno - Frente', 'postulaciones-alumnos/2f9fe91213f7a11e6547eb8a13eab02c/documento-0.pdf'),
+  (161, 124, 'DNI del alumno - Dorso', 'postulaciones-alumnos/2f9fe91213f7a11e6547eb8a13eab02c/documento-1.pdf'),
+  (162, 124, 'Partida de nacimiento', 'postulaciones-alumnos/2f9fe91213f7a11e6547eb8a13eab02c/documento-2.pdf'),
+  (163, 125, 'DNI del alumno - Frente', 'postulaciones-alumnos/aa65d96b096702d1ef37ea77cd115d75/documento-0.pdf'),
+  (164, 125, 'DNI del alumno - Dorso', 'postulaciones-alumnos/aa65d96b096702d1ef37ea77cd115d75/documento-1.pdf'),
+  (165, 125, 'Partida de nacimiento', 'postulaciones-alumnos/aa65d96b096702d1ef37ea77cd115d75/documento-2.pdf'),
+  (166, 126, 'DNI del alumno - Frente', 'postulaciones-alumnos/70506a4a78c00799d8ef971769c0af9a/documento-0.pdf'),
+  (167, 126, 'DNI del alumno - Dorso', 'postulaciones-alumnos/70506a4a78c00799d8ef971769c0af9a/documento-1.pdf'),
+  (168, 126, 'Partida de nacimiento', 'postulaciones-alumnos/70506a4a78c00799d8ef971769c0af9a/documento-2.pdf'),
+  (169, 127, 'DNI del alumno - Frente', 'postulaciones-alumnos/c7a143111a1be58496530f04b8bc6276/documento-0.pdf'),
+  (170, 127, 'DNI del alumno - Dorso', 'postulaciones-alumnos/c7a143111a1be58496530f04b8bc6276/documento-1.pdf'),
+  (171, 127, 'Partida de nacimiento', 'postulaciones-alumnos/c7a143111a1be58496530f04b8bc6276/documento-2.pdf');
 
-INSERT INTO PostulacionesAdminInstitucion
-  (id, fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado,
-   nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, rutaConstanciaLaboral, motivoRechazo) VALUES
-  (1,  '2025-09-08', 'PAI-20250908-0001', 1,  3,
-   'Jardín de Infantes N° 902 Arco Iris',        '30710000014', 'constancia_inst1.pdf',  'habilitacion_inst1.pdf', 'laboral_inst1.pdf',  NULL),
-  (2,  '2025-09-10', 'PAI-20250910-0002', 2,  3,
-   'Escuela Primaria N° 14 Domingo F. Sarmiento','30710000022', 'constancia_inst2.pdf',  'habilitacion_inst2.pdf', 'laboral_inst2.pdf',  NULL),
-  (3,  '2025-09-15', 'PAI-20250915-0003', 3,  3,
-   'Escuela Secundaria N° 6 Manuel Belgrano',    '30710000030', 'constancia_inst3.pdf',  'habilitacion_inst3.pdf', 'laboral_inst3.pdf',  NULL),
-  (4,  '2025-09-22', 'PAI-20250922-0004', 6,  3,
-   'Escuela Primaria Bilingüe St. Patrick',      '30710000065', 'constancia_inst6.pdf',  'habilitacion_inst6.pdf', 'laboral_inst6.pdf',  NULL),
-  (5,  '2025-10-01', 'PAI-20251001-0005', 5,  3,
-   'Jardín Maternal Pequeños Pasos',             '30710000057', 'constancia_inst5.pdf',  'habilitacion_inst5.pdf', 'laboral_inst5.pdf',  NULL),
-  (6,  '2025-10-06', 'PAI-20251006-0006', 7,  3,
-   'Instituto Técnico San Martín',               '30710000073', 'constancia_inst7.pdf',  'habilitacion_inst7.pdf', 'laboral_inst7.pdf',  NULL),
-  (7,  '2025-10-20', 'PAI-20251020-0007', 8,  3,
-   'Escuela Primaria N° 31 Juana Manso',         '30710000081', 'constancia_inst8.pdf',  'habilitacion_inst8.pdf', 'laboral_inst8.pdf',  NULL),
-  (8,  '2025-11-14', 'PAI-20251114-0008', 9,  3,
-   'Jardín de Infantes N° 915 Mundo Mágico',     '30710000103', 'constancia_inst9.pdf',  'habilitacion_inst9.pdf', 'laboral_inst9.pdf',  NULL),
-  (9,  '2025-12-05', 'PAI-20251205-0009', 10, 4,
-   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v1.pdf', 'habilitacion_inst10_v1.pdf', 'laboral_inst10_v1.pdf',
-   'La constancia fiscal no es legible y no se puede verificar el CUIT.'),
-  (10, '2025-12-18', 'PAI-20251218-0010', 4,  3,
-   'Instituto de Idiomas Lingua Norte',          '30710000049', 'constancia_inst4.pdf',  'habilitacion_inst4.pdf', 'laboral_inst4.pdf',  NULL),
-  (11, '2026-01-20', 'PAI-20260120-0011', 10, 3,
-   'Escuela Secundaria para Adultos N° 703',     '30710000111', 'constancia_inst10_v2.pdf', 'habilitacion_inst10_v2.pdf', 'laboral_inst10_v2.pdf', NULL),
-  (12, '2026-10-29', 'PAI-20261029-0012', 11, 1,
-   'Instituto Nuevo Horizonte',                  '30710000120', 'constancia_nueva1.pdf', 'habilitacion_nueva1.pdf', 'laboral_nueva1.pdf', NULL);
+  -- PostulacionesAdminInstitucion
+INSERT INTO PostulacionesAdminInstitucion (id, fecha, codigoSeguimiento, idAdministradorInstitucion, idEstado, nombreInstitucion, cuitInstitucion, rutaConstanciaFiscal, rutaHabilitacion, rutaConstanciaLaboral, motivoRechazo) VALUES
+  (1, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0001', 1, 3, 'Colegio Horizonte', '30790001016', 'postulaciones-admin/97ab39ec726be1bb306d2cbbe96a59b9/constancia-fiscal.pdf', 'postulaciones-admin/97ab39ec726be1bb306d2cbbe96a59b9/habilitacion.pdf', 'postulaciones-admin/97ab39ec726be1bb306d2cbbe96a59b9/constancia-laboral.pdf', NULL),
+  (2, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0002', 4, 3, 'Escuela Río de la Plata', '30790000028', 'postulaciones-admin/3d1f162956317839ac7258a1af06d831/constancia-fiscal.pdf', 'postulaciones-admin/3d1f162956317839ac7258a1af06d831/habilitacion.pdf', 'postulaciones-admin/3d1f162956317839ac7258a1af06d831/constancia-laboral.pdf', NULL),
+  (3, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0003', 5, 3, 'Secundaria del Parque', '30790000036', 'postulaciones-admin/d45dc3ca976f521e9ac9d5dee57ee1d1/constancia-fiscal.pdf', 'postulaciones-admin/d45dc3ca976f521e9ac9d5dee57ee1d1/habilitacion.pdf', 'postulaciones-admin/d45dc3ca976f521e9ac9d5dee57ee1d1/constancia-laboral.pdf', NULL),
+  (4, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0004', 6, 3, 'Instituto de Idiomas Puentes', '30790000044', 'postulaciones-admin/efb54a88262bb27282c4ee59d83ba508/constancia-fiscal.pdf', 'postulaciones-admin/efb54a88262bb27282c4ee59d83ba508/habilitacion.pdf', 'postulaciones-admin/efb54a88262bb27282c4ee59d83ba508/constancia-laboral.pdf', NULL),
+  (5, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0005', 7, 3, 'Jardín Rayuela', '30790000052', 'postulaciones-admin/201346d6effb96193410b2956043daac/constancia-fiscal.pdf', 'postulaciones-admin/201346d6effb96193410b2956043daac/habilitacion.pdf', 'postulaciones-admin/201346d6effb96193410b2956043daac/constancia-laboral.pdf', NULL),
+  (6, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0006', 8, 3, 'Colegio del Sur', '30790000060', 'postulaciones-admin/60769797f69c93aa28eb5af997c8c8b4/constancia-fiscal.pdf', 'postulaciones-admin/60769797f69c93aa28eb5af997c8c8b4/habilitacion.pdf', 'postulaciones-admin/60769797f69c93aa28eb5af997c8c8b4/constancia-laboral.pdf', NULL),
+  (7, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0007', 9, 3, 'Instituto Amanecer', '30790000079', 'postulaciones-admin/b7cf5d3fc813e313d2d81daabed19dd5/constancia-fiscal.pdf', 'postulaciones-admin/b7cf5d3fc813e313d2d81daabed19dd5/habilitacion.pdf', 'postulaciones-admin/b7cf5d3fc813e313d2d81daabed19dd5/constancia-laboral.pdf', NULL),
+  (8, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0008', 10, 3, 'Colegio Encuentro', '30790000087', 'postulaciones-admin/68d6f42c60d6b5c377f45ac6b80d0874/constancia-fiscal.pdf', 'postulaciones-admin/68d6f42c60d6b5c377f45ac6b80d0874/habilitacion.pdf', 'postulaciones-admin/68d6f42c60d6b5c377f45ac6b80d0874/constancia-laboral.pdf', NULL),
+  (9, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 30 DAY)), 'ADM-SEED-0009', 11, 3, 'Centro Educativo Los Aromos', '30790000311', 'postulaciones-admin/9a772c89c0be37765924ecae20f775d4/constancia-fiscal.pdf', 'postulaciones-admin/9a772c89c0be37765924ecae20f775d4/habilitacion.pdf', 'postulaciones-admin/9a772c89c0be37765924ecae20f775d4/constancia-laboral.pdf', NULL),
+  (10, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 'ADM-SEED-0010', 12, 1, 'Instituto Nuevos Caminos', '30790001326', 'postulaciones-admin/ac42a9c2b51b3c29bf2e55b9c318177c/constancia-fiscal.pdf', 'postulaciones-admin/ac42a9c2b51b3c29bf2e55b9c318177c/habilitacion.pdf', 'postulaciones-admin/ac42a9c2b51b3c29bf2e55b9c318177c/constancia-laboral.pdf', NULL),
+  (11, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 'ADM-SEED-0011', 13, 4, 'Colegio Las Acacias', '30790000338', 'postulaciones-admin/051b57ae0c9c9042587ae88e57af7061/constancia-fiscal.pdf', 'postulaciones-admin/051b57ae0c9c9042587ae88e57af7061/habilitacion.pdf', 'postulaciones-admin/051b57ae0c9c9042587ae88e57af7061/constancia-laboral.pdf', 'La habilitación presentada no corresponde al domicilio declarado.');
 
--- ---------------------------------------------------------------------
--- 9. Resenias (8): cada una la escribe un responsable con un alumno
---    en esa institucion. Calificacion de 1 a 5. Algunas tienen respuesta
---    de la institucion (2, 5 y 8); el resto la deja en NULL.
--- ---------------------------------------------------------------------
-
+  -- Resenias
 INSERT INTO Resenias (id, calificacion, comentario, respuestaInstitucion, fecha, idInstitucion, idResponsable) VALUES
-  (1, 5, 'Las seños son un amor y mi hija va feliz todos los días. Muy buena comunicación con las familias.',
-   NULL,
-   '2026-04-10', 1, 1),
-  (2, 4, 'Excelente propuesta pedagógica. Solo mejoraría el horario de ingreso, que es un poco temprano.',
-   'Gracias por el comentario. Vamos a evaluar con el equipo docente una franja de ingreso más flexible para el próximo ciclo.',
-   '2026-05-02', 1, 2),
-  (3, 5, 'Muy contenedores con los chicos. Valentina se adaptó enseguida y la directora siempre está disponible.',
-   NULL,
-   '2026-04-22', 2, 3),
-  (4, 4, 'Buen nivel académico y docentes comprometidos. Instalaciones algo antiguas pero bien cuidadas.',
-   NULL,
-   '2026-06-15', 3, 4),
-  (5, 3, 'Los profesores son buenos, pero los grupos son grandes y a veces se cancelan clases sin aviso.',
-   'Lamentamos los inconvenientes. Estamos armando un aviso por mail para cuando se reprograme una clase y reducimos el tamaño de los grupos.',
-   '2026-07-01', 4, 5),
-  (6, 5, 'El mejor lugar para dejar a mi hija. Personal atento, sala luminosa y mucha comunicación diaria.',
-   NULL,
-   '2026-03-12', 5, 6),
-  (7, 5, 'Muy buena propuesta bilingüe. Benjamín disfruta las clases en inglés y la infraestructura es excelente.',
-   NULL,
-   '2026-05-20', 6, 7),
-  (8, 2, 'Falta comunicación con las familias y los reclamos tardan mucho en resolverse.',
-   'Tomamos nota de su reclamo. Desde secretaría vamos a asignar un responsable para dar respuesta a las familias en un plazo máximo de 5 días.',
-   '2026-08-05', 7, 8);
+  (1, 5, 'Nos acompañaron durante la adaptación. Valoramos la comunicación y los talleres de lectura.', 'Gracias por compartir su experiencia. Seguimos trabajando junto a las familias.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 1, 1),
+  (2, 4, 'Buena propuesta educativa y actividades deportivas. Sería útil ampliar los horarios de entrevista.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 1, 2),
+  (3, 5, 'Me inscribí por mi cuenta y encontré un grupo con buen ritmo para aprender inglés.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 4 DAY)), 4, 3),
+  (101, 4, 'Las reuniones con las familias nos ayudan a seguir los aprendizajes.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 6 DAY)), 1, 101),
+  (102, 5, 'Valoramos el trabajo de la biblioteca y los proyectos de lectura.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 7 DAY)), 1, 102),
+  (103, 3, 'La adaptación fue gradual y el equipo respondió nuestras consultas.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 8 DAY)), 1, 103),
+  (104, 4, 'Las actividades de ciencias despertaron mucho interés en casa.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 1 DAY)), 1, 104),
+  (105, 5, 'Buena comunicación y un trato cercano con los chicos.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 1, 105),
+  (106, 3, 'Nos gustaría contar con más opciones de talleres por la tarde.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 1, 106),
+  (107, 4, 'Las reuniones con las familias nos ayudan a seguir los aprendizajes.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 4 DAY)), 1, 107),
+  (108, 5, 'Valoramos el trabajo de la biblioteca y los proyectos de lectura.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 5 DAY)), 1, 108),
+  (109, 3, 'La adaptación fue gradual y el equipo respondió nuestras consultas.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 6 DAY)), 1, 109),
+  (110, 4, 'Las actividades de ciencias despertaron mucho interés en casa.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 7 DAY)), 1, 110),
+  (111, 5, 'Buena comunicación y un trato cercano con los chicos.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 8 DAY)), 1, 111),
+  (112, 3, 'Nos gustaría contar con más opciones de talleres por la tarde.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 1 DAY)), 1, 112),
+  (113, 4, 'Las reuniones con las familias nos ayudan a seguir los aprendizajes.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 1, 113),
+  (114, 5, 'Valoramos el trabajo de la biblioteca y los proyectos de lectura.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 1, 114),
+  (115, 3, 'La adaptación fue gradual y el equipo respondió nuestras consultas.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 4 DAY)), 1, 115),
+  (116, 4, 'Las actividades de ciencias despertaron mucho interés en casa.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 5 DAY)), 1, 116),
+  (117, 5, 'Buena comunicación y un trato cercano con los chicos.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 6 DAY)), 1, 117),
+  (118, 3, 'Nos gustaría contar con más opciones de talleres por la tarde.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 7 DAY)), 1, 118),
+  (119, 4, 'Las reuniones con las familias nos ayudan a seguir los aprendizajes.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 8 DAY)), 1, 119),
+  (120, 5, 'Valoramos el trabajo de la biblioteca y los proyectos de lectura.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 1 DAY)), 1, 120),
+  (121, 3, 'La adaptación fue gradual y el equipo respondió nuestras consultas.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 2 DAY)), 1, 121),
+  (122, 4, 'Las actividades de ciencias despertaron mucho interés en casa.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 3 DAY)), 1, 122),
+  (123, 5, 'Buena comunicación y un trato cercano con los chicos.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 4 DAY)), 1, 123),
+  (124, 3, 'Nos gustaría contar con más opciones de talleres por la tarde.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 5 DAY)), 1, 124),
+  (125, 4, 'Las reuniones con las familias nos ayudan a seguir los aprendizajes.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 6 DAY)), 1, 125),
+  (126, 5, 'Valoramos el trabajo de la biblioteca y los proyectos de lectura.', NULL, GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 7 DAY)), 1, 126),
+  (127, 3, 'La adaptación fue gradual y el equipo respondió nuestras consultas.', 'Gracias por la devolución. Tomamos la sugerencia para las próximas actividades.', GREATEST(DATE(CONCAT(@seed_anio, '-01-01')), DATE_SUB(CURDATE(), INTERVAL 8 DAY)), 1, 127);
 
--- ---------------------------------------------------------------------
--- 10. Telefonos (17). Un telefono puede tener mas de un dueno:
---    el 4 es de la institucion 4 y del administrador 4; el 16 es el
---    celular de Gabriela como administradora 4 y como responsable 7.
--- ---------------------------------------------------------------------
-
+  -- Telefonos
 INSERT INTO Telefonos (id, idInstitucion, idAdministrador, idResponsable, telefono) VALUES
-  (1,  1,    NULL, NULL, '+54 11 5555-0101'),
-  (2,  2,    NULL, NULL, '+54 11 5555-0102'),
-  (3,  3,    NULL, NULL, '+54 11 5555-0103'),
-  (4,  4,    4,    NULL, '+54 11 5555-0104'),
-  (5,  5,    NULL, NULL, '+54 11 5555-0105'),
-  (6,  6,    NULL, NULL, '+54 11 5555-0106'),
-  (7,  7,    NULL, NULL, '+54 11 5555-0107'),
-  (8,  8,    NULL, NULL, '+54 11 5555-0108'),
-  (9,  9,    NULL, NULL, '+54 11 5555-0109'),
-  (10, 10,   NULL, NULL, '+54 11 5555-0110'),
-  (11, NULL, NULL, 1,    '+54 9 11 5555-1001'),
-  (12, NULL, NULL, 2,    '+54 9 11 5555-1002'),
-  (13, NULL, NULL, 3,    '+54 9 11 5555-1003'),
-  (14, NULL, NULL, 9,    '+54 9 11 5555-1009'),
-  (15, NULL, 1,    NULL, '+54 9 11 5555-2001'),
-  (16, NULL, 4,    7,    '+54 9 11 5555-1007'),
-  (17, NULL, NULL, 7,    '+54 9 11 5555-1008');
+  (1, 1, NULL, NULL, '+54 9 11 5555-0001'),
+  (2, 2, NULL, NULL, '+54 9 11 5555-0002'),
+  (3, 3, NULL, NULL, '+54 9 11 5555-0003'),
+  (4, 4, NULL, NULL, '+54 9 11 5555-0004'),
+  (5, 5, NULL, NULL, '+54 9 11 5555-0005'),
+  (6, 6, NULL, NULL, '+54 9 11 5555-0006'),
+  (7, 7, NULL, NULL, '+54 9 11 5555-0007'),
+  (8, 8, NULL, NULL, '+54 9 11 5555-0008'),
+  (9, 1, NULL, NULL, '+54 9 11 5555-0009'),
+  (10, NULL, 1, NULL, '+54 9 11 5555-0010'),
+  (11, NULL, 2, NULL, '+54 9 11 5555-0011'),
+  (12, NULL, 3, NULL, '+54 9 11 5555-0012'),
+  (13, NULL, 4, NULL, '+54 9 11 5555-0013'),
+  (14, NULL, 5, NULL, '+54 9 11 5555-0014'),
+  (15, NULL, 6, NULL, '+54 9 11 5555-0015'),
+  (16, NULL, 7, NULL, '+54 9 11 5555-0016'),
+  (17, NULL, 8, NULL, '+54 9 11 5555-0017'),
+  (18, NULL, 9, NULL, '+54 9 11 5555-0018'),
+  (19, NULL, 10, NULL, '+54 9 11 5555-0019'),
+  (20, NULL, 11, NULL, '+54 9 11 5555-0020'),
+  (21, NULL, 12, NULL, '+54 9 11 5555-0021'),
+  (22, NULL, 13, NULL, '+54 9 11 5555-0022'),
+  (23, NULL, NULL, 1, '+54 9 11 5555-0023'),
+  (24, NULL, NULL, 2, '+54 9 11 5555-0024'),
+  (25, NULL, NULL, 3, '+54 9 11 5555-0025'),
+  (26, NULL, NULL, 4, '+54 9 11 5555-0026'),
+  (27, NULL, NULL, 5, '+54 9 11 5555-0027'),
+  (28, NULL, NULL, 6, '+54 9 11 5555-0028'),
+  (29, NULL, NULL, 7, '+54 9 11 5555-0029'),
+  (30, NULL, NULL, 101, '+54 9 11 5555-0030'),
+  (31, NULL, NULL, 102, '+54 9 11 5555-0031'),
+  (32, NULL, NULL, 103, '+54 9 11 5555-0032'),
+  (33, NULL, NULL, 104, '+54 9 11 5555-0033'),
+  (34, NULL, NULL, 105, '+54 9 11 5555-0034'),
+  (35, NULL, NULL, 106, '+54 9 11 5555-0035'),
+  (36, NULL, NULL, 107, '+54 9 11 5555-0036'),
+  (37, NULL, NULL, 108, '+54 9 11 5555-0037'),
+  (38, NULL, NULL, 109, '+54 9 11 5555-0038'),
+  (39, NULL, NULL, 110, '+54 9 11 5555-0039'),
+  (40, NULL, NULL, 111, '+54 9 11 5555-0040'),
+  (41, NULL, NULL, 112, '+54 9 11 5555-0041'),
+  (42, NULL, NULL, 113, '+54 9 11 5555-0042'),
+  (43, NULL, NULL, 114, '+54 9 11 5555-0043'),
+  (44, NULL, NULL, 115, '+54 9 11 5555-0044'),
+  (45, NULL, NULL, 116, '+54 9 11 5555-0045'),
+  (46, NULL, NULL, 117, '+54 9 11 5555-0046'),
+  (47, NULL, NULL, 118, '+54 9 11 5555-0047'),
+  (48, NULL, NULL, 119, '+54 9 11 5555-0048'),
+  (49, NULL, NULL, 120, '+54 9 11 5555-0049'),
+  (50, NULL, NULL, 121, '+54 9 11 5555-0050'),
+  (51, NULL, NULL, 122, '+54 9 11 5555-0051'),
+  (52, NULL, NULL, 123, '+54 9 11 5555-0052'),
+  (53, NULL, NULL, 124, '+54 9 11 5555-0053'),
+  (54, NULL, NULL, 125, '+54 9 11 5555-0054'),
+  (55, NULL, NULL, 126, '+54 9 11 5555-0055'),
+  (56, NULL, NULL, 127, '+54 9 11 5555-0056'),
+  (57, NULL, NULL, 1, '+54 9 11 5555-0057');
 
--- ---------------------------------------------------------------------
--- 11. inscriptos = postulaciones Confirmado de cada curso
--- ---------------------------------------------------------------------
-SET SQL_SAFE_UPDATES = 0;
-UPDATE Cursos c
-SET c.inscriptos = (SELECT COUNT(*) FROM PostulacionesAlumnos p
-                    WHERE p.idCurso = c.id
-                      AND p.idEstado = (SELECT id FROM EstadosPostulacion WHERE descripcion = 'Confirmado'));
-SET SQL_SAFE_UPDATES = 1;
+  COMMIT;
+  SELECT @seed_anio AS ciclo_actual, @seed_anio + 1 AS ciclo_para_pruebas,
+         'Seed cargado. Ejecutar 04 Extras/Tests/verificar_seed.sql.' AS resultado;
+END$$
+CALL seed_20261127_cargar()$$
+DROP PROCEDURE IF EXISTS seed_20261127_cargar$$
+DELIMITER ;

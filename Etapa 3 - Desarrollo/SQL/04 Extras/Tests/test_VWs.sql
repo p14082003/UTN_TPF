@@ -1,3 +1,5 @@
+USE InstiRed_DEV;
+
 SELECT * FROM vw_Responsables_Con_Alumnos ORDER BY idResponsable, idAlumno;
 
 -- ==============================================================================
@@ -45,3 +47,11 @@ SELECT * FROM vw_Postulaciones_Por_Responsable ORDER BY fecha;
 -- ==============================================================================
 -- ==============================================================================
 SELECT * FROM vw_Instituciones;
+
+-- ==============================================================================
+-- Administradores, perfil, telefonos y cursos
+-- ==============================================================================
+SELECT * FROM vw_Administradores_Por_Institucion;
+SELECT * FROM vw_Perfil_Usuario;
+SELECT * FROM vw_Telefonos_Por_Usuario;
+SELECT * FROM vw_Cursos;

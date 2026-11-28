@@ -229,7 +229,7 @@ namespace Presentacion
                 return;
             }
 
-            string asunto = "Codigo de Seguimiento - InstiRed";
+            string asunto = "Bienvenido a InstiRed - Solicitud recibida";
             string cuerpo = CuerpoCodigoSeguimiento(nombre, apellido, institucion, codigoSeguimiento);
 
             try
@@ -262,7 +262,7 @@ namespace Presentacion
                                         </tr>
                                         <tr>
                                             <td bgcolor=""#FFFFFF"" style=""background-color:#FFFFFF; border:1px solid #E4E0F0; border-top:none; border-radius:0 0 15px 15px; padding:40px 36px;"">
-                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">¡Tu solicitud fue registrada!</h1>
+                                                <h1 style=""margin:0 0 16px 0; font-size:22px; color:#373A72;"">¡Bienvenido! Recibimos tu solicitud</h1>
 
                                                 <p style=""font-size:15px; line-height:1.6; color:#373A72;"">
                                                     Hola, <strong>{nombreAdministrador}</strong>. Recibimos correctamente tu solicitud de registro como administrador de la institución <strong>{institucion}</strong>.

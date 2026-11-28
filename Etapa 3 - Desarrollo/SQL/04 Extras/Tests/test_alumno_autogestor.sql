@@ -3,6 +3,8 @@
 -- Una versión vieja de la vw_ contenía "WHERE rpa.id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM Alumnos x WHERE x.idPersona = r.idPersona) UNION ALL"
 -- La nueva contiene 					"WHERE rpa.id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM Alumnos x WHERE x.idPersona = r.idPersona AND NOT EXISTS (SELECT 1 FROM ResponsablesPorAlumno y WHERE y.idAlumno = x.id)) UNION ALL"
 -- Esto fuerza a que deba borrarse el enlace con un responsable antes de que una persona que paso a ser adulta se considere "autogestionada".
+-- HISTORICO: los IDs corresponden a la carga anterior.
+-- Para el seed nuevo, usar verificar_seed.sql y Seed/LEEME_seed.txt.
 USE InstiRed_DEV;
 
 -- 1) Se carga un Madre (responsable). 

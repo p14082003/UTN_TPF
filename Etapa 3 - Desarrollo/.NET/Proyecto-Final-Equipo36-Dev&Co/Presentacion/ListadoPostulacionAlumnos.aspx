@@ -130,7 +130,7 @@
                                 <asp:LinkButton ID="btnEliminarAlumno" runat="server" CommandArgument='<%# Eval("IdAlumno") %>' CssClass="btn btn-sm border" ToolTip="Eliminar alumno" OnClick="btnEliminarAlumno_Click" OnClientClick="return confirmarAccion(this,'¿Desea eliminar este alumno? Esta acción no se puede deshacer.', 'Aceptar');">
                                     <i class="bi bi-trash text-danger fg-danger"></i>
                                 </asp:LinkButton>
-                                <asp:Label ID="lblConPostulaciones" runat="server" Visible="false" CssClass="text-secondary small" Text="Tiene postulaciones"></asp:Label>
+                                <asp:Label ID="lblConPostulaciones" runat="server" Visible="false" CssClass="fg-danger small" Text="Tiene postulaciones"></asp:Label>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>

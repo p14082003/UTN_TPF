@@ -1,6 +1,7 @@
 ﻿using Negocio;
 using Presentacion.Auth;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
@@ -12,6 +13,7 @@ namespace Presentacion
     {
         private UsuarioSesion usuario;
         private int idPostulacion;
+        private string mensajeOperacionGuardada;
 
         protected void Page_Init(object sender, EventArgs e)
         {
@@ -70,7 +72,7 @@ namespace Presentacion
             return postulacion;
         }
 
-        private async Task CargarDetalleAsync(string mensajeExito = null)
+        private async Task CargarDetalleAsync(string mensajeExito = null, bool notificacionCompleta = true)
         {
             pnlDatos.Visible = false;
             OcultarBotones();
@@ -105,7 +107,7 @@ namespace Presentacion
                 pnlDatos.Visible = true;
                 if (mensajeExito != null)
                 {
-                    MostrarMensaje(mensajeExito, true);
+                    MostrarMensaje(mensajeExito, notificacionCompleta);
                 }
             }
             catch (Exception ex)
@@ -145,8 +147,12 @@ namespace Presentacion
                 });
                 if (respuesta.Estado == HttpStatusCode.OK)
                 {
+                    mensajeOperacionGuardada = confirmar ? "La postulación fue confirmada con éxito." : "La postulación fue cancelada correctamente.";
+                    bool correosEnviados = await NotificarGestionAsync(postulacion, confirmar);
+                    if (!correosEnviados)
+                        mensajeOperacionGuardada += " El cambio quedó guardado, pero no pudimos enviar todos los correos de aviso. No repitas la operación.";
                     Session.Remove("PostulacionesResponsable:" + usuario.IdResponsable.Value);
-                    await CargarDetalleAsync(confirmar ? "La postulación fue confirmada con éxito." : "La postulación fue cancelada correctamente.");
+                    await CargarDetalleAsync(mensajeOperacionGuardada, correosEnviados);
                     return;
                 }
                 if (respuesta.Estado == HttpStatusCode.BadRequest)
@@ -161,8 +167,70 @@ namespace Presentacion
             {
                 Trace.Warn("ResponsableGestionarPostulacionAlumno", "Error al gestionar la postulación.", ex);
                 OcultarBotones();
-                MostrarMensaje("No pudimos confirmar el resultado de la operación. Volvé al listado para consultar el estado antes de reintentarlo.", false);
+                MostrarMensaje(mensajeOperacionGuardada == null
+                    ? "No pudimos confirmar el resultado de la operación. Volvé al listado para consultar el estado antes de reintentarlo."
+                    : mensajeOperacionGuardada + " Volvé al listado para consultar el estado; no hace falta repetir la operación.", false);
             }
+        }
+
+        private async Task<bool> NotificarGestionAsync(PostulacionApi postulacion, bool confirmada)
+        {
+            string correoResponsable = string.IsNullOrWhiteSpace(postulacion.EmailResponsable)
+                ? usuario.Email : postulacion.EmailResponsable;
+            string nombreResponsable = (postulacion.NombreResponsable + " " + postulacion.ApellidoResponsable).Trim();
+            if (nombreResponsable.Length == 0)
+                nombreResponsable = (usuario.Nombre + " " + usuario.Apellido).Trim();
+
+            bool enviados = CrearNotificacion(postulacion, confirmada, correoResponsable, nombreResponsable, false)
+                .IntentarEnviar(ex => Trace.Warn("ResponsableGestionarPostulacionAlumno", "Error al notificar al responsable.", ex));
+
+            try
+            {
+                var institucion = await InstiRedApi.GetAsync<InstitucionContactoApi>("ent/Instituciones/" + postulacion.IdInstitucion);
+                // Un correo compartido recibe un solo aviso por operación.
+                if (!string.Equals(institucion.Email?.Trim(), correoResponsable?.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    bool avisoInstitucion = CrearNotificacion(postulacion, confirmada, institucion.Email, institucion.Nombre, true)
+                        .IntentarEnviar(ex => Trace.Warn("ResponsableGestionarPostulacionAlumno", "Error al notificar a la institución.", ex));
+                    enviados = avisoInstitucion && enviados;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.Warn("ResponsableGestionarPostulacionAlumno", "No se pudieron obtener los datos para avisar a la institución.", ex);
+                enviados = false;
+            }
+            return enviados;
+        }
+
+        private static NotificacionEmail CrearNotificacion(PostulacionApi postulacion, bool confirmada,
+            string correo, string nombre, bool paraInstitucion)
+        {
+            string responsable = (postulacion.NombreResponsable + " " + postulacion.ApellidoResponsable).Trim();
+            string mensaje = confirmada
+                ? "La postulación fue confirmada por su responsable. La inscripción quedó registrada y ocupa una vacante del curso."
+                : "La postulación fue cancelada por su responsable. Si estaba confirmada, la vacante volvió a estar disponible.";
+            string curso = postulacion.Nivel + (postulacion.Anio.HasValue ? " " + postulacion.Anio.Value : "") +
+                " · División " + postulacion.Division + " · " + postulacion.Turno;
+            return new NotificacionEmail
+            {
+                Destinatario = correo,
+                NombreDestinatario = nombre,
+                Asunto = confirmada ? "Postulación confirmada - InstiRed" : "Postulación cancelada - InstiRed",
+                Titulo = confirmada ? "Confirmación de postulación" : "Cancelación de postulación",
+                Mensaje = mensaje,
+                Datos = new Dictionary<string, string>
+                {
+                    { "Alumno", (postulacion.NombreAlumno + " " + postulacion.ApellidoAlumno).Trim() },
+                    { "Responsable", responsable },
+                    { "Institución", postulacion.Institucion },
+                    { "Curso", curso },
+                    { "Ciclo lectivo", postulacion.CicloLectivo.ToString() },
+                    { "Código de seguimiento", postulacion.CodigoSeguimiento }
+                },
+                Indicaciones = paraInstitucion ? "Podés consultar el estado actualizado desde Postulaciones en tu cuenta de administrador."
+                    : "Podés consultar el estado actualizado desde Mis postulaciones en tu cuenta de responsable."
+            };
         }
 
         private void ConfigurarBotonesPorEstado(int idEstado, int cicloLectivo)
@@ -273,6 +341,10 @@ namespace Presentacion
         {
             public int IdPostulacion { get; set; }
             public int? IdResponsable { get; set; }
+            public string NombreResponsable { get; set; }
+            public string ApellidoResponsable { get; set; }
+            public string EmailResponsable { get; set; }
+            public int IdInstitucion { get; set; }
             public int IdCurso { get; set; }
             public DateTime Fecha { get; set; }
             public string CodigoSeguimiento { get; set; }
@@ -288,6 +360,12 @@ namespace Presentacion
             public string Institucion { get; set; }
             public string Turno { get; set; }
             public string MotivoRechazo { get; set; }
+        }
+
+        private class InstitucionContactoApi
+        {
+            public string Nombre { get; set; }
+            public string Email { get; set; }
         }
 
         private class CursoApi

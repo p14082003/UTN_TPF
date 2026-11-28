@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -15,8 +16,15 @@ namespace Negocio
 
         public EmailService()
         {
+            string usuario = ConfigurationManager.AppSettings["SmtpUsuario"];
+            string clave = ConfigurationManager.AppSettings["SmtpClave"];
+            if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(clave))
+            {
+                throw new InvalidOperationException("Falta configurar SmtpUsuario y SmtpClave en Web.Local.config.");
+            }
+
             server = new SmtpClient();
-            server.Credentials = new NetworkCredential("testingprogramacionutnfrpg@gmail.com", "jvxg dnvs puov pggm"); // gmail creado para el programa, clave generada para esta app
+            server.Credentials = new NetworkCredential(usuario.Trim(), clave);
             server.EnableSsl = true;
             server.Port = 587;
             server.Host = "smtp.gmail.com";

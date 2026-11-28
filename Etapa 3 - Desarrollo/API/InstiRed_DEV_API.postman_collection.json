@@ -3202,7 +3202,7 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/sp/AlumnosPorResponsable?idResponsable=1",
-                "description": "Ejecuta sp_alumnos_Por_Responsable. idResponsable es obligatorio. Devuelve IdAlumno, NombreCompleto, Documento, FechaNacimiento, Domicilio y Rol de los alumnos a cargo, incluido el autogestor. Sin alumnos devuelve [] con HTTP 200. Requiere la versión ampliada del SP de JuliCreate_SPs.sql."
+                "description": "Ejecuta sp_alumnos_Por_Responsable. idResponsable es obligatorio. Devuelve IdAlumno, NombreCompleto, Documento, FechaNacimiento, Domicilio y Rol de los alumnos a cargo, incluido el autogestor. Sin alumnos devuelve [] con HTTP 200. Requiere la versión ampliada del SP de SQL/02 Stored Procedures/create_SPs.sql."
               },
               "response": []
             }
@@ -3224,7 +3224,7 @@
                   "raw": "{\n  \"idResponsable\": 1,\n  \"idAlumno\": 1\n}",
                   "options": { "raw": { "language": "json" } }
                 },
-                "description": "Ejecuta sp_Alumno_Eliminar de create_SPs_Marcos.sql. El responsable debe tener un usuario activo y el alumno debe estar a su cargo o ser él mismo (autogestor). No permite eliminar alumnos con postulaciones de ningún estado. El SP elimina el alumno y todos sus vínculos con responsables; conserva la persona si también es responsable o administrador. Responde HTTP 200 con message al eliminar, o HTTP 400 con el motivo del rechazo (IDs inválidos, falta de permiso, alumno inexistente o con postulaciones). En la WebApp idResponsable se toma de la sesión."
+                "description": "Ejecuta sp_Alumno_Eliminar de SQL/02 Stored Procedures/create_SPs.sql. El responsable debe tener un usuario activo y el alumno debe estar a su cargo o ser él mismo (autogestor). No permite eliminar alumnos con postulaciones de ningún estado. El SP elimina el alumno y todos sus vínculos con responsables; conserva la persona si también es responsable o administrador. Responde HTTP 200 con message al eliminar, o HTTP 400 con el motivo del rechazo (IDs inválidos, falta de permiso, alumno inexistente o con postulaciones). En la WebApp idResponsable se toma de la sesión."
               },
               "response": []
             }

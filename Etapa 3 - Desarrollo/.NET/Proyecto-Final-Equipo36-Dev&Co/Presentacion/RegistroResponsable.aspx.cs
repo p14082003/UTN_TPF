@@ -1,5 +1,6 @@
 ﻿using System;
 using Negocio;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -84,9 +85,13 @@ namespace Presentacion
                 var respuesta = await InstiRedApi.PostAsync("/sp/RegistrarResponsable", registro);
                 if (respuesta.Estado == HttpStatusCode.Created)
                 {
-                    MostrarResultado("Responsable registrado correctamente.", true);
                     btnRegistrar.Enabled = false;
-                    ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='Login.aspx',3000);", true);
+                    bool bienvenidaEnviada = EnviarBienvenida(email, registro.nombre + " " + registro.apellido);
+                    MostrarResultado(bienvenidaEnviada
+                        ? "Tu cuenta se creó correctamente. Ya podés iniciar sesión."
+                        : "Tu cuenta se creó correctamente, pero no pudimos enviar el correo de bienvenida. Ya podés iniciar sesión con tu correo y contraseña; no vuelvas a registrarte.", bienvenidaEnviada);
+                    if (bienvenidaEnviada)
+                        ClientScript.RegisterStartupScript(this.GetType(), "Redirección", "setTimeout(() => window.location.href='Login.aspx',3000);", true);
                     return;
                 }
 
@@ -113,6 +118,29 @@ namespace Presentacion
             }
 
             MostrarResultado("No se pudo completar el registro. Intentá nuevamente más tarde.", false);
+        }
+
+        private bool EnviarBienvenida(string email, string nombre)
+        {
+            var bienvenida = new NotificacionEmail
+            {
+                Destinatario = email,
+                NombreDestinatario = nombre.Trim(),
+                Asunto = "¡Bienvenido a InstiRed!",
+                Titulo = "Tu próximo paso empieza en InstiRed",
+                Mensaje = "¡Gracias por sumarte! Tu cuenta de responsable ya está lista para acompañarte en la búsqueda de una institución educativa.",
+                Datos = new Dictionary<string, string>
+                {
+                    { "Tu cuenta", email },
+                    { "Encontrá tu institución", "Explorá el mapa y compará propuestas, idiomas, accesibilidad y vacantes." },
+                    { "Registrá a tus alumnos", "Agregá a quienes tenés a cargo. Si estudiás vos, también podés registrarte como autogestor." },
+                    { "Seguí tus postulaciones", "Presentá la documentación y consultá las respuestas desde Mis postulaciones." }
+                },
+                Indicaciones = "Ingresá con el correo y la contraseña que elegiste al registrarte. ¡Nos alegra acompañarte en esta nueva etapa!",
+                TextoAccion = "Empezar en InstiRed",
+                UrlAccion = "https://instired.nummis.com.ar/Login.aspx"
+            };
+            return bienvenida.IntentarEnviar(ex => Trace.Warn("RegistroResponsable", "La cuenta se creó, pero no se pudo enviar la bienvenida.", ex));
         }
 
         private static bool EmailValido(string email)
